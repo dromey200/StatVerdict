@@ -7,6 +7,16 @@
     <meta name="theme-color" content="#d32f2f">
     <meta name="color-scheme" content="dark">
     
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
+        font-src 'self' https://fonts.gstatic.com; 
+        img-src 'self' data: blob: https://www.google-analytics.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://generativelanguage.googleapis.com; 
+        base-uri 'self';
+    ">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
@@ -15,85 +25,25 @@
     <title>Horadric AI - Diablo Loot Analyzer</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-E1JZ16DMSF', { 'send_page_view': true, 'cookie_flags': 'SameSite=None;Secure' });
-    </script>
+    <script src="js/gtag.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Outfit:wght@500&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     
-    <script src="js/config.js"></script>
-    <script src="js/translations.js"></script>
-    <script src="js/analytics.js"></script>
-    <script src="js/pricing.js"></script>
-    <script src="js/tour.js"></script>
-    <script src="js/i18n-ui.js"></script>
-    <script src="js/app.js"></script>
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23d32f2f'>⚔</text></svg>" type="image/svg+xml">
 
     <style>
-        /* Force header to adapt to content height */
-        .dashboard-header {
-            height: auto !important;
-            min-height: 60px;
-            padding: 10px 20px;
-        }
-
-        /* Custom Header Content Layout */
-        .header-content-custom {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .header-left {
-            width: auto;
-            margin-right: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Center title on mobile */
-            gap: 10px;
-        }
-        
-        /* FIX: Ensure title text is ALWAYS visible, even on mobile */
-        .title-text {
-            display: inline-block !important;
-            color: #fff; /* Ensure text is white against dark header */
-        }
-
-        .header-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        /* Mobile Adjustments */
+        .dashboard-header { height: auto !important; min-height: 60px; padding: 10px 20px; }
+        .header-content-custom { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+        .header-left { width: auto; margin-right: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .title-text { display: inline-block !important; color: #fff; }
+        .header-controls { display: flex; gap: 10px; align-items: center; }
         @media (max-width: 768px) {
-            /* On mobile, allow row layout if space permits, or keep column but compact */
-            .header-content-custom {
-                gap: 8px;
-            }
-            
-            .dashboard-title {
-                font-size: 1.2rem; /* Slightly smaller title on mobile */
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            /* Ensure header doesn't cover content if fixed */
-            body.dashboard-layout {
-                padding-top: 10px; /* Adjust if your CSS has fixed padding */
-            }
+            .header-content-custom { gap: 8px; }
+            .dashboard-title { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+            body.dashboard-layout { padding-top: 10px; }
         }
     </style>
 </head>
@@ -103,9 +53,8 @@
     
     <header class="dashboard-header" role="banner">
         <div class="header-content-custom">
-            
             <div class="header-left">
-                <a href="StatVerdict.html" class="back-link" aria-label="Back to Games">
+                <a href="index.html" class="back-link" aria-label="Back to Games">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="m15 18-6-6 6-6"/>
                     </svg>
@@ -115,7 +64,6 @@
                     <span class="title-text">Horadric AI</span>
                 </h1>
             </div>
-            
             <div class="header-controls">
                 <select id="game-version" class="game-selector" aria-label="Select game">
                     <option value="d4" selected>Diablo IV</option>
@@ -123,14 +71,12 @@
                     <option value="d2r">Diablo II: Resurrected</option>
                     <option value="di">Diablo Immortal</option>
                 </select>
-                
                 <button id="settings-trigger" class="icon-btn" aria-label="Open settings">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M12 1v6m0 6v6m7.071-16.071l-4.243 4.243m-5.656 5.656l-4.243 4.243m16.071 0l-4.243-4.243m-5.656-5.656L1.929 1.929"></path>
                     </svg>
                 </button>
-                
                 <button id="help-trigger" class="icon-btn" aria-label="Open help">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -139,78 +85,44 @@
                     </svg>
                 </button>
             </div>
-            
         </div>
     </header>
 
     <main class="dashboard-main" id="main-content" role="main">
-        
         <div class="dashboard-grid">
-            
             <div class="dashboard-card scan-card">
                 <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="card-icon">📸</span>
-                        New Scan
-                    </h2>
+                    <h2 class="card-title"><span class="card-icon">📸</span> New Scan</h2>
                 </div>
-                
                 <div class="card-body">
                     <div class="upload-zone" id="upload-zone">
-                        <input 
-                            type="file" 
-                            id="image-upload" 
-                            accept="image/png,image/jpeg,image/jpg,image/webp"
-                            class="upload-input"
-                            aria-label="Upload item screenshot"
-                        >
+                        <input type="file" id="image-upload" accept="image/png,image/jpeg,image/jpg,image/webp" class="upload-input" aria-label="Upload item screenshot">
                         <label for="image-upload" class="upload-label">
                             <div class="upload-icon">📷</div>
                             <div class="upload-text">Drop image here or click to browse</div>
                             <div class="upload-hint">PNG, JPEG, WebP • Max 10MB</div>
                         </label>
-                        
-                        <img 
-                            id="image-preview" 
-                            class="upload-preview" 
-                            alt="Item preview" 
-                            style="display: none;"
-                        >
+                        <img id="image-preview" class="upload-preview" alt="Item preview" style="display: none;">
                     </div>
-                    
                     <div class="quick-options">
                         <div class="option-row">
                             <label for="player-class" class="option-label">Class</label>
-                            <select id="player-class" class="option-select">
-                                <option value="Any">Any Class</option>
-                            </select>
+                            <select id="player-class" class="option-select"><option value="Any">Any Class</option></select>
                         </div>
-                        
                         <div class="mode-toggle">
-                            <button type="button" id="mode-identify" class="mode-btn active" aria-pressed="true">
-                                🔍 Identify
-                            </button>
-                            <button type="button" id="mode-compare" class="mode-btn" aria-pressed="false">
-                                ⚖️ Compare
-                            </button>
+                            <button type="button" id="mode-identify" class="mode-btn active" aria-pressed="true">🔍 Identify</button>
+                            <button type="button" id="mode-compare" class="mode-btn" aria-pressed="false">⚖️ Compare</button>
                         </div>
                     </div>
-                    
                     <button id="toggle-advanced" class="advanced-toggle" aria-expanded="false">
                         <span>⚙️ Advanced Options</span>
-                        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
+                        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
-                    
                     <div id="advanced-panel" class="advanced-panel hidden">
                         <div class="advanced-section">
                             <label class="advanced-label">Build Focus</label>
-                            <select id="build-style" class="advanced-select">
-                                <option value="">Any Build</option>
-                            </select>
+                            <select id="build-style" class="advanced-select"><option value="">Any Build</option></select>
                         </div>
-                        
                         <div class="advanced-section">
                             <label class="advanced-label">Stat Requirements</label>
                             <div class="stat-grid">
@@ -221,7 +133,6 @@
                                 <label class="stat-checkbox"><input type="checkbox" id="need-res"> All Resist</label>
                             </div>
                         </div>
-                        
                         <div class="advanced-section">
                             <label class="advanced-label">Build Mechanic</label>
                             <select id="key-mechanic" class="advanced-select">
@@ -233,23 +144,15 @@
                             </select>
                         </div>
                     </div>
-                    
                     <div id="image-error" class="message-box error" style="display: none;"></div>
                     <div id="image-success" class="message-box success" style="display: none;"></div>
-                    
                     <div id="progress-container" class="progress-container" style="display: none;">
                         <div id="progress-bar" class="progress-bar"></div>
                     </div>
-                    
                     <div class="card-actions">
-                        <button id="analyze-btn" type="button" class="btn-primary btn-large">
-                            Analyze Item
-                        </button>
-                        <button id="demo-btn" type="button" class="btn-secondary">
-                            🎮 Try Demo
-                        </button>
+                        <button id="analyze-btn" type="button" class="btn-primary btn-large">Analyze Item</button>
+                        <button id="demo-btn" type="button" class="btn-secondary">🎮 Try Demo</button>
                     </div>
-                    
                     <div id="loading" class="loading-state" style="display: none;">
                         <div class="loading-spinner"></div>
                         <div class="loading-text">Consulting the archives...</div>
@@ -260,13 +163,10 @@
             <div class="dashboard-card recent-card">
                 <div class="card-header">
                     <h2 class="card-title">
-                        <span class="card-icon">📜</span>
-                        Recent Scans
-                        <span id="scan-count" class="count-badge">0</span>
+                        <span class="card-icon">📜</span> Recent Scans <span id="scan-count" class="count-badge">0</span>
                     </h2>
                     <button id="clear-history" class="btn-text" aria-label="Clear all scans">Clear All</button>
                 </div>
-                
                 <div class="card-body">
                     <div id="history-list" class="recent-list">
                         <div class="empty-state">
@@ -280,21 +180,13 @@
             
             <div id="results-card" class="dashboard-card results-card" style="display: none;">
                 <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="card-icon">📊</span>
-                        Analysis Results
-                    </h2>
+                    <h2 class="card-title"><span class="card-icon">📊</span> Analysis Results</h2>
                     <button id="close-results" class="btn-icon" aria-label="Close results">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                 </div>
-                
                 <div class="card-body">
                     <div id="result-area" class="result-content"></div>
-                    
                     <div id="price-section" class="price-section" style="display: none;">
                         <div class="price-header">
                             <h3>💰 Market Value</h3>
@@ -302,21 +194,13 @@
                         </div>
                         <div id="price-content" class="price-content"></div>
                     </div>
-                    
                     <div class="result-actions">
-                        <button id="share-btn" class="btn-secondary" aria-label="Copy for Discord">
-                            📢 Copy for Discord
-                        </button>
-                        <button id="price-check-btn" class="btn-secondary" aria-label="Check price">
-                            💰 Check Price
-                        </button>
-                        <button id="search-trade-btn" class="btn-secondary" aria-label="Search trade">
-                            🔍 Search Trade
-                        </button>
+                        <button id="share-btn" class="btn-secondary" aria-label="Copy for Discord">📢 Copy for Discord</button>
+                        <button id="price-check-btn" class="btn-secondary" aria-label="Check price">💰 Check Price</button>
+                        <button id="search-trade-btn" class="btn-secondary" aria-label="Search trade">🔍 Search Trade</button>
                     </div>
                 </div>
             </div>
-            
         </div>
     </main>
 
@@ -326,63 +210,34 @@
             <div class="settings-header">
                 <h2 class="settings-title">⚙️ Settings</h2>
                 <button id="settings-close" class="btn-icon" aria-label="Close settings">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            
             <div class="settings-body">
                 <div class="settings-section">
                     <h3 class="section-title">Gemini API Key</h3>
                     <p class="section-desc">Required for AI-powered analysis</p>
-                    
                     <div class="input-group">
-                        <input 
-                            type="password" 
-                            id="api-key" 
-                            class="settings-input"
-                            placeholder="Paste your API key here..."
-                            autocomplete="off"
-                        >
+                        <input type="password" id="api-key" class="settings-input" placeholder="Paste your API key here..." autocomplete="off">
                         <span class="input-hint">🔒 Encrypted & stored locally</span>
                     </div>
-                    
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn-link" rel="noopener noreferrer">
-                        Get API Key →
-                    </a>
-                    
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn-link" rel="noopener noreferrer">Get API Key →</a>
                     <div id="api-key-error" class="message-box error" style="display: none;"></div>
                     <div id="api-key-success" class="message-box success" style="display: none;"></div>
                 </div>
-                
                 <div class="settings-section">
                     <h3 class="section-title">Preferences</h3>
-                    
-                    <label class="setting-item">
-                        <input type="checkbox" id="auto-save-scans" checked>
-                        <span>Auto-save scan results</span>
-                    </label>
-                    
-                    <label class="setting-item">
-                        <input type="checkbox" id="show-prices" checked>
-                        <span>Show market prices</span>
-                    </label>
+                    <label class="setting-item"><input type="checkbox" id="auto-save-scans" checked> <span>Auto-save scan results</span></label>
+                    <label class="setting-item"><input type="checkbox" id="show-prices" checked> <span>Show market prices</span></label>
+                    <label class="setting-item"><input type="checkbox" id="enable-sounds"> <span>Enable sound effects</span></label>
                 </div>
-                
                 <div class="settings-section">
                     <h3 class="section-title">About</h3>
-                    <p class="about-text">Horadric AI v2.0.0</p>
+                    <p class="about-text">Horadric AI v2.6.1</p>
                     <p class="about-text">Made with ❤️ for Sanctuary</p>
-                    
                     <div class="settings-links">
-                        <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" class="settings-link">
-                            🐛 Report Issue
-                        </a>
-                        <a href="https://forms.gle/MappsrQeiSyskmYb6" target="_blank" class="settings-link">
-                            💡 Submit Enhancement
-                        </a>
+                        <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" class="settings-link">🐛 Report Issue</a>
+                        <a href="https://forms.gle/MappsrQeiSyskmYb6" target="_blank" class="settings-link">💡 Submit Enhancement</a>
                     </div>
                 </div>
             </div>
@@ -396,28 +251,13 @@
         </div>
     </div>
 
-    <div id="privacy-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button id="privacy-close-btn" class="modal-close" aria-label="Close">×</button>
-            <h3>Privacy & Data</h3>
-            <div class="privacy-content">
-                <ul>
-                    <li>API keys stored locally in encrypted form</li>
-                    <li>Images processed in real-time, never saved on servers</li>
-                    <li>Scan history stored locally in your browser</li>
-                    <li>No personal data collected or transmitted</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <script src="config.js"></script>
-    <script src="translations.js"></script>
-    <script src="analytics.js"></script>
-    <script src="pricing.js"></script>
-    <script src="tour.js"></script>
-    <script src="i18n-ui.js"></script>
-    <script src="app.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/pricing.js"></script>
+    <script src="js/tour.js"></script>
+    <script src="js/i18n-ui.js"></script>
+    <script src="js/app.js"></script>
     
 </body>
 </html>
