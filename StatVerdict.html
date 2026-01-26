@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="StatVerdict - AI-powered loot analysis for ARPGs. Instant item scoring, build optimization, and gear evaluation for Diablo 4, Path of Exile 2, Last Epoch, and more.">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="color-scheme" content="dark">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://www.google-analytics.com; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com; base-uri 'self'; form-action 'self' https://formspree.io https://forms.gle https://app.convertkit.com https://app.kit.com;">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <link rel="dns-prefetch" href="https://api.counterapi.dev">
+    <link rel="dns-prefetch" href="https://app.kit.com">
+    
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="statverdict.css" as="style">
+    
+    <title>StatVerdict - AI-Powered Loot Analysis for ARPGs</title>
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-E1JZ16DMSF', {
+            'send_page_view': true,
+            'cookie_flags': 'SameSite=None;Secure'
+        });
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="statverdict.css">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🔍</text></svg>" type="image/svg+xml">
+</head>
+<body>
+    <div class="sv-bg-effects" aria-hidden="true">
+        <div class="sv-bg-glow sv-bg-glow-1"></div>
+        <div class="sv-bg-glow sv-bg-glow-2"></div>
+        <div class="sv-bg-particles"></div>
+    </div>
+
+    <header class="sv-header" role="banner">
+        <div class="sv-header-inner">
+            <a href="index.html" class="sv-logo" aria-label="StatVerdict Home">
+                <div class="sv-logo-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </div>
+                <div class="sv-logo-text">
+                    <span class="sv-logo-title">StatVerdict</span>
+                    <span class="sv-logo-subtitle">Loot Analysis for ARPGs</span>
+                </div>
+            </a>
+            
+            <nav class="sv-nav" role="navigation" aria-label="Main navigation">
+                <a href="#games" class="sv-nav-link">Games</a>
+                <a href="#features" class="sv-nav-link">Features</a>
+                <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" rel="noopener noreferrer" class="sv-nav-link" aria-label="Support (opens in new tab)">Support</a>
+            </nav>
+
+            <button id="sv-mobile-menu-btn" class="sv-mobile-menu-btn" aria-label="Open menu">
+                <span class="sv-bar"></span>
+                <span class="sv-bar"></span>
+                <span class="sv-bar"></span>
+            </button>
+        </div>
+
+        <div id="sv-mobile-nav" class="sv-mobile-nav">
+            <a href="#games" class="sv-mobile-link">Games</a>
+            <a href="#features" class="sv-mobile-link">Features</a>
+            <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" rel="noopener noreferrer" class="sv-mobile-link">Support</a>
+        </div>
+    </header>
+
+    <section class="sv-hero" role="region" aria-labelledby="hero-title">
+        <div class="sv-hero-content">
+            <div class="sv-badge" role="status">
+                <span class="sv-badge-icon" aria-hidden="true">✨</span>
+                <span>AI-Powered Loot Intelligence</span>
+            </div>
+            
+            <h1 class="sv-hero-title" id="hero-title">
+                Master Your <span class="sv-text-gradient">ARPG Loot</span>
+            </h1>
+            
+            <p class="sv-hero-subtitle">
+                Instant item analysis, build optimization, and gear scoring powered by advanced AI.
+            </p>
+            <p class="sv-hero-cta-text">
+                Choose your game to begin your journey.
+            </p>
+
+            <div class="sv-beta-container">
+                <label for="beta-email-input" style="display:block; margin-block-end:10px; color:var(--sv-accent); font-weight:600;">
+                    🔥 Get Early Access & Updates
+                </label>
+                <form action="https://app.kit.com/forms/8985038/subscriptions" method="post" class="sv-beta-form" id="beta-signup-form">
+                    <label for="beta-email-input" class="sr-only">Email address</label>
+                    <input 
+                        type="email" 
+                        name="email_address" 
+                        id="beta-email-input" 
+                        placeholder="Enter your email..." 
+                        required
+                        aria-required="true"
+                        aria-describedby="beta-signup-success beta-signup-error"
+                    >
+                    <button type="submit" id="beta-submit-btn" aria-label="Join beta program">Join Beta</button>
+                </form>
+                <div id="beta-signup-success" class="sv-beta-msg sv-beta-success" style="display:none;" role="status" aria-live="polite">
+                    ✅ You're on the list! Check your email to confirm.
+                </div>
+                <div id="beta-signup-error" class="sv-beta-msg sv-beta-error" style="display:none;" role="alert" aria-live="assertive">
+                    ⚠️ Something went wrong. Please try again.
+                </div>
+            </div>
+
+            <div class="sv-stats" style="margin-block-start: 40px;" role="region" aria-label="Platform statistics">
+                <div class="sv-stat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                    <span id="stat-scans" class="sv-stat-value" aria-live="polite">
+                        <span class="sv-stat-loading" aria-label="Loading statistics"></span>
+                        Items Analyzed
+                    </span>
+                </div>
+                <div class="sv-stat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span id="stat-users" class="sv-stat-value" aria-live="polite">
+                        <span class="sv-stat-loading" aria-label="Loading statistics"></span>
+                        Community Members
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sv-games" id="games" role="region" aria-labelledby="games-heading">
+        <h2 id="games-heading" class="sv-section-title">Available Games</h2>
+        
+        <div class="sv-games-grid">
+            <a 
+                href="horadric.html" 
+                class="sv-game-card sv-game-available" 
+                data-game="diablo"
+                aria-label="Launch Diablo Universe scanner (Live)"
+            >
+                <div class="sv-game-glow" aria-hidden="true"></div>
+                <div class="sv-game-badge" role="status">Live</div>
+                <div class="sv-game-content">
+                    <div class="sv-game-icon" aria-hidden="true">🔥</div>
+                    <h3 class="sv-game-title">Diablo Universe</h3>
+                    <p class="sv-game-subtitle sv-text-live">Horadric AI</p>
+                    <p class="sv-game-description">D4, D3, D2: Resurrected, & Immortal Analysis</p>
+                    
+                    <ul class="sv-game-features" aria-label="Features">
+                        <li class="sv-feature-dot">
+                            <span class="sv-dot" aria-hidden="true"></span>
+                            <span>Multi-Game Support</span>
+                        </li>
+                        <li class="sv-feature-dot">
+                            <span class="sv-dot" aria-hidden="true"></span>
+                            <span>Compare Items</span>
+                        </li>
+                        <li class="sv-feature-dot">
+                            <span class="sv-dot" aria-hidden="true"></span>
+                            <span>Build Analysis</span>
+                        </li>
+                        <li class="sv-feature-dot">
+                            <span class="sv-dot" aria-hidden="true"></span>
+                            <span>Scan Journal</span>
+                        </li>
+                        <li class="sv-feature-dot">
+                            <span class="sv-dot" aria-hidden="true"></span>
+                            <span>Price Checker</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="sv-game-cta">
+                        <span>Launch Scanner</span>
+                        <span class="sv-arrow" aria-hidden="true">→</span>
+                    </div>
+                </div>
+            </a>
+
+            <div class="sv-game-card sv-game-soon" data-game="poe2" role="article" aria-label="Path of Exile 2 (Coming Soon)">
+                <div class="sv-game-content">
+                    <div class="sv-game-icon" aria-hidden="true">⚔️</div>
+                    <h3 class="sv-game-title">Path of Exile Universe</h3>
+                    <p class="sv-game-subtitle sv-text-muted">Coming Soon</p>
+                    <p class="sv-game-description">Exile analysis tools in development</p>
+                    
+                    <div class="sv-game-status" role="status">Coming Soon</div>
+                </div>
+            </div>
+
+            <div class="sv-game-card sv-game-soon" data-game="lastepoch" role="article" aria-label="Last Epoch (Coming Soon)">
+                <div class="sv-game-content">
+                    <div class="sv-game-icon" aria-hidden="true">⏳</div>
+                    <h3 class="sv-game-title">Last Epoch</h3>
+                    <p class="sv-game-subtitle sv-text-muted">Coming Soon</p>
+                    <p class="sv-game-description">Temporal loot mastery tools</p>
+                    
+                    <div class="sv-game-status" role="status">Coming Soon</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sv-teaser">
+            <p>
+                <span class="sv-text-accent">More games coming soon!</span> 
+                Vote for the next ARPG to be added or suggest your favorite game in our community.
+            </p>
+        </div>
+    </section>
+
+    <section class="sv-features" id="features" role="region" aria-labelledby="features-heading">
+        <h2 class="sv-section-title" id="features-heading">Why StatVerdict?</h2>
+        
+        <div class="sv-features-grid">
+            <article class="sv-feature-card">
+                <div class="sv-feature-icon" aria-hidden="true">🎯</div>
+                <h3>Instant Analysis</h3>
+                <p>Upload a screenshot and get detailed item evaluation in seconds. No more guessing if that drop is worth keeping.</p>
+            </article>
+            
+            <article class="sv-feature-card">
+                <div class="sv-feature-icon" aria-hidden="true">📊</div>
+                <h3>Build-Aware Scoring</h3>
+                <p>Tell us your class and playstyle. Get recommendations tailored to YOUR build, not generic advice.</p>
+            </article>
+            
+            <article class="sv-feature-card">
+                <div class="sv-feature-icon" aria-hidden="true">💰</div>
+                <h3>Market Insights</h3>
+                <p>Understand your item's trade value with community-driven price data and demand indicators.</p>
+            </article>
+            
+            <article class="sv-feature-card">
+                <div class="sv-feature-icon" aria-hidden="true">📜</div>
+                <h3>Scan Journal</h3>
+                <p>Keep track of all your analyzed items. Review past scans and compare gear easily.</p>
+            </article>
+        </div>
+    </section>
+
+    <footer class="sv-footer" role="contentinfo">
+        <div class="sv-footer-content">
+            <p>© 2025 StatVerdict. Built for the ARPG community.</p>
+            <div class="sv-footer-links">
+                <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" rel="noopener noreferrer" aria-label="Report issue (opens in new tab)">🐛 Report Issue</a>
+                <span class="sv-divider" aria-hidden="true">•</span>
+                <a href="https://forms.gle/MappsrQeiSyskmYb6" target="_blank" rel="noopener noreferrer" aria-label="Suggest a game (opens in new tab)">💡 Suggest a Game</a>
+            </div>
+            <div style="margin-top: 15px;">
+                <button id="privacy-trigger" class="sv-footer-link-btn">Privacy Policy</button>
+            </div>
+        </div>
+    </footer>
+
+    <div id="privacy-modal" class="sv-modal-overlay">
+        <div class="sv-modal-content">
+            <button id="privacy-close-btn" class="sv-modal-close" aria-label="Close">×</button>
+            <h3>Privacy & Data</h3>
+            <div class="privacy-content">
+                <ul>
+                    <li>API keys stored locally in encrypted form</li>
+                    <li>Images processed in real-time, never saved on servers</li>
+                    <li>Scan history stored locally in your browser</li>
+                    <li>No personal data collected or transmitted</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ====================================
+        // SMART STATS LOADER (Dev Aware)
+        // ====================================
+        
+        const StatsLoader = {
+            NAMESPACE: 'statverdict', 
+            
+            async init() {
+                const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+                if (isLocal) {
+                    this.displayFallback();
+                    return;
+                }
+                await Promise.all([
+                    this.loadScanCount(),
+                    this.loadUserCount()
+                ]);
+            },
+            
+            displayFallback() {
+                const scanEl = document.getElementById('stat-scans');
+                const userEl = document.getElementById('stat-users');
+                if (scanEl) { 
+                    scanEl.innerHTML = `<strong>10K+</strong> Items Analyzed`; 
+                    scanEl.classList.add('sv-stat-loaded'); 
+                }
+                if (userEl) { 
+                    userEl.innerHTML = `<strong>500+</strong> Community Members`; 
+                    userEl.classList.add('sv-stat-loaded'); 
+                }
+            },
+            
+            async loadScanCount() {
+                const el = document.getElementById('stat-scans');
+                if (!el) return;
+                
+                try {
+                    const res = await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/scans`);
+                    const data = await res.json();
+                    if (data?.count) {
+                        el.innerHTML = `<strong>${this.formatNumber(data.count)}</strong> Items Analyzed`;
+                    }
+                } catch (e) { 
+                    this.displayFallback(); 
+                }
+                el.classList.add('sv-stat-loaded');
+            },
+            
+            async loadUserCount() {
+                const el = document.getElementById('stat-users');
+                if (!el) return;
+                
+                try {
+                    const counted = localStorage.getItem('sv_user_counted');
+                    const url = counted 
+                        ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users` 
+                        : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up`;
+                    
+                    if (!counted) localStorage.setItem('sv_user_counted', 'true');
+                    
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data?.count) {
+                        el.innerHTML = `<strong>${this.formatNumber(data.count)}</strong> Community Members`;
+                    }
+                } catch (e) { 
+                    this.displayFallback(); 
+                }
+                el.classList.add('sv-stat-loaded');
+            },
+            
+            formatNumber(num) {
+                if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
+                if (num >= 1000) return `${(num / 1000).toFixed(1)}K+`;
+                return num.toString();
+            }
+        };
+        
+        // Initialize stats loader
+        StatsLoader.init();
+
+        // BETA SIGNUP HANDLER
+        const betaForm = document.getElementById('beta-signup-form');
+        if (betaForm) {
+            betaForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const form = e.target;
+                const submitBtn = document.getElementById('beta-submit-btn');
+                const successMsg = document.getElementById('beta-signup-success');
+                const errorMsg = document.getElementById('beta-signup-error');
+                
+                submitBtn.textContent = 'Joining...';
+                submitBtn.disabled = true;
+                
+                fetch(form.action, { 
+                    method: 'POST', 
+                    body: new FormData(form), 
+                    mode: 'no-cors' 
+                })
+                .then(() => {
+                    successMsg.style.display = 'block';
+                    errorMsg.style.display = 'none';
+                    document.getElementById('beta-email-input').value = '';
+                    submitBtn.textContent = 'Join Beta';
+                    submitBtn.disabled = false;
+                })
+                .catch(() => {
+                    errorMsg.style.display = 'block';
+                    successMsg.style.display = 'none';
+                    submitBtn.textContent = 'Join Beta';
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+
+        // MOBILE MENU & PRIVACY MODAL HANDLER
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile Menu
+            const menuBtn = document.getElementById('sv-mobile-menu-btn');
+            const mobileNav = document.getElementById('sv-mobile-nav');
+            const mobileLinks = document.querySelectorAll('.sv-mobile-link');
+
+            if (menuBtn && mobileNav) {
+                menuBtn.addEventListener('click', () => {
+                    menuBtn.classList.toggle('active');
+                    mobileNav.classList.toggle('active');
+                });
+
+                // Close menu when clicking a link
+                mobileLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        menuBtn.classList.remove('active');
+                        mobileNav.classList.remove('active');
+                    });
+                });
+            }
+
+            // Privacy Modal
+            const privacyTrigger = document.getElementById('privacy-trigger');
+            const privacyModal = document.getElementById('privacy-modal');
+            const privacyClose = document.getElementById('privacy-close-btn');
+
+            if (privacyTrigger && privacyModal && privacyClose) {
+                privacyTrigger.addEventListener('click', () => {
+                    privacyModal.classList.add('open');
+                });
+
+                privacyClose.addEventListener('click', () => {
+                    privacyModal.classList.remove('open');
+                });
+
+                // Close on click outside
+                privacyModal.addEventListener('click', (e) => {
+                    if (e.target === privacyModal) {
+                        privacyModal.classList.remove('open');
+                    }
+                });
+                
+                // Close on Esc
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && privacyModal.classList.contains('open')) {
+                        privacyModal.classList.remove('open');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
