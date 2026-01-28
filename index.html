@@ -9,7 +9,7 @@
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com; 
@@ -18,24 +18,31 @@
         form-action 'self' https://formspree.io https://forms.gle https://app.convertkit.com https://app.kit.com;
     ">
     
+    <!-- Optimized preconnect - only for critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    
+    <!-- DNS prefetch for non-critical resources -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://api.counterapi.dev">
     <link rel="dns-prefetch" href="https://app.kit.com">
     
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" as="style">
+    <!-- Preload critical CSS -->
     <link rel="preload" href="css/statverdict.css" as="style">
     
     <title>StatVerdict - AI-Powered Loot Analysis for ARPGs</title>
     
+    <!-- Load Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
     <script src="js/gtag.js"></script>
     
+    <!-- Optimized font loading - direct stylesheet link with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Critical CSS -->
     <link rel="stylesheet" href="css/statverdict.css">
     
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🔍</text></svg>" type="image/svg+xml">
 </head>
 <body>
@@ -116,7 +123,7 @@
                     <button type="submit" id="beta-submit-btn" aria-label="Join beta program">Join Beta</button>
                 </form>
                 <div id="beta-signup-success" class="sv-beta-msg sv-beta-success" style="display:none;" role="status" aria-live="polite">
-                    ✅ You're on the list! Check your Inbox or Spam folder to confirm.
+                    ✅ You're on the list! Check your inbox/spam folder to confirm.
                 </div>
                 <div id="beta-signup-error" class="sv-beta-msg sv-beta-error" style="display:none;" role="alert" aria-live="assertive">
                     ⚠️ Something went wrong. Please try again.
@@ -211,7 +218,7 @@
 
             <div class="sv-game-card sv-game-soon" data-game="lastepoch" role="article" aria-label="Last Epoch (Coming Soon)">
                 <div class="sv-game-content">
-                    <div class="sv-game-icon" aria-hidden="true">⏳</div>
+                    <div class="sv-game-icon" aria-hidden="true">⌛</div>
                     <h3 class="sv-game-title">Last Epoch</h3>
                     <p class="sv-game-subtitle sv-text-muted">Coming Soon</p>
                     <p class="sv-game-description">Temporal loot mastery tools</p>
@@ -288,7 +295,8 @@
         </div>
     </div>
 
-    <script src="js/landing.js" type="module"></script>
+    <!-- Defer all non-critical JavaScript -->
+    <script defer src="js/landing.js" type="module"></script>
     
 </body>
 </html>

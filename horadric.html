@@ -9,7 +9,7 @@
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com; 
@@ -17,29 +17,45 @@
         base-uri 'self';
     ">
     
+    <!-- Optimized preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    
+    <!-- DNS prefetch for non-critical -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
     
     <title>Horadric AI - Diablo Loot Analyzer</title>
     
+    <!-- Load Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
     <script src="js/gtag.js"></script>
     
+    <!-- Optimized font loading with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Outfit:wght@500&display=swap" rel="stylesheet">
     
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="css/dashboard.css" as="style">
+    
+    <!-- Critical CSS -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23d32f2f'>⚔</text></svg>" type="image/svg+xml">
 
+    <!-- Inline critical styles for immediate render -->
     <style>
+        /* Critical layout styles */
         .dashboard-header { height: auto !important; min-height: 60px; padding: 10px 20px; }
         .header-content-custom { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; }
         .header-left { width: auto; margin-right: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .title-text { display: inline-block !important; color: #fff; }
         .header-controls { display: flex; gap: 10px; align-items: center; }
+        
+        /* Loading skeleton to prevent layout shift */
+        .dashboard-card { min-height: 300px; }
+        
         @media (max-width: 768px) {
             .header-content-custom { gap: 8px; }
             .dashboard-title { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
@@ -217,10 +233,12 @@
                 <div class="settings-section">
                     <h3 class="section-title">Gemini API Key</h3>
                     <p class="section-desc">Required for AI-powered analysis</p>
-                    <div class="input-group">
-                        <input type="password" id="api-key" class="settings-input" placeholder="Paste your API key here..." autocomplete="off">
-                        <span class="input-hint">🔒 Encrypted & stored locally</span>
-                    </div>
+                    <form id="api-key-form">
+                        <div class="input-group">
+                            <input type="password" id="api-key" name="api-key" class="settings-input" placeholder="Paste your API key here..." autocomplete="off">
+                            <span class="input-hint">🔒 Encrypted & stored locally</span>
+                        </div>
+                    </form>
                     <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn-link" rel="noopener noreferrer">Get API Key →</a>
                     <div id="api-key-error" class="message-box error" style="display: none;"></div>
                     <div id="api-key-success" class="message-box success" style="display: none;"></div>
@@ -233,7 +251,7 @@
                 </div>
                 <div class="settings-section">
                     <h3 class="section-title">About</h3>
-                    <p class="about-text">Horadric AI v2.6.1</p>
+                    <p class="about-text">Horadric AI v2.6.3 (CSP-Compliant)</p>
                     <p class="about-text">Made with ❤️ for Sanctuary</p>
                     <div class="settings-links">
                         <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" class="settings-link">🐛 Report Issue</a>
@@ -251,13 +269,18 @@
         </div>
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/translations.js"></script>
-    <script src="js/analytics.js"></script>
-    <script src="js/pricing.js"></script>
-    <script src="js/tour.js"></script>
-    <script src="js/i18n-ui.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Load all scripts deferred for better performance -->
+    <script defer src="js/config.js"></script>
+    <script defer src="js/translations.js"></script>
+    <script defer src="js/pricing.js"></script>
+    
+    <!-- Lower priority scripts -->
+    <script defer src="js/analytics.js"></script>
+    <script defer src="js/tour.js"></script>
+    <script defer src="js/i18n-ui.js"></script>
+    
+    <!-- Main app script must load last -->
+    <script defer src="js/app.js"></script>
     
 </body>
 </html>
