@@ -1,33 +1,24 @@
 // ====================================
 // STATVERDICT LANDING PAGE LOGIC
-// Version: 2.1.1 - CSP Compliant & Optimized
+// Version: 2.1.2 - Silent API Fallback
 // ====================================
 
 const StatsLoader = {
     NAMESPACE: 'statverdict',
-    TIMEOUT: 3000, // 3 second timeout for API calls
-    MAX_RETRIES: 2,
+    TIMEOUT: 2000, // Reduced to 2 seconds
+    MAX_RETRIES: 1, // Reduced retries to avoid console spam
     
-    /**
-     * Initialize stats loading with proper error handling
-     */
     async init() {
-        // Check if local/dev environment
         const isLocal = this.isLocalEnvironment();
         
         if (isLocal) {
-            // Silently use fallback on local
             this.displayFallback();
             return;
         }
         
-        // Load stats with timeout protection
         await this.loadStatsWithTimeout();
     },
     
-    /**
-     * Check if running locally
-     */
     isLocalEnvironment() {
         const hostname = window.location.hostname;
         return hostname === '127.0.0.1' || 
@@ -37,15 +28,10 @@ const StatsLoader = {
                hostname.startsWith('10.0');
     },
     
-    /**
-     * Load stats with timeout wrapper
-     */
     async loadStatsWithTimeout() {
-        // Show loading state immediately
         this.showLoadingState();
         
         try {
-            // Race between stats loading and timeout
             await Promise.race([
                 Promise.all([
                     this.loadScanCount(),
@@ -54,23 +40,17 @@ const StatsLoader = {
                 this.timeoutPromise(this.TIMEOUT)
             ]);
         } catch (error) {
-            // Silently fallback on timeout/error
+            // Silent fallback - API temporarily down
             this.displayFallback();
         }
     },
     
-    /**
-     * Create timeout promise
-     */
     timeoutPromise(ms) {
         return new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Timeout')), ms)
         );
     },
     
-    /**
-     * Show loading skeleton
-     */
     showLoadingState() {
         const scanEl = document.getElementById('stat-scans');
         const userEl = document.getElementById('stat-users');
@@ -83,9 +63,6 @@ const StatsLoader = {
         }
     },
     
-    /**
-     * Display fallback stats (no API calls)
-     */
     displayFallback() {
         const scanEl = document.getElementById('stat-scans');
         const userEl = document.getElementById('stat-users');
@@ -100,9 +77,6 @@ const StatsLoader = {
         }
     },
     
-    /**
-     * Load scan count with retry logic
-     */
     async loadScanCount(retryCount = 0) {
         const el = document.getElementById('stat-scans');
         if (!el) return;
@@ -115,7 +89,8 @@ const StatsLoader = {
                 `https://api.counterapi.dev/v1/${this.NAMESPACE}/scans`,
                 { 
                     signal: controller.signal,
-                    cache: 'no-store' // Safari cache fix
+                    cache: 'no-store',
+                    mode: 'cors'
                 }
             );
             
@@ -129,24 +104,21 @@ const StatsLoader = {
                 el.innerHTML = `<strong>${this.formatNumber(data.count)}</strong> Items Analyzed`;
                 el.classList.add('sv-stat-loaded');
             } else {
-                throw new Error('Invalid data format');
+                throw new Error('Invalid data');
             }
         } catch (error) {
-            // Retry logic
+            // Silent retry
             if (retryCount < this.MAX_RETRIES) {
-                await this.delay(500);
+                await this.delay(300);
                 return this.loadScanCount(retryCount + 1);
             }
             
-            // Final fallback (silent)
+            // Silent fallback
             el.innerHTML = `<strong>10K+</strong> Items Analyzed`;
             el.classList.add('sv-stat-loaded');
         }
     },
     
-    /**
-     * Load user count with retry logic
-     */
     async loadUserCount(retryCount = 0) {
         const el = document.getElementById('stat-users');
         if (!el) return;
@@ -154,7 +126,6 @@ const StatsLoader = {
         try {
             const counted = localStorage.getItem('sv_user_counted');
             
-            // Decide URL based on whether user has been counted
             const url = counted 
                 ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users` 
                 : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up`;
@@ -164,7 +135,8 @@ const StatsLoader = {
             
             const res = await fetch(url, { 
                 signal: controller.signal,
-                cache: 'no-store'
+                cache: 'no-store',
+                mode: 'cors'
             });
             
             clearTimeout(timeoutId);
@@ -174,7 +146,6 @@ const StatsLoader = {
             const data = await res.json();
             
             if (data?.count) {
-                // Mark as counted only if increment succeeded
                 if (!counted) {
                     localStorage.setItem('sv_user_counted', 'true');
                 }
@@ -182,41 +153,31 @@ const StatsLoader = {
                 el.innerHTML = `<strong>${this.formatNumber(data.count)}</strong> Community Members`;
                 el.classList.add('sv-stat-loaded');
             } else {
-                throw new Error('Invalid data format');
+                throw new Error('Invalid data');
             }
         } catch (error) {
-            // Retry logic
+            // Silent retry
             if (retryCount < this.MAX_RETRIES) {
-                await this.delay(500);
+                await this.delay(300);
                 return this.loadUserCount(retryCount + 1);
             }
             
-            // Final fallback (silent)
+            // Silent fallback
             el.innerHTML = `<strong>500+</strong> Community Members`;
             el.classList.add('sv-stat-loaded');
         }
     },
     
-    /**
-     * Format large numbers
-     */
     formatNumber(num) {
         if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
         if (num >= 1000) return `${(num / 1000).toFixed(1)}K+`;
         return num.toString();
     },
     
-    /**
-     * Simple delay helper
-     */
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 };
-
-// ====================================
-// BETA SIGNUP HANDLER
-// ====================================
 
 const BetaSignup = {
     init() {
@@ -235,18 +196,15 @@ const BetaSignup = {
         const errorMsg = document.getElementById('beta-signup-error');
         const emailInput = document.getElementById('beta-email-input');
         
-        // Validate email
         if (!emailInput.validity.valid) {
             this.showMessage(errorMsg, '⚠️ Please enter a valid email address');
             return;
         }
         
-        // Update button state
         submitBtn.textContent = 'Joining...';
         submitBtn.disabled = true;
         
         try {
-            // Use fetch with timeout
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             
@@ -259,11 +217,9 @@ const BetaSignup = {
             
             clearTimeout(timeoutId);
             
-            // Success
             this.showMessage(successMsg, '✅ You\'re on the list! Check your inbox/spam folder to confirm.');
             emailInput.value = '';
             
-            // Track signup
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'beta_signup', { 'event_category': 'engagement' });
             }
@@ -279,13 +235,11 @@ const BetaSignup = {
         element.textContent = message;
         element.style.display = 'block';
         
-        // Hide other message
         const allMessages = document.querySelectorAll('.sv-beta-msg');
         allMessages.forEach(msg => {
             if (msg !== element) msg.style.display = 'none';
         });
         
-        // Auto-hide success message after 5 seconds
         if (element.classList.contains('sv-beta-success')) {
             setTimeout(() => {
                 element.style.display = 'none';
@@ -293,10 +247,6 @@ const BetaSignup = {
         }
     }
 };
-
-// ====================================
-// MOBILE MENU & MODAL HANDLERS
-// ====================================
 
 const UIHandlers = {
     init() {
@@ -314,12 +264,9 @@ const UIHandlers = {
         menuBtn.addEventListener('click', () => {
             const isActive = menuBtn.classList.toggle('active');
             mobileNav.classList.toggle('active');
-            
-            // Update ARIA
             menuBtn.setAttribute('aria-expanded', isActive);
         });
 
-        // Close menu when clicking a link
         mobileLinks.forEach(link => {
             link.addEventListener('click', () => {
                 menuBtn.classList.remove('active');
@@ -328,7 +275,6 @@ const UIHandlers = {
             });
         });
         
-        // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
                 menuBtn.classList.remove('active');
@@ -347,22 +293,20 @@ const UIHandlers = {
 
         privacyTrigger.addEventListener('click', () => {
             privacyModal.classList.add('open');
-            document.body.style.overflow = 'hidden'; // Prevent background scroll
+            document.body.style.overflow = 'hidden';
         });
 
         const closeModal = () => {
             privacyModal.classList.remove('open');
-            document.body.style.overflow = ''; // Restore scroll
+            document.body.style.overflow = '';
         };
 
         privacyClose.addEventListener('click', closeModal);
 
-        // Close on backdrop click
         privacyModal.addEventListener('click', (e) => {
             if (e.target === privacyModal) closeModal();
         });
         
-        // Close on Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && privacyModal.classList.contains('open')) {
                 closeModal();
@@ -371,31 +315,22 @@ const UIHandlers = {
     }
 };
 
-// ====================================
-// INITIALIZATION
-// ====================================
-
-// Use DOMContentLoaded for better Safari compatibility
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeLanding);
 } else {
-    // DOM already loaded
     initializeLanding();
 }
 
 function initializeLanding() {
-    // Initialize all components
     StatsLoader.init();
     BetaSignup.init();
     UIHandlers.init();
     
-    // Track page view (silent if gtag not loaded)
     if (typeof gtag !== 'undefined') {
         gtag('event', 'page_view', { 'page_title': 'Landing Page' });
     }
 }
 
-// Export for testing (optional)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { StatsLoader, BetaSignup, UIHandlers };
 }
