@@ -287,7 +287,7 @@ const HoradricApp = {
                 }
             `;
             
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.state.apiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.state.apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -546,7 +546,7 @@ const HoradricApp = {
             mode: 'identify'
         };
 
-        this.el.imagePreview.src = 'harlequin crest.jpg';
+        this.el.imagePreview.src = 'assets/images/harlequin%20crest.jpg';
         this.el.imagePreview.style.display = 'block';
         if (this.el.uploadZone.querySelector('.upload-label')) {
             this.el.uploadZone.querySelector('.upload-label').style.display = 'none';

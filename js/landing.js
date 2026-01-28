@@ -1,5 +1,5 @@
 // ====================================
-// STATVERDICT LANDING PAGE LOGIC 
+// STATVERDICT LANDING PAGE LOGIC
 // Version: 2.1.2 - Silent API Fallback
 // ====================================
 
