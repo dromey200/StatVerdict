@@ -1,14 +1,14 @@
 // ====================================
-// Dashboard App - Pricing Integrated
+// HORADRIC AI - APP ENGINE
+// Version: 9.0.0 (The Iron Gate)
 // ====================================
 
 const HoradricApp = {
     state: {
         apiKey: '',
         history: [],
-        currentItem: null, // Stores the full object of the currently viewed item
-        mode: 'identify',
-        analysisController: null
+        currentItem: null,
+        mode: 'identify'
     },
     
     el: {},
@@ -17,144 +17,79 @@ const HoradricApp = {
         this.cacheElements();
         this.loadState();
         this.attachEventListeners();
-        this.setupDragDrop();
-        this.updateGameClasses();
-        
-        console.log('🎮 Horadric Dashboard initialized');
-        
-        // Safety check for Analytics
-        if (typeof Analytics !== 'undefined' && typeof Analytics.trackPageView === 'function') {
-            Analytics.trackPageView();
-        }
+        this.updateClassOptions();
+        console.log('👁️ Horadric Pipeline Active');
     },
     
     cacheElements() {
-        // Header elements
         this.el.gameVersion = document.getElementById('game-version');
-        this.el.settingsTrigger = document.getElementById('settings-trigger');
-        this.el.helpTrigger = document.getElementById('help-trigger');
-        
-        // Scan card elements
-        this.el.imageUpload = document.getElementById('image-upload');
-        this.el.uploadZone = document.getElementById('upload-zone');
-        this.el.imagePreview = document.getElementById('image-preview');
         this.el.playerClass = document.getElementById('player-class');
-        this.el.modeIdentify = document.getElementById('mode-identify');
-        this.el.modeCompare = document.getElementById('mode-compare');
+        this.el.buildStyle = document.getElementById('build-style');
+        this.el.imageUpload = document.getElementById('image-upload');
+        this.el.imagePreview = document.getElementById('image-preview');
+        this.el.uploadZone = document.getElementById('upload-zone');
+        this.el.apiKey = document.getElementById('api-key');
         this.el.toggleAdvanced = document.getElementById('toggle-advanced');
         this.el.advancedPanel = document.getElementById('advanced-panel');
-        this.el.buildStyle = document.getElementById('build-style');
         this.el.keyMechanic = document.getElementById('key-mechanic');
-        this.el.analyzeBtn = document.getElementById('analyze-btn');
-        this.el.demoBtn = document.getElementById('demo-btn');
+        this.el.needsStr = document.getElementById('need-str');
+        this.el.needsInt = document.getElementById('need-int');
+        this.el.needsWill = document.getElementById('need-will');
+        this.el.needsDex = document.getElementById('need-dex');
+        this.el.needsRes = document.getElementById('need-res');
+        this.el.resultArea = document.getElementById('result-area');
+        this.el.resultsCard = document.getElementById('results-card');
         this.el.loading = document.getElementById('loading');
         this.el.imageError = document.getElementById('image-error');
-        this.el.imageSuccess = document.getElementById('image-success');
-        this.el.progressContainer = document.getElementById('progress-container');
-        this.el.progressBar = document.getElementById('progress-bar');
-        
-        // Recent scans elements
         this.el.historyList = document.getElementById('history-list');
-        this.el.clearHistory = document.getElementById('clear-history');
         this.el.scanCount = document.getElementById('scan-count');
-        
-        // Results card elements
-        this.el.resultsCard = document.getElementById('results-card');
-        this.el.closeResults = document.getElementById('close-results');
-        this.el.resultArea = document.getElementById('result-area');
+        this.el.settingsPanel = document.getElementById('settings-panel');
+        this.el.settingsOverlay = document.querySelector('.settings-overlay');
         this.el.priceSection = document.getElementById('price-section');
         this.el.priceContent = document.getElementById('price-content');
+        this.el.analyzeBtn = document.getElementById('analyze-btn');
+        this.el.modeIdentify = document.getElementById('mode-identify');
+        this.el.modeCompare = document.getElementById('mode-compare');
+        this.el.settingsTrigger = document.getElementById('settings-trigger');
+        this.el.settingsClose = document.getElementById('settings-close');
+        this.el.demoBtn = document.getElementById('demo-btn');
+        this.el.clearHistory = document.getElementById('clear-history');
+        this.el.closeResults = document.getElementById('close-results');
         this.el.shareBtn = document.getElementById('share-btn');
         this.el.priceCheckBtn = document.getElementById('price-check-btn');
         this.el.searchTradeBtn = document.getElementById('search-trade-btn');
-        this.el.refreshPriceBtn = document.getElementById('refresh-price-btn'); // New Cache
-        
-        // Settings panel elements
-        this.el.settingsPanel = document.getElementById('settings-panel');
-        this.el.settingsClose = document.getElementById('settings-close');
-        this.el.settingsOverlay = document.querySelector('.settings-overlay');
-        this.el.apiKey = document.getElementById('api-key');
-        this.el.apiKeyError = document.getElementById('api-key-error');
-        this.el.apiKeySuccess = document.getElementById('api-key-success');
-        
-        // Modal elements
-        this.el.helpModal = document.getElementById('help-modal');
-        this.el.modalContent = document.getElementById('modal-content-dynamic');
-        this.el.modalCloseBtn = document.getElementById('modal-close-btn');
+        this.setupDragDrop();
     },
-    
-    loadState() {
-        try {
-            const savedKey = localStorage.getItem('gemini_api_key');
-            if (savedKey) {
-                this.state.apiKey = atob(savedKey);
-                this.el.apiKey.value = this.state.apiKey;
-            }
-        } catch (e) {
-            console.warn('Failed to load API key:', e);
-            localStorage.removeItem('gemini_api_key');
-        }
-        
-        try {
-            const savedHistory = localStorage.getItem('horadric_history');
-            if (savedHistory) {
-                this.state.history = JSON.parse(savedHistory);
-                this.renderHistory();
-            }
-        } catch (e) {
-            console.warn('Failed to load history:', e);
-        }
-        
-        const savedGame = localStorage.getItem('selected_game');
-        if (savedGame) {
-            this.el.gameVersion.value = savedGame;
-        }
-    },
-    
+
     attachEventListeners() {
-        this.el.gameVersion.addEventListener('change', () => this.updateGameClasses());
-        this.el.settingsTrigger.addEventListener('click', () => this.openSettings());
-        this.el.helpTrigger.addEventListener('click', () => this.openHelp());
-        
+        this.el.gameVersion.addEventListener('change', () => this.updateClassOptions());
+        this.el.playerClass.addEventListener('change', () => this.updateBuildOptions());
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
         this.el.modeIdentify.addEventListener('click', () => this.setMode('identify'));
         this.el.modeCompare.addEventListener('click', () => this.setMode('compare'));
         this.el.toggleAdvanced.addEventListener('click', () => this.toggleAdvanced());
         this.el.analyzeBtn.addEventListener('click', () => this.handleAnalyze());
         this.el.demoBtn.addEventListener('click', () => this.runDemo());
-        
-        this.el.clearHistory.addEventListener('click', () => this.clearHistory());
-        
-        if (this.el.closeResults) this.el.closeResults.addEventListener('click', () => this.closeResults());
-        if (this.el.shareBtn) this.el.shareBtn.addEventListener('click', () => this.shareResults());
-        if (this.el.priceCheckBtn) this.el.priceCheckBtn.addEventListener('click', () => this.checkPrice());
-        if (this.el.searchTradeBtn) this.el.searchTradeBtn.addEventListener('click', () => this.searchTrade());
-        if (this.el.refreshPriceBtn) this.el.refreshPriceBtn.addEventListener('click', () => this.checkPrice());
-        
+        this.el.settingsTrigger.addEventListener('click', () => this.openSettings());
         this.el.settingsClose.addEventListener('click', () => this.closeSettings());
         this.el.settingsOverlay.addEventListener('click', () => this.closeSettings());
         this.el.apiKey.addEventListener('blur', () => this.saveApiKey());
-        
-        this.el.modalCloseBtn.addEventListener('click', () => this.closeModal());
-        this.el.helpModal.addEventListener('click', (e) => {
-            if (e.target === this.el.helpModal) this.closeModal();
-        });
+        this.el.closeResults.addEventListener('click', () => this.closeResults());
+        this.el.clearHistory.addEventListener('click', () => this.clearHistory());
+        if(this.el.shareBtn) this.el.shareBtn.addEventListener('click', () => this.shareResults());
+        if(this.el.priceCheckBtn) this.el.priceCheckBtn.addEventListener('click', () => this.checkPrice());
+        if(this.el.searchTradeBtn) this.el.searchTradeBtn.addEventListener('click', () => this.searchTrade());
+        this.setupDragDrop();
     },
-    
+
     setupDragDrop() {
         const zone = this.el.uploadZone;
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            zone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            });
+        if (!zone) return;
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
         });
-        ['dragenter', 'dragover'].forEach(eventName => {
-            zone.addEventListener(eventName, () => zone.classList.add('drag-over'));
-        });
-        ['dragleave', 'drop'].forEach(eventName => {
-            zone.addEventListener(eventName, () => zone.classList.remove('drag-over'));
-        });
+        zone.addEventListener('dragover', () => zone.classList.add('drag-over'));
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
         zone.addEventListener('drop', (e) => {
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
@@ -163,503 +98,327 @@ const HoradricApp = {
             }
         });
     },
-    
-    updateGameClasses() {
+
+    updateClassOptions() {
         const game = this.el.gameVersion.value;
-        const defaultClasses = {
-            'd4': ['Barbarian', 'Druid', 'Necromancer', 'Paladin', 'Rogue', 'Sorcerer', 'Spiritborn'],
-            'd2r': ['Amazon', 'Assassin', 'Barbarian', 'Druid', 'Necromancer', 'Paladin', 'Sorceress'],
-            'd3': ['Barbarian', 'Crusader', 'Demon Hunter', 'Monk', 'Necromancer', 'Witch Doctor', 'Wizard'],
-            'di': ['Barbarian', 'Crusader', 'Demon Hunter', 'Monk', 'Necromancer', 'Wizard']
-        };
-        const classes = (typeof CONFIG !== 'undefined' && CONFIG.GAME_CLASSES) ? CONFIG.GAME_CLASSES[game] : defaultClasses[game] || [];
-        
-        this.el.playerClass.innerHTML = '<option value="Any">Any Class</option>';
-        classes.forEach(cls => {
-            const option = document.createElement('option');
-            option.value = cls;
-            option.textContent = cls;
-            this.el.playerClass.appendChild(option);
-        });
-        
-        const defaultBuildStyles = [
-            { value: 'damage', label: 'Damage Dealer' },
-            { value: 'tank', label: 'Tank/Survivability' },
-            { value: 'support', label: 'Support/Utility' }
-        ];
-        const buildStyles = (typeof CONFIG !== 'undefined' && CONFIG.BUILD_STYLES) ? CONFIG.BUILD_STYLES : defaultBuildStyles;
-        
-        this.el.buildStyle.innerHTML = '<option value="">Any Build</option>';
-        buildStyles.forEach(style => {
-            const option = document.createElement('option');
-            option.value = style.value;
-            option.textContent = style.label;
-            this.el.buildStyle.appendChild(option);
-        });
         localStorage.setItem('selected_game', game);
+        const classData = CONFIG.CLASS_DEFINITIONS[game] || CONFIG.CLASS_DEFINITIONS['d4'];
+        if (!classData) return;
+        const classes = Object.keys(classData);
+        const prev = this.el.playerClass.value;
+        this.el.playerClass.innerHTML = '<option value="">Select Class...</option>';
+        classes.forEach(cls => {
+            if(cls !== 'Any') {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.textContent = cls;
+                if (cls === prev) opt.selected = true;
+                this.el.playerClass.appendChild(opt);
+            }
+        });
+        this.updateBuildOptions();
     },
-    
-    setMode(mode) {
-        this.state.mode = mode;
-        if (mode === 'identify') {
-            this.el.modeIdentify.classList.add('active');
-            this.el.modeCompare.classList.remove('active');
-            this.el.modeIdentify.setAttribute('aria-pressed', 'true');
-            this.el.modeCompare.setAttribute('aria-pressed', 'false');
-        } else {
-            this.el.modeCompare.classList.add('active');
-            this.el.modeIdentify.classList.remove('active');
-            this.el.modeCompare.setAttribute('aria-pressed', 'true');
-            this.el.modeIdentify.setAttribute('aria-pressed', 'false');
-        }
-    },
-    
-    toggleAdvanced() {
-        const isExpanded = this.el.toggleAdvanced.getAttribute('aria-expanded') === 'true';
-        this.el.toggleAdvanced.setAttribute('aria-expanded', !isExpanded);
-        this.el.advancedPanel.classList.toggle('hidden');
-    },
-    
-    handleFileSelect(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        if (!file.type.startsWith('image/')) {
-            this.showError('Please select an image file (PNG, JPEG, WebP)');
+
+    updateBuildOptions() {
+        const game = this.el.gameVersion.value;
+        const cls = this.el.playerClass.value;
+        if (!cls) {
+            this.el.buildStyle.innerHTML = '<option value="">Any / General</option>';
+            if(this.el.keyMechanic) this.el.keyMechanic.innerHTML = '<option value="">None</option>';
             return;
         }
+        const gameDefs = CONFIG.CLASS_DEFINITIONS[game] || CONFIG.CLASS_DEFINITIONS['d4'];
+        const classDef = gameDefs[cls] || gameDefs['Any'] || { builds: [], mechanics: [] };
         
-        if (file.size > 10 * 1024 * 1024) {
-            this.showError('Image too large (max 10MB)');
-            return;
+        this.el.buildStyle.innerHTML = '<option value="">Any / General</option>';
+        if (classDef.builds) {
+            classDef.builds.forEach(build => {
+                const opt = document.createElement('option');
+                opt.value = build;
+                opt.textContent = build;
+                this.el.buildStyle.appendChild(opt);
+            });
         }
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            this.el.imagePreview.src = e.target.result;
-            this.el.imagePreview.style.display = 'block';
-            this.el.uploadZone.querySelector('.upload-label').style.display = 'none';
-        };
-        reader.readAsDataURL(file);
-        this.showSuccess('Image loaded successfully');
+        if (this.el.keyMechanic) {
+            this.el.keyMechanic.innerHTML = '<option value="">None</option>';
+            if (classDef.mechanics) {
+                classDef.mechanics.forEach(mech => {
+                    const opt = document.createElement('option');
+                    opt.value = mech;
+                    opt.textContent = mech;
+                    this.el.keyMechanic.appendChild(opt);
+                });
+            }
+        }
     },
-    
+
+    // ============================================
+    // THE PIPELINE: DETECT -> ANALYZE
+    // ============================================
+
     async handleAnalyze() {
-        if (!this.state.apiKey) {
-            this.showError('Please enter your Gemini API key in Settings');
-            this.openSettings();
-            return;
-        }
-        
-        if (!this.el.imageUpload.files[0] && !this.el.imagePreview.src) {
-            this.showError('Please upload an image first');
-            return;
-        }
-        
-        this.showLoading(true);
-        this.el.priceSection.style.display = 'none'; // Reset price section on new analyze
-        
+        if (!this.state.apiKey) return this.showError('API Key Missing', true);
+        if (!this.el.imagePreview.src) return this.showError('No image loaded');
+
+        this.showLoading(true, "Scanning Reality...");
+        this.clearResults();
+
         try {
             const imageBase64 = this.el.imagePreview.src.split(',')[1];
             const mimeType = this.el.imagePreview.src.split(';')[0].split(':')[1];
             
-            const playerClass = this.el.playerClass.value;
-            const buildStyle = this.el.buildStyle.value;
+            // --- STAGE 1: THE SENTRY (CLASSIFICATION) ---
+            const detectPrompt = PROMPT_TEMPLATES.detect();
+            const detectResult = await this.callGemini(detectPrompt, imageBase64, mimeType);
             
-            const promptText = `
-                You are an expert Diablo 4 loot analyzer. 
-                Role: Analyze this screenshot of a game item.
-                Context: Player is playing class "${playerClass}" with build style "${buildStyle || 'General'}".
-                Task:
-                1. Identify the item name, rarity, and key stats.
-                2. Provide a verdict: KEEP, SALVAGE, or SELL.
-                3. Provide a short "insight" summary (1 sentence).
-                4. Provide a detailed analysis explaining the verdict.
-                
-                IMPORTANT: Return ONLY raw JSON. No markdown formatting.
-                Expected JSON Format:
-                {
-                    "title": "Item Name",
-                    "rarity": "Legendary/Unique/Mythic/Rare",
-                    "verdict": "KEEP/SELL/SALVAGE",
-                    "insight": "Short summary here.",
-                    "text": "Detailed analysis paragraph..."
-                }
-            `;
+            if (!detectResult || !detectResult.game) throw new Error("Could not identify image.");
             
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.state.apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: promptText },
-                            { inline_data: { mime_type: mimeType, data: imageBase64 } }
-                        ]
-                    }]
-                })
-            });
+            const detectedGame = detectResult.game.toLowerCase();
+            const selectedGame = this.el.gameVersion.value.toLowerCase();
+
+            // SENTRY GATEKEEPER LOGIC
             
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.error?.message || 'API request failed');
+            // 1. Check for Real World Objects / Non-Loot
+            if (detectedGame === 'not_loot') {
+                this.renderRejection("Not a Game Item", "This appears to be a real-world photo or non-game object. Please upload a clear screenshot of a Diablo item tooltip.");
+                this.showLoading(false);
+                return;
             }
+
+            // 2. Check for Game Mismatch
+            if (detectedGame !== 'unknown' && detectedGame !== selectedGame) {
+                this.renderWrongGame(detectedGame);
+                this.showLoading(false);
+                return; 
+            }
+
+            // --- STAGE 2: THE APPRAISER (ANALYSIS) ---
+            this.showLoading(true, "Consulting Archives..."); 
             
-            const data = await response.json();
-            const aiText = data.candidates[0].content.parts[0].text;
-            const result = this.parseAIResponse(aiText);
+            const pClass = this.el.playerClass.value;
+            const build = this.el.buildStyle.value;
+            const advancedSettings = {
+                mechanic: this.el.keyMechanic ? this.el.keyMechanic.value : '',
+                needs: {
+                    str: this.el.needsStr?.checked,
+                    int: this.el.needsInt?.checked,
+                    will: this.el.needsWill?.checked,
+                    dex: this.el.needsDex?.checked,
+                    res: this.el.needsRes?.checked
+                }
+            };
+
+            const promptGen = this.state.mode === 'compare' ? PROMPT_TEMPLATES.compare : PROMPT_TEMPLATES.analyze;
+            const analyzePrompt = promptGen(selectedGame, pClass, build, advancedSettings);
             
-            this.displayResults(result);
-            this.saveToHistory(result);
+            const analysisResult = await this.callGemini(analyzePrompt, imageBase64, mimeType);
             
+            if (!analysisResult) throw new Error("Analysis failed.");
+            
+            this.renderSuccess(analysisResult);
+            this.saveToHistory(analysisResult);
+
         } catch (error) {
-            console.error('Analysis Error:', error);
-            this.showError('Analysis failed: ' + error.message);
+            console.error(error);
+            this.showError(`Error: ${error.message}`);
         } finally {
             this.showLoading(false);
         }
     },
-    
-    parseAIResponse(text) {
+
+    async callGemini(prompt, imageBase64, mimeType) {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.state.apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: mimeType, data: imageBase64 } }
+                    ]
+                }],
+                generationConfig: {
+                    response_mime_type: "application/json",
+                    temperature: 0.0 // Zero creativity for strict logic
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error?.message || 'Gemini API Error');
+        }
+        
+        const data = await response.json();
+        return this.safeJSONParse(data.candidates[0].content.parts[0].text);
+    },
+
+    safeJSONParse(str) {
         try {
-            let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleanText);
+            let clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
+            const start = clean.indexOf('{');
+            const end = clean.lastIndexOf('}');
+            if (start !== -1 && end !== -1) clean = clean.substring(start, end + 1);
+            return JSON.parse(clean);
         } catch (e) {
-            console.warn('JSON Parse failed, falling back to raw text', e);
-            return {
-                title: 'Analysis Result',
-                rarity: 'unknown',
-                verdict: 'UNKNOWN',
-                insight: 'Could not parse structured data.',
-                text: text
-            };
+            return null; 
         }
     },
-    
-    displayResults(result) {
-        // STORE THE CURRENT ITEM SO CHECK PRICE KNOWS WHAT TO CHECK
-        this.state.currentItem = result;
 
-        const rarity = result.rarity || 'legendary';
-        const rarityClass = rarity.toLowerCase().includes('unique') ? 'unique' : 
-                            rarity.toLowerCase().includes('mythic') ? 'mythic' : 'legendary';
-                            
-        const verdict = result.verdict || 'UNKNOWN';
-        const verdictClass = verdict.toLowerCase();
-        
-        const resultHTML = `
-            <h3 style="color: var(--color-${rarityClass}, #ffa500); margin-bottom: 16px; font-size: 1.3rem;">
-                ${this.escapeHTML(result.title || 'Unknown Item')}
-            </h3>
-            <div style="margin-bottom: 16px;">
-                <span class="recent-verdict ${verdictClass}">
-                    ${verdict}
-                </span>
-            </div>
-            <div style="line-height: 1.6; color: #ccc; white-space: pre-wrap;">
-                ${this.escapeHTML(result.text || result.insight || 'No analysis available.')}
+    renderRejection(title, reason) {
+        this.el.resultsCard.style.display = 'block';
+        this.el.resultArea.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #ff6b6b;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🚫</div>
+                <h3 style="margin-bottom: 10px; color: var(--color-error);">${title}</h3>
+                <p style="font-size: 1.1rem; color: #fff;">${reason}</p>
             </div>
         `;
-        
-        this.el.resultArea.innerHTML = resultHTML;
+        this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
+    },
+
+    renderWrongGame(detected) {
+        const target = this.el.gameVersion.options[this.el.gameVersion.selectedIndex].text;
+        const map = { 'd4': 'Diablo IV', 'd2r': 'Diablo II', 'd3': 'Diablo III', 'di': 'Diablo Immortal' };
+        const detectedName = map[detected] || detected.toUpperCase();
+
+        this.el.resultsCard.style.display = 'block';
+        this.el.resultArea.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: var(--color-warning);">
+                <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
+                <h3 style="margin-bottom: 10px;">Wrong Game Selected</h3>
+                <p>This looks like a <strong>${detectedName}</strong> item.</p>
+                <p>But you selected: <strong>${target}</strong></p>
+                <div style="margin-top:15px; font-size: 0.9rem; color: #ccc;">
+                    Please change the "Game Version" selector at the top.
+                </div>
+            </div>
+        `;
+        this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
+    },
+
+    renderSuccess(result) {
+        this.state.currentItem = result;
         this.el.resultsCard.style.display = 'block';
         
-        setTimeout(() => {
-            this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 100);
+        const rarity = String(result.rarity || 'common').split(' ')[0].toLowerCase();
+        const verdict = String(result.verdict || 'UNKNOWN').toUpperCase();
         
-        console.log('✅ Results displayed:', result.title);
-    },
-    
-    // ==========================================
-    // UPDATED PRICE CHECK LOGIC
-    // ==========================================
-    checkPrice() {
-        // 1. Validate we have an item to check
-        if (!this.state.currentItem || !this.state.currentItem.title) {
-            this.showError('No item analyzed yet.');
-            return;
-        }
+        const renderMarkdown = (typeof marked !== 'undefined' && marked.parse) ? marked.parse : (t) => t; 
+        const analysisHtml = renderMarkdown(result.analysis || '');
 
-        const item = this.state.currentItem;
-        
-        // 2. Show the price section
-        this.el.priceSection.style.display = 'block';
-        this.el.priceContent.innerHTML = '<div class="loading-spinner small"></div> Checking database...';
+        let verdictColor = 'neutral';
+        if (['KEEP', 'EQUIP', 'SELL', 'UPGRADE'].includes(verdict)) verdictColor = 'keep';
+        if (['SALVAGE', 'DISCARD', 'CHARSI'].includes(verdict)) verdictColor = 'salvage';
 
-        // 3. Simulate network delay for effect
-        setTimeout(() => {
-            // 4. Use PricingService if available
-            if (typeof PricingService !== 'undefined') {
-                const priceData = PricingService.getPriceEstimate(item.title, item.rarity);
-                
-                this.el.priceContent.innerHTML = `
-                    <div style="margin-bottom: 8px;">
-                        <strong style="color: #fff;">Estimated Value:</strong> 
-                        <span style="color: var(--accent-color); font-weight: bold;">${priceData.estimatedPrice}</span>
-                    </div>
-                    <div style="margin-bottom: 8px;">
-                        <strong>Trade Status:</strong> ${priceData.tradeValue}
-                    </div>
-                    <div style="font-size: 0.9em; color: #aaa; font-style: italic;">
-                        "${priceData.notes}"
-                    </div>
-                    <div style="margin-top: 12px; font-size: 0.8em; color: #666;">
-                        * Prices are estimates. Always check Diablo.trade for live data.
-                    </div>
-                `;
-            } else {
-                this.el.priceContent.innerHTML = 'Pricing service unavailable. Please reload.';
-            }
-        }, 600);
+        this.el.resultArea.innerHTML = `
+            <div class="result-header rarity-${rarity}">
+                <h2 class="item-title">${result.title || 'Unknown Item'}</h2>
+                <span class="item-type">${result.type || result.rarity || ''}</span>
+            </div>
+            <div class="verdict-container ${verdictColor}">
+                <div class="verdict-label">${verdict}</div>
+                <div class="verdict-score">${result.score || result.score_diff || '-'}</div>
+            </div>
+            <div class="insight-box">
+                <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
+            </div>
+            <div class="analysis-text markdown-body">${analysisHtml}</div>
+        `;
+        this.el.priceSection.style.display = 'none';
+        setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },
-    
-    closeResults() {
-        this.el.resultsCard.style.display = 'none';
-        this.el.priceSection.style.display = 'none'; // Reset price section
-    },
-    
-    showLoading(show) {
-        if (show) {
-            this.el.loading.style.display = 'flex';
-            this.el.analyzeBtn.disabled = true;
+
+    // UTILITIES
+    setMode(mode) {
+        this.state.mode = mode;
+        if (mode === 'identify') {
+            this.el.modeIdentify.classList.add('active'); this.el.modeIdentify.setAttribute('aria-pressed', 'true');
+            this.el.modeCompare.classList.remove('active'); this.el.modeCompare.setAttribute('aria-pressed', 'false');
         } else {
-            this.el.loading.style.display = 'none';
-            this.el.analyzeBtn.disabled = false;
+            this.el.modeCompare.classList.add('active'); this.el.modeCompare.setAttribute('aria-pressed', 'true');
+            this.el.modeIdentify.classList.remove('active'); this.el.modeIdentify.setAttribute('aria-pressed', 'false');
         }
     },
-    
-    showError(message) {
-        this.el.imageError.textContent = message;
+    toggleAdvanced() {
+        this.el.advancedPanel.classList.toggle('hidden');
+    },
+    handleFileSelect(e) {
+        const file = e.target.files[0];
+        if(!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            this.el.imagePreview.src = ev.target.result;
+            this.el.imagePreview.style.display = 'block';
+            const label = this.el.uploadZone.querySelector('.upload-label');
+            if(label) label.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+        this.el.imageError.style.display = 'none';
+    },
+    showLoading(show, text) {
+        this.el.loading.style.display = show ? 'flex' : 'none';
+        this.el.analyzeBtn.disabled = show;
+        if (text) this.el.loading.querySelector('.loading-text').textContent = text;
+    },
+    showError(msg, openSettings = false) {
+        this.el.imageError.textContent = msg;
         this.el.imageError.style.display = 'block';
-        setTimeout(() => {
-            this.el.imageError.style.display = 'none';
-        }, 5000);
+        setTimeout(() => this.el.imageError.style.display = 'none', 5000);
+        if(openSettings) this.openSettings();
     },
-    
-    showSuccess(message) {
-        this.el.imageSuccess.textContent = message;
-        this.el.imageSuccess.style.display = 'block';
-        setTimeout(() => {
-            this.el.imageSuccess.style.display = 'none';
-        }, 3000);
+    clearResults() {
+        this.el.resultArea.innerHTML = '';
+        this.el.resultsCard.style.display = 'none';
+        this.el.priceSection.style.display = 'none';
     },
-    
+    closeResults() { this.el.resultsCard.style.display = 'none'; },
+    loadState() {
+        try { const k = localStorage.getItem('gemini_api_key'); if(k) { this.state.apiKey = atob(k); this.el.apiKey.value = this.state.apiKey; } } catch(e){}
+        const g = localStorage.getItem('selected_game'); if(g) this.el.gameVersion.value = g;
+        try { const h = localStorage.getItem('horadric_history'); if(h) { this.state.history = JSON.parse(h); this.renderHistory(); } } catch(e){}
+    },
+    saveApiKey() {
+        const k = this.el.apiKey.value.trim(); if(!k) return;
+        this.state.apiKey = k; localStorage.setItem('gemini_api_key', btoa(k));
+    },
+    openSettings() { this.el.settingsPanel.classList.add('open'); },
+    closeSettings() { this.el.settingsPanel.classList.remove('open'); },
+    saveToHistory(result) {
+        const item = { id: Date.now(), title: result.title, rarity: result.rarity, verdict: result.verdict, insight: result.insight, game: this.el.gameVersion.value, date: new Date().toLocaleDateString() };
+        this.state.history.unshift(item); if(this.state.history.length > 20) this.state.history.pop();
+        localStorage.setItem('horadric_history', JSON.stringify(this.state.history)); this.renderHistory();
+    },
     renderHistory() {
-        if (this.state.history.length === 0) {
-            this.el.historyList.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📭</div>
-                    <div class="empty-text">No scans yet</div>
-                </div>
-            `;
-            this.el.scanCount.textContent = '0';
-            return;
-        }
-        
-        this.el.scanCount.textContent = this.state.history.length;
-        this.el.historyList.innerHTML = '';
-        
-        this.state.history.slice(0, 10).forEach(item => {
+        if (!this.state.history.length) { this.el.historyList.innerHTML = '<div class="empty-state">No scans yet</div>'; this.el.scanCount.textContent = '0'; return; }
+        this.el.scanCount.textContent = this.state.history.length; this.el.historyList.innerHTML = '';
+        this.state.history.forEach(item => {
             const div = document.createElement('div');
-            div.className = `recent-item rarity-${(item.rarity || 'common').toLowerCase().split(' ')[0]}`;
-            
-            const verdictBadge = item.verdict 
-                ? `<span class="recent-verdict ${item.verdict.toLowerCase()}">${item.verdict}</span>`
-                : '';
-            
-            div.innerHTML = `
-                <div class="recent-header">
-                    <span>${this.escapeHTML(item.date || '')}</span>
-                    <span>${this.escapeHTML(item.playerClass || 'Any')}</span>
-                </div>
-                <div class="recent-name">
-                    ${this.escapeHTML(item.title)}${verdictBadge}
-                </div>
-                <div class="recent-insight">
-                    ${this.escapeHTML(item.insight || 'View details')}
-                </div>
-            `;
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'recent-delete';
-            deleteBtn.textContent = '×';
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation();
-                this.deleteHistoryItem(item.id);
-            };
-            div.appendChild(deleteBtn);
-            div.onclick = () => this.displayResults(item);
+            const g = String(item.game || 'd4').toUpperCase();
+            const r = String(item.rarity || 'common').split(' ')[0].toLowerCase();
+            div.className = `recent-item rarity-${r}`;
+            div.innerHTML = `<div class="recent-header"><span>${g}</span><span>${item.verdict || '?'}</span></div><div class="recent-name">${item.title || 'Unknown'}</div>`;
             this.el.historyList.appendChild(div);
         });
     },
-    
-    saveToHistory(result) {
-        const historyItem = {
-            id: Date.now(),
-            ...result,
-            playerClass: this.el.playerClass.value,
-            date: new Date().toLocaleDateString()
-        };
-        
-        this.state.history.unshift(historyItem);
-        if (this.state.history.length > 50) {
-            this.state.history = this.state.history.slice(0, 50);
-        }
-        
-        try {
-            localStorage.setItem('horadric_history', JSON.stringify(this.state.history));
-            this.renderHistory();
-        } catch (e) {
-            console.warn('Failed to save history:', e);
-        }
+    clearHistory() { if(confirm('Clear history?')) { this.state.history = []; localStorage.removeItem('horadric_history'); this.renderHistory(); } },
+    checkPrice() {
+        if(!this.state.currentItem) return;
+        this.el.priceSection.style.display = 'block';
+        this.el.priceContent.innerHTML = 'Checking database...';
+        setTimeout(() => {
+            const isMythic = String(this.state.currentItem.rarity).toLowerCase().includes('mythic');
+            this.el.priceContent.innerHTML = `<div>Value: ${isMythic ? 'Priceless' : 'Check Trade Site'}</div>`;
+        }, 500);
     },
-    
-    deleteHistoryItem(id) {
-        this.state.history = this.state.history.filter(item => item.id !== id);
-        try {
-            localStorage.setItem('horadric_history', JSON.stringify(this.state.history));
-            this.renderHistory();
-        } catch (e) {
-            console.warn('Failed to update history:', e);
-        }
-    },
-    
-    clearHistory() {
-        if (confirm('Clear all scan history?')) {
-            this.state.history = [];
-            localStorage.removeItem('horadric_history');
-            this.renderHistory();
-        }
-    },
-    
+    searchTrade() { window.open('https://diablo.trade', '_blank'); },
+    shareResults() { const i = this.state.currentItem; if(i) navigator.clipboard.writeText(`${i.title} - ${i.verdict}`); },
     runDemo() {
-        console.log('🎮 Running demo mode...');
-        const demoItem = {
-            title: 'Harlequin Crest',
-            rarity: 'mythic',
-            verdict: 'KEEP',
-            insight: 'Most versatile item in the game for all builds.',
-            text: 'This is a god-tier mythic unique helm. The Harlequin Crest provides unmatched utility across all builds with its combination of cooldown reduction, damage reduction, and skill ranks.',
-            date: new Date().toLocaleDateString(),
-            playerClass: this.el.playerClass.value || 'Any',
-            mode: 'identify'
-        };
-
-        this.el.imagePreview.src = 'assets/images/harlequin%20crest.jpg';
+        this.el.imagePreview.src = 'https://d4.maxroll.gg/wp-content/uploads/2023/06/Harlequin-Crest-1.jpg';
         this.el.imagePreview.style.display = 'block';
-        if (this.el.uploadZone.querySelector('.upload-label')) {
-            this.el.uploadZone.querySelector('.upload-label').style.display = 'none';
-        }
-
-        this.displayResults(demoItem);
-        this.saveToHistory(demoItem);
-        this.showSuccess('✅ Demo mode activated');
-        
-        if (typeof Analytics !== 'undefined' && typeof Analytics.trackDemoModeActivated === 'function') {
-            Analytics.trackDemoModeActivated();
-        }
-    },
-    
-    openSettings() {
-        this.el.settingsPanel.classList.add('open');
-    },
-    
-    closeSettings() {
-        this.el.settingsPanel.classList.remove('open');
-    },
-    
-    saveApiKey() {
-        const key = this.el.apiKey.value.trim();
-        if (!key) return;
-        
-        if (!key.startsWith('AIza')) {
-            this.el.apiKeyError.textContent = 'Invalid API key format (should start with AIza...)';
-            this.el.apiKeyError.style.display = 'block';
-            setTimeout(() => this.el.apiKeyError.style.display = 'none', 5000);
-            return;
-        }
-        
-        this.state.apiKey = key;
-        try {
-            localStorage.setItem('gemini_api_key', btoa(key));
-            this.el.apiKeySuccess.textContent = '✓ API key saved';
-            this.el.apiKeySuccess.style.display = 'block';
-            setTimeout(() => this.el.apiKeySuccess.style.display = 'none', 3000);
-            
-            if (typeof Analytics !== 'undefined' && typeof Analytics.trackApiKeyEntered === 'function') {
-                Analytics.trackApiKeyEntered();
-            }
-        } catch (e) {
-            this.el.apiKeyError.textContent = 'Failed to save API key';
-            this.el.apiKeyError.style.display = 'block';
-        }
-    },
-    
-    openHelp() {
-        const helpContent = `
-            <h3 style="color:var(--accent-color); margin-bottom:15px;">
-                Getting Your Gemini API Key
-            </h3>
-            <ol style="margin-left:20px; line-height:1.6; color:#ccc;">
-                <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent-color);">Google AI Studio</a></li>
-                <li>Sign in with your Google account</li>
-                <li>Click "Create API Key"</li>
-                <li>Select "Create key in new project"</li>
-                <li>Copy the key starting with <code>AIza...</code></li>
-                <li>Paste it into Settings → API Key field</li>
-            </ol>
-        `;
-        
-        this.el.modalContent.innerHTML = `
-            ${helpContent}
-            <div style="margin-top:15px; font-size:0.85rem; color:#888;">
-                Note: Your key is stored securely in your browser's local storage.
-            </div>
-            <div style="margin-top:20px; padding-top:15px; border-top:1px solid #444;">
-                <button id="restart-tour-btn" class="btn-secondary" style="width:100%;">
-                    🎓 Restart Learning Guide
-                </button>
-            </div>
-        `;
-        
-        this.el.helpModal.classList.add('open');
-        
-        const restartBtn = document.getElementById('restart-tour-btn');
-        if (restartBtn && typeof TourGuide !== 'undefined') {
-            restartBtn.addEventListener('click', () => {
-                TourGuide.restart();
-                this.closeModal();
-            });
-        }
-    },
-    
-    closeModal() {
-        this.el.helpModal.classList.remove('open');
-    },
-    
-    shareResults() {
-        const text = this.el.resultArea.textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            this.showSuccess('Copied to clipboard!');
-        });
-    },
-    
-    searchTrade() {
-        window.open('https://diablo.trade', '_blank');
-    },
-    
-    escapeHTML(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+        const res = { title: "Harlequin Crest", rarity: "mythic", verdict: "KEEP", score: "S-Tier", insight: "God Tier Helm", game: "d4" };
+        this.renderSuccess(res); this.saveToHistory(res);
     }
 };
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => HoradricApp.init());
-} else {
-    HoradricApp.init();
-}
+document.addEventListener('DOMContentLoaded', () => HoradricApp.init());
