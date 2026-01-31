@@ -120,9 +120,9 @@ const CONFIG = {
 const PROMPT_TEMPLATES = {
     /**
      * D4-OPTIMIZED SINGLE-CALL ANALYSIS
-     * Enhanced with detailed visual recognition and comparison screenshot support
+     * Enhanced with detailed visual recognition and comparison screenshot support + MEMORY CONTEXT
      */
-    analyzeOptimized: (selectedGame, playerClass, buildStyle, advancedSettings) => {
+    analyzeOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedItem) => {
         // Only D4 is supported right now
         if (selectedGame !== 'd4') {
             return PROMPT_TEMPLATES.unsupportedGame(selectedGame);
@@ -134,6 +134,12 @@ const PROMPT_TEMPLATES = {
         if (advancedSettings?.needs) {
              const needed = Object.keys(advancedSettings.needs).filter(k => advancedSettings.needs[k]);
              if (needed.length) contextLayer += `\nUser Needs: ${needed.join(', ').toUpperCase()}`;
+        }
+
+        // MEMORY CONTEXT INJECTION
+        let memoryContext = '';
+        if (equippedItem) {
+            memoryContext = `\n\n🧠 EQUIPPED ITEM MEMORY:\nThe user currently has this item equipped:\n- Item: ${equippedItem.title}\n- Type: ${equippedItem.type}\n- Rarity: ${equippedItem.rarity}\n- Score: ${equippedItem.score}\n- Key Analysis: ${equippedItem.insight}\n\n💡 IMPORTANT: Compare the NEW item in the screenshot against this EQUIPPED item. In your verdict and insight, explicitly mention if the new item is an UPGRADE, DOWNGRADE, or SIDEGRADE compared to what they have equipped. Consider Item Power, stats, and build synergy.`;
         }
 
         return `
@@ -172,7 +178,7 @@ const PROMPT_TEMPLATES = {
         STEP 2: ANALYSIS (Only if D4 confirmed)
         ═══════════════════════════════════════════════════════════
         
-        Context: ${contextLayer}
+        Context: ${contextLayer}${memoryContext}
         
         SEASON 7 KEY FEATURES:
         • Sanctified Items: Can be forged at the Heavenly Forge
@@ -222,11 +228,17 @@ const PROMPT_TEMPLATES = {
     },
 
     /**
-     * D4 COMPARISON MODE (Side-by-side items)
+     * D4 COMPARISON MODE (Side-by-side items) + MEMORY CONTEXT
      */
-    compareOptimized: (selectedGame, playerClass, buildStyle) => {
+    compareOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedItem) => {
         if (selectedGame !== 'd4') {
             return PROMPT_TEMPLATES.unsupportedGame(selectedGame);
+        }
+
+        // MEMORY CONTEXT INJECTION
+        let memoryContext = '';
+        if (equippedItem) {
+            memoryContext = `\n\n🧠 EQUIPPED ITEM MEMORY:\nUser also has this item in memory:\n- ${equippedItem.title} (${equippedItem.rarity}, Score: ${equippedItem.score})\n\nNote: This comparison screenshot shows two items side-by-side. Additionally reference the memory item if relevant.`;
         }
 
         return `
@@ -238,7 +250,7 @@ const PROMPT_TEMPLATES = {
         • Both should have D4 markers (Item Power, Ancestral, etc.)
         • One is usually labeled "EQUIPPED"
         
-        COMPARISON FOR: ${playerClass} - ${buildStyle || 'General Build'}
+        COMPARISON FOR: ${playerClass} - ${buildStyle || 'General Build'}${memoryContext}
         
         EVALUATE:
         1. Item Power difference

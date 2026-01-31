@@ -1,6 +1,6 @@
 // ====================================
 // HORADRIC AI - APP ENGINE
-// Version: 9.3.0 (Path 1A: D4 Excellence + Multi-Game Foundation)
+// Version: 9.4.0 (Memory Feature - MVP)
 // ====================================
 
 const HoradricApp = {
@@ -26,7 +26,18 @@ const HoradricApp = {
         this.attachEventListeners();
         this.updateGameSelector();
         this.updateClassOptions();
-        console.log('👁️ Horadric Pipeline Active (D4 Excellence Mode)');
+        this.updateMemoryIndicator(); // Initialize memory indicator
+        
+        // Check if loaded game is unsupported and show coming soon message
+        const game = this.el.gameVersion.value;
+        const support = CONFIG.GAME_SUPPORT[game];
+        if (support && !support.enabled) {
+            this.renderUnsupportedGame(game);
+            this.el.analyzeBtn.disabled = true;
+            this.el.compareBtn.disabled = true;
+        }
+        
+        console.log('👁️ Horadric Pipeline Active (D4 Excellence Mode + Memory)');
     },
     
     cacheElements() {
@@ -66,6 +77,10 @@ const HoradricApp = {
         this.el.shareBtn = document.getElementById('share-btn');
         this.el.priceCheckBtn = document.getElementById('price-check-btn');
         this.el.searchTradeBtn = document.getElementById('search-trade-btn');
+        this.el.memoryIndicator = document.getElementById('memory-indicator');
+        this.el.memoryItemName = document.getElementById('memory-item-name');
+        this.el.clearMemoryBtn = document.getElementById('clear-memory-btn');
+        this.el.toast = document.getElementById('toast');
         this.setupDragDrop();
     },
 
@@ -87,6 +102,7 @@ const HoradricApp = {
         if(this.el.shareBtn) this.el.shareBtn.addEventListener('click', () => this.shareResults());
         if(this.el.priceCheckBtn) this.el.priceCheckBtn.addEventListener('click', () => this.checkPrice());
         if(this.el.searchTradeBtn) this.el.searchTradeBtn.addEventListener('click', () => this.searchTrade());
+        if(this.el.clearMemoryBtn) this.el.clearMemoryBtn.addEventListener('click', () => this.clearEquippedItem());
         this.setupDragDrop();
     },
 
@@ -108,7 +124,6 @@ const HoradricApp = {
     },
 
     updateGameSelector() {
-        // Add visual indicators for supported vs coming soon games
         const options = this.el.gameVersion.querySelectorAll('option');
         options.forEach(opt => {
             const game = opt.value;
@@ -125,9 +140,15 @@ const HoradricApp = {
         const support = CONFIG.GAME_SUPPORT[game];
         
         if (support && !support.enabled) {
-            // Show coming soon message
-            this.showError(`${support.label} analysis is coming soon! Currently only Diablo IV is supported.`, false);
-            // Don't prevent selection, but warn them
+            // Show coming soon UI immediately
+            this.renderUnsupportedGame(game);
+            this.el.analyzeBtn.disabled = true;
+            this.el.compareBtn.disabled = true;
+        } else {
+            // Re-enable buttons for supported games
+            this.el.analyzeBtn.disabled = false;
+            this.el.compareBtn.disabled = false;
+            this.clearResults();
         }
         
         this.updateClassOptions();
@@ -139,7 +160,6 @@ const HoradricApp = {
         const classData = CONFIG.CLASS_DEFINITIONS[game];
         
         if (!classData) {
-            // Game not implemented yet
             this.el.playerClass.innerHTML = '<option value="">Not Available Yet</option>';
             this.el.playerClass.disabled = true;
             return;
@@ -198,7 +218,77 @@ const HoradricApp = {
     },
 
     // ============================================
-    // ENHANCED ANALYSIS PIPELINE
+    // MEMORY FEATURE
+    // ============================================
+
+    getEquippedItem() {
+        try {
+            const stored = localStorage.getItem('sv_equipped_item');
+            return stored ? JSON.parse(stored) : null;
+        } catch (e) {
+            console.error('Error reading equipped item:', e);
+            return null;
+        }
+    },
+
+    equipItem(result) {
+        try {
+            const itemData = {
+                title: result.title,
+                type: result.type,
+                rarity: result.rarity,
+                analysis: result.analysis,
+                insight: result.insight,
+                score: result.score,
+                sanctified: result.sanctified || false,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('sv_equipped_item', JSON.stringify(itemData));
+            this.updateMemoryIndicator();
+            this.showToast('⚔️ Item Equipped! Future scans will compare against this item.');
+        } catch (e) {
+            console.error('Error equipping item:', e);
+            this.showToast('❌ Failed to equip item.', 'error');
+        }
+    },
+
+    clearEquippedItem() {
+        try {
+            localStorage.removeItem('sv_equipped_item');
+            this.updateMemoryIndicator();
+            this.showToast('🗑️ Memory cleared. No item equipped.');
+        } catch (e) {
+            console.error('Error clearing equipped item:', e);
+        }
+    },
+
+    updateMemoryIndicator() {
+        if (!this.el.memoryIndicator) return;
+        
+        const equipped = this.getEquippedItem();
+        if (equipped) {
+            this.el.memoryIndicator.style.display = 'flex';
+            if (this.el.memoryItemName) {
+                this.el.memoryItemName.textContent = equipped.title || 'Unknown Item';
+            }
+        } else {
+            this.el.memoryIndicator.style.display = 'none';
+        }
+    },
+
+    showToast(message, type = 'success') {
+        if (!this.el.toast) return;
+        
+        this.el.toast.textContent = message;
+        this.el.toast.className = `toast toast-${type} toast-show`;
+        
+        setTimeout(() => {
+            this.el.toast.classList.remove('toast-show');
+        }, 3000);
+    },
+
+    // ============================================
+    // ENHANCED ANALYSIS PIPELINE WITH MEMORY
     // ============================================
 
     async handleAnalyze() {
@@ -208,7 +298,6 @@ const HoradricApp = {
         const selectedGame = this.el.gameVersion.value;
         const support = CONFIG.GAME_SUPPORT[selectedGame];
         
-        // Check if game is supported
         if (support && !support.enabled) {
             this.renderUnsupportedGame(selectedGame);
             return;
@@ -221,7 +310,6 @@ const HoradricApp = {
             const imageBase64 = this.el.imagePreview.src.split(',')[1];
             const mimeType = this.el.imagePreview.src.split(';')[0].split(':')[1];
             
-            // Gather settings
             const pClass = this.el.playerClass.value;
             const build = this.el.buildStyle.value;
             const advancedSettings = {
@@ -235,12 +323,15 @@ const HoradricApp = {
                 }
             };
 
-            // SINGLE API CALL - Enhanced detection + analysis
+            // GET EQUIPPED ITEM FROM MEMORY
+            const equippedItem = this.getEquippedItem();
+
+            // Generate prompt with memory context
             const promptGen = this.state.mode === 'compare' 
                 ? PROMPT_TEMPLATES.compareOptimized 
                 : PROMPT_TEMPLATES.analyzeOptimized;
             
-            const prompt = promptGen(selectedGame, pClass, build, advancedSettings);
+            const prompt = promptGen(selectedGame, pClass, build, advancedSettings, equippedItem);
             const result = await this.callGemini(prompt, imageBase64, mimeType);
             
             console.log('Analysis result:', result);
@@ -249,21 +340,18 @@ const HoradricApp = {
                 throw new Error("Analysis failed. Please try again.");
             }
             
-            // Handle unsupported game response
             if (result.status === 'unsupported_game') {
                 this.renderUnsupportedGame(result.detected_game, result.message);
                 this.showLoading(false);
                 return;
             }
             
-            // Handle rejection cases
             if (result.status === 'rejected') {
                 this.handleRejection(result);
                 this.showLoading(false);
                 return;
             }
             
-            // Success - render results
             this.renderSuccess(result);
             this.saveToHistory(result);
 
@@ -300,7 +388,7 @@ const HoradricApp = {
 
     async callGemini(prompt, imageBase64, mimeType) {
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.state.apiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${this.state.apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -368,9 +456,6 @@ const HoradricApp = {
                     <strong>Currently Supported:</strong><br>
                     ✅ Diablo IV (Full Analysis)
                 </div>
-                <div style="margin-top: 15px; font-size: 0.9rem; color: #aaa;">
-                    Want ${gameName} support sooner? Let us know via the feedback form!
-                </div>
             </div>
         `;
         this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
@@ -421,7 +506,6 @@ const HoradricApp = {
         const rarity = String(result.rarity || 'common').split(' ')[0].toLowerCase();
         const verdict = String(result.verdict || 'UNKNOWN').toUpperCase();
         
-        // Show confidence indicator if medium/low
         const confidenceBadge = (result.confidence === 'medium' || result.confidence === 'low')
             ? `<span style="font-size: 0.8rem; color: #ffa500; margin-left: 10px;">⚠️ ${result.confidence} confidence</span>`
             : '';
@@ -433,7 +517,6 @@ const HoradricApp = {
         if (['KEEP', 'EQUIP', 'SELL', 'UPGRADE', 'EQUIP NEW'].includes(verdict)) verdictColor = 'keep';
         if (['SALVAGE', 'DISCARD', 'CHARSI', 'KEEP EQUIPPED'].includes(verdict)) verdictColor = 'salvage';
 
-        // Add Sanctified badge if applicable
         const sanctifiedBadge = result.sanctified 
             ? `<span style="display: inline-block; padding: 4px 8px; background: rgba(255,215,0,0.2); color: gold; border-radius: 4px; font-size: 0.85rem; margin-left: 10px;">🦋 Sanctified</span>`
             : '';
@@ -451,7 +534,16 @@ const HoradricApp = {
                 <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
             </div>
             <div class="analysis-text markdown-body">${analysisHtml}</div>
+            <div class="result-actions">
+                <button id="equip-item-btn" class="btn-equip">⚔️ Equip This Item</button>
+            </div>
         `;
+        
+        const equipBtn = document.getElementById('equip-item-btn');
+        if (equipBtn) {
+            equipBtn.addEventListener('click', () => this.equipItem(result));
+        }
+        
         this.el.priceSection.style.display = 'none';
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },
