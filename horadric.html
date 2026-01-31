@@ -137,6 +137,16 @@
                             <select id="player-class" class="option-select"><option value="Any">Any Class</option></select>
                         </div>
                     </div>
+                    
+                    <!-- Memory Indicator -->
+                    <div id="memory-indicator" class="memory-indicator" style="display: none;">
+                        <div class="memory-badge">
+                            <span class="memory-icon">🧠</span>
+                            <span class="memory-text">Memory Active: <strong id="memory-item-name"></strong></span>
+                        </div>
+                        <button id="clear-memory-btn" class="btn-clear-memory" title="Clear equipped item">🗑️</button>
+                    </div>
+                    
                     <button id="toggle-advanced" class="advanced-toggle" aria-expanded="false">
                         <span>⚙️ Advanced Options</span>
                         <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -275,6 +285,13 @@
             <div id="modal-content-dynamic"></div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <footer style="text-align: center; padding: 30px 20px; margin-top: 40px; border-top: 1px solid #333; font-size: 0.75rem; color: #666; line-height: 1.5;">
+        <p style="margin: 0;">StatVerdict and Horadric AI are not affiliated with or endorsed by Blizzard Entertainment, Inc. Diablo is a trademark or registered trademark of Blizzard Entertainment, Inc.</p>
+    </footer>
 
     <!-- Load config.js FIRST (must be available before app.js) -->
     <script src="js/config.js"></script>
