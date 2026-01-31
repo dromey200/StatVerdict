@@ -262,6 +262,135 @@
         .settings-panel { width: 100%; right: -100%; }
         .settings-panel.open { right: 0; }
     }
+
+    /* Memory Feature Styles */
+    .memory-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-sm);
+        padding: var(--space-sm) var(--space-md);
+        margin-block: var(--space-md);
+        background: rgba(156, 39, 176, 0.15);
+        border: 1px solid rgba(156, 39, 176, 0.4);
+        border-radius: var(--border-radius-sm);
+    }
+
+    .memory-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        flex: 1;
+    }
+
+    .memory-icon {
+        font-size: 1.2rem;
+    }
+
+    .memory-text {
+        font-size: 0.85rem;
+        color: #e0e0e0;
+    }
+
+    .memory-text strong {
+        color: var(--color-compare);
+        font-weight: 600;
+    }
+
+    .btn-clear-memory {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #999;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        inline-size: auto;
+        min-block-size: 32px;
+    }
+
+    .btn-clear-memory:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.4);
+        color: #ff6b6b;
+    }
+
+    /* Equip Button in Results */
+    .result-actions {
+        margin-top: var(--space-lg);
+        display: flex;
+        gap: var(--space-sm);
+        justify-content: center;
+    }
+
+    .btn-equip {
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.3), rgba(156, 39, 176, 0.1));
+        border: 2px solid var(--color-compare);
+        color: #fff;
+        padding: var(--space-md) var(--space-xl);
+        border-radius: var(--border-radius-sm);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        min-block-size: 44px;
+        inline-size: auto;
+    }
+
+    .btn-equip:hover {
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.5), rgba(156, 39, 176, 0.2));
+        border-color: #e770ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
+    }
+
+    /* Toast Notifications */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: var(--space-md) var(--space-lg);
+        background: var(--card-bg);
+        border: 2px solid var(--color-success);
+        border-radius: var(--border-radius-md);
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        opacity: 0;
+        transform: translateY(100px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        max-width: 400px;
+    }
+
+    .toast-show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .toast-success {
+        border-color: var(--color-success);
+        background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), var(--card-bg));
+    }
+
+    .toast-error {
+        border-color: var(--color-error);
+        background: linear-gradient(135deg, rgba(255, 51, 51, 0.2), var(--card-bg));
+    }
+
+    @media (max-width: 768px) {
+        .toast {
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
+    }
 }
 
 @layer utilities {
