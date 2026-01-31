@@ -12,7 +12,7 @@
         script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
-        img-src 'self' data: blob: https://www.google-analytics.com; 
+        img-src 'self' data: blob: https://www.google-analytics.com https://d4.maxroll.gg https://statverdict.com; 
         connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://generativelanguage.googleapis.com; 
         base-uri 'self';
     ">
@@ -48,8 +48,15 @@
     <style>
         /* Critical layout styles */
         .dashboard-header { height: auto !important; min-height: 60px; padding: 10px 20px; }
-        .header-content-custom { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; }
-        .header-left { width: auto; margin-right: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .header-content-custom { 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 20px; 
+            width: 100%; 
+        }
+        .header-left { width: auto; margin-right: 0; display: flex; align-items: center; justify-content: flex-start; gap: 10px; }
         .title-text { display: inline-block !important; color: #fff; }
         .header-controls { display: flex; gap: 10px; align-items: center; }
         
@@ -57,7 +64,13 @@
         .dashboard-card { min-height: 300px; }
         
         @media (max-width: 768px) {
-            .header-content-custom { gap: 8px; }
+            .header-content-custom { 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                gap: 8px; 
+            }
+            .header-left { justify-content: center; }
             .dashboard-title { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
             body.dashboard-layout { padding-top: 10px; }
         }
@@ -123,10 +136,6 @@
                             <label for="player-class" class="option-label">Class</label>
                             <select id="player-class" class="option-select"><option value="Any">Any Class</option></select>
                         </div>
-                        <div class="mode-toggle">
-                            <button type="button" id="mode-identify" class="mode-btn active" aria-pressed="true">🔍 Identify</button>
-                            <button type="button" id="mode-compare" class="mode-btn" aria-pressed="false">⚖️ Compare</button>
-                        </div>
                     </div>
                     <button id="toggle-advanced" class="advanced-toggle" aria-expanded="false">
                         <span>⚙️ Advanced Options</span>
@@ -138,8 +147,8 @@
                             <select id="build-style" class="advanced-select"><option value="">Any Build</option></select>
                         </div>
                         <div class="advanced-section">
-                            <label class="advanced-label">Stat Requirements</label>
-                            <div class="stat-grid">
+                            <label class="advanced-label">Stat Priorities</label>
+                            <div class="stat-checkboxes">
                                 <label class="stat-checkbox"><input type="checkbox" id="need-str"> Strength</label>
                                 <label class="stat-checkbox"><input type="checkbox" id="need-int"> Intelligence</label>
                                 <label class="stat-checkbox"><input type="checkbox" id="need-will"> Willpower</label>
@@ -164,7 +173,8 @@
                         <div id="progress-bar" class="progress-bar"></div>
                     </div>
                     <div class="card-actions">
-                        <button id="analyze-btn" type="button" class="btn-primary btn-large">Analyze Item</button>
+                        <button id="analyze-btn" type="button" class="btn-primary btn-large">🔍 Analyze Item</button>
+                        <button id="compare-btn" type="button" class="btn-primary btn-large">⚖️ Compare Item</button>
                         <button id="demo-btn" type="button" class="btn-secondary">🎮 Try Demo</button>
                     </div>
                     <div id="loading" class="loading-state" style="display: none;">
@@ -245,7 +255,6 @@
                     <h3 class="section-title">Preferences</h3>
                     <label class="setting-item"><input type="checkbox" id="auto-save-scans" checked> <span>Auto-save scan results</span></label>
                     <label class="setting-item"><input type="checkbox" id="show-prices" checked> <span>Show market prices</span></label>
-                    <label class="setting-item"><input type="checkbox" id="enable-sounds"> <span>Enable sound effects</span></label>
                 </div>
                 <div class="settings-section">
                     <h3 class="section-title">About</h3>
@@ -267,8 +276,10 @@
         </div>
     </div>
 
-    <!-- Load all scripts deferred for better performance -->
-    <script defer src="js/config.js"></script>
+    <!-- Load config.js FIRST (must be available before app.js) -->
+    <script src="js/config.js"></script>
+    
+    <!-- Load other dependencies -->
     <script defer src="js/translations.js"></script>
     <script defer src="js/pricing.js"></script>
     
