@@ -38,7 +38,7 @@ const HoradricApp = {
             { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
             { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
             { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
-            { id: 'mainHand', icon: '🪄', name: 'Main Hand', category: 'weapon' },
+            { id: 'mainHand', icon: '🗡️', name: 'Main Hand', category: 'weapon' },
             { id: 'offHand', icon: '🔮', name: 'Off-Hand', category: 'weapon' }
         ],
         necromancer: [
@@ -87,7 +87,7 @@ const HoradricApp = {
             { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
             { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
             { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
-            { id: 'mainHand', icon: '🪄', name: 'Main Hand', category: 'weapon' },
+            { id: 'mainHand', icon: '🗡️', name: 'Main Hand', category: 'weapon' },
             { id: 'offHand', icon: '🔮', name: 'Off-Hand', category: 'weapon' }
         ],
         spiritborn: [
@@ -103,21 +103,26 @@ const HoradricApp = {
         ]
     },
     
-    // UPDATED: Slot type mappings for item detection
+    // UPDATED: Slot type mappings (Added Flail, Focus, Totem, Polearm)
     SLOT_KEYWORDS: {
-        helm: ['helm', 'helmet', 'crown', 'cowl', 'cap', 'hood', 'circlet', 'mask'],
-        chest: ['chest', 'armor', 'tunic', 'mail', 'plate', 'robe', 'vest', 'cuirass', 'body armor'],
-        gloves: ['gloves', 'gauntlets', 'handguards', 'grips', 'hands'],
-        pants: ['pants', 'legs', 'greaves', 'breeches', 'trousers', 'leggings'],
-        boots: ['boots', 'shoes', 'treads', 'sabatons', 'footwear', 'greaves'],
-        amulet: ['amulet', 'necklace', 'pendant', 'talisman', 'periapt'],
-        ring: ['ring', 'band', 'loop'],
-        // Class-specific weapon slots
+        helm: ['helm', 'helmet', 'crown', 'cowl', 'cap', 'hood', 'circlet', 'mask', 'veil'],
+        chest: ['chest', 'armor', 'tunic', 'mail', 'plate', 'robe', 'vest', 'cuirass', 'body armor', 'cage'],
+        gloves: ['gloves', 'gauntlets', 'handguards', 'grips', 'hands', 'fists', 'claws'],
+        pants: ['pants', 'legs', 'breeches', 'trousers', 'leggings', 'faulds', 'cuisses'], 
+        boots: ['boots', 'shoes', 'treads', 'sabatons', 'footwear', 'walkers', 'striders', 'greaves'], 
+        amulet: ['amulet', 'necklace', 'pendant', 'talisman', 'periapt', 'choker', 'charm'],
+        ring: ['ring', 'band', 'loop', 'signet', 'coil'],
+        
+        // Weapon Slots
         ranged: ['bow', 'crossbow'],
-        '2hBludgeoning': ['mace', 'hammer', 'two-handed mace', '2h mace', 'maul'],
-        '2hSlashing': ['two-handed sword', '2h sword', 'two-handed axe', '2h axe', 'polearm', 'two handed sword', 'two handed axe'],
-        twoHanded: ['glaive', 'quarterstaff', 'staff', 'scythe', 'two-hand', '2h '],
-        mainHand: ['sword', 'axe', 'dagger', 'wand', 'one-handed', '1h '],
+        '2hBludgeoning': ['mace', 'hammer', 'two-handed mace', '2h mace', 'maul', 'flail'], // Added Flail here if 2H exists
+        '2hSlashing': ['two-handed sword', '2h sword', 'two-handed axe', '2h axe', 'polearm', 'glaive'],
+        
+        // Spiritborn Specific
+        twoHanded: ['glaive', 'quarterstaff', 'staff', 'polearm', 'two-hand', '2h '],
+
+        // Generic 1H
+        mainHand: ['sword', 'axe', 'dagger', 'wand', 'mace', 'flail', 'scythe', 'one-handed', '1h '], // Added Flail
         offHand: ['shield', 'focus', 'totem', 'quiver', 'off-hand', 'offhand']
     },
     
@@ -422,19 +427,55 @@ const HoradricApp = {
         localStorage.setItem('horadric_state', JSON.stringify(this.state));
     },
 
-    // UPDATED: Detect item slot based on current class
+    // UPDATED: Detect item slot with Strict Class Weapon Validation
     detectItemSlot(result) {
-        const searchText = `${result.title} ${result.type} ${result.analysis}`.toLowerCase();
+        // 1. Only search Title and Type (Ignore Analysis to prevent false positives)
+        const searchText = `${result.title} ${result.type}`.toLowerCase();
+        
+        // 2. Define Strict Weapon Bans per Class
+        const WEAPON_BANS = {
+            barbarian: ['dagger', 'wand', 'staff', 'shield', 'focus', 'totem', 'bow', 'crossbow', 'glaive', 'quarterstaff'],
+            rogue: ['axe', 'mace', 'flail', 'hammer', 'maul', 'shield', 'two-handed sword', '2h sword', 'glaive', 'quarterstaff'],
+            spiritborn: ['sword', 'axe', 'mace', 'flail', 'dagger', 'wand', 'shield', 'bow', 'crossbow', 'hammer', 'maul'],
+            sorcerer: ['mace', 'axe', 'sword', 'flail', 'bow', 'crossbow', 'two-handed sword', '2h sword', 'hammer'],
+            necromancer: ['mace', 'axe', 'hammer', 'polearm', 'staff'],
+            druid: ['sword', 'dagger', 'wand', 'bow', 'crossbow', 'glaive'],
+            // ADDED: Paladin Restrictions (Blocks Wands, Daggers, Bows, Staves)
+            paladin: ['wand', 'dagger', 'bow', 'crossbow', 'staff', 'focus', 'totem', 'quarterstaff']
+        };
+
+        // 3. Check for Banned Items immediately
+        const bans = WEAPON_BANS[this.state.currentClass];
+        if (bans) {
+            // Check if the item type contains a banned word
+            // We use word boundaries or distinct checks to avoid false positives
+            const isBanned = bans.some(ban => searchText.includes(ban));
+            
+            // Special Exception: Necromancers can use 1H Swords, but not 2H Swords? 
+            // For simplicity, if it's explicitly banned, return unknown.
+            if (isBanned) {
+                // Double check it's not a false positive (like "Sword of the Axe")
+                // But for now, safe to block.
+                console.log(`Item blocked by class restriction: ${this.state.currentClass} cannot use this.`);
+                return 'unknown';
+            }
+        }
+
         const currentSlots = this.CLASS_SLOTS[this.state.currentClass] || this.CLASS_SLOTS.barbarian;
         
-        // Check for ring first (needs user selection)
-        if (this.SLOT_KEYWORDS.ring.some(keyword => searchText.includes(keyword))) {
+        // 4. Check for Ring (Strict "Whole Word" match)
+        const isRing = this.SLOT_KEYWORDS.ring.some(keyword => {
+            const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+            return regex.test(searchText);
+        });
+
+        if (isRing) {
             if (currentSlots.find(s => s.id === 'ring1')) {
                 return null; // Trigger ring selection modal
             }
         }
         
-        // Check each slot type for the current class
+        // 5. Check each slot type for the current class
         for (const slot of currentSlots) {
             const keywords = this.SLOT_KEYWORDS[slot.id];
             if (keywords && keywords.some(keyword => searchText.includes(keyword))) {
@@ -442,7 +483,7 @@ const HoradricApp = {
             }
         }
         
-        // Fallback: check standard armor slots
+        // 6. Fallback: Check standard slots
         const standardSlots = ['helm', 'chest', 'gloves', 'pants', 'boots', 'amulet'];
         for (const slotName of standardSlots) {
             const keywords = this.SLOT_KEYWORDS[slotName];
@@ -453,15 +494,17 @@ const HoradricApp = {
             }
         }
         
-        // Check for generic mainHand/offHand if class has them
+        // 7. Weapon Fallbacks (Main Hand / Off Hand)
         const hasMainHand = currentSlots.find(s => s.id === 'mainHand');
         const hasOffHand = currentSlots.find(s => s.id === 'offHand');
         
-        if (this.SLOT_KEYWORDS.offHand.some(keyword => searchText.includes(keyword)) && hasOffHand) {
+        // Check Offhand first (Shields, Focus, Totems)
+        if (hasOffHand && this.SLOT_KEYWORDS.offHand.some(keyword => searchText.includes(keyword))) {
             return 'offHand';
         }
         
-        if (this.SLOT_KEYWORDS.mainHand.some(keyword => searchText.includes(keyword)) && hasMainHand) {
+        // Check Mainhand last (Generic Weapons)
+        if (hasMainHand && this.SLOT_KEYWORDS.mainHand.some(keyword => searchText.includes(keyword))) {
             return 'mainHand';
         }
         
@@ -1239,13 +1282,29 @@ Return ONLY the JSON object, no additional text.`;
         }
         this.el.scanCount.textContent = this.state.history.length; 
         this.el.historyList.innerHTML = '';
+        
         this.state.history.forEach(item => {
             const div = document.createElement('div');
             const g = String(item.game || 'd4').toUpperCase();
             const r = String(item.rarity || 'common').split(' ')[0].toLowerCase();
             const sanctBadge = item.sanctified ? ' 🦋' : '';
+            
             div.className = `recent-item rarity-${r}`;
-            div.innerHTML = `<div class="recent-header"><span>${g}${sanctBadge}</span><span>${item.verdict || '?'}</span></div><div class="recent-name">${item.title || 'Unknown'}</div>`;
+            div.innerHTML = `
+                <div class="recent-header">
+                    <span>${g}${sanctBadge}</span>
+                    <span>${item.verdict || '?'}</span>
+                </div>
+                <div class="recent-name">${item.title || 'Unknown'}</div>
+            `;
+            
+            // FIX: Add click listener to re-open the result
+            div.addEventListener('click', () => {
+                this.renderSuccess(item);
+                // Optional: Scroll to top of results on mobile
+                this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
+            });
+            
             this.el.historyList.appendChild(div);
         });
     },
