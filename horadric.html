@@ -144,38 +144,33 @@
                             <span class="memory-icon">🧠</span>
                             <span class="memory-text">Memory Active: <strong id="memory-item-name"></strong></span>
                         </div>
-                        <button id="clear-memory-btn" class="btn-clear-memory" title="Clear equipped item">🗑️</button>
+                        <button id="clear-memory-btn" class="btn-clear-memory" aria-label="Clear memory">🗑️</button>
                     </div>
-                    
+
                     <button id="toggle-advanced" class="advanced-toggle" aria-expanded="false">
-                        <span>⚙️ Advanced Options</span>
-                        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <span>⚙️ ADVANCED OPTIONS</span>
+                        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
                     </button>
-                    <div id="advanced-panel" class="advanced-panel hidden">
+                    <div id="advanced-context-drawer" class="advanced-panel hidden">
                         <div class="advanced-section">
                             <label class="advanced-label">Build Focus</label>
-                            <select id="build-style" class="advanced-select"><option value="">Any Build</option></select>
-                        </div>
-                        <div class="advanced-section">
-                            <label class="advanced-label">Stat Priorities</label>
-                            <div class="stat-checkboxes">
-                                <label class="stat-checkbox"><input type="checkbox" id="need-str"> Strength</label>
-                                <label class="stat-checkbox"><input type="checkbox" id="need-int"> Intelligence</label>
-                                <label class="stat-checkbox"><input type="checkbox" id="need-will"> Willpower</label>
-                                <label class="stat-checkbox"><input type="checkbox" id="need-dex"> Dexterity</label>
-                                <label class="stat-checkbox"><input type="checkbox" id="need-res"> All Resist</label>
-                            </div>
+                            <select id="build-style" class="advanced-select">
+                                <option value="">None</option>
+                            </select>
                         </div>
                         <div class="advanced-section">
                             <label class="advanced-label">Build Mechanic</label>
                             <select id="key-mechanic" class="advanced-select">
                                 <option value="">None</option>
-                                <option value="thorns">Thorns Build</option>
-                                <option value="low-life">Low Life / Injured</option>
-                                <option value="overpower">Overpower Stack</option>
-                                <option value="minion-only">Minion Only</option>
                             </select>
                         </div>
+                        <div class="advanced-section">
+                            <div id="build-synergy" class="build-synergy" style="display: none;">
+                                <!-- Build synergy indicator will be rendered here by JavaScript -->
+                            </div>
+                        </div>  
                     </div>
                     <div id="image-error" class="message-box error" style="display: none;"></div>
                     <div id="image-success" class="message-box success" style="display: none;"></div>
@@ -194,19 +189,37 @@
                 </div>
             </div>
             
-            <div class="dashboard-card recent-card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="card-icon">📜</span> Recent Scans <span id="scan-count" class="count-badge">0</span>
-                    </h2>
-                    <button id="clear-history" class="btn-text" aria-label="Clear all scans">Clear All</button>
+            <div class="dashboard-card recent-card recent-loadout-split">
+                <!-- Recent Scans Section (Top Half) -->
+                <div class="split-section recent-section">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="card-icon">📜</span> Recent Scans <span id="scan-count" class="count-badge">0</span>
+                        </h2>
+                        <button id="clear-history" class="btn-text" aria-label="Clear all scans">Clear All</button>
+                    </div>
+                    <div class="card-body card-body-compact">
+                        <div id="history-list" class="recent-list">
+                            <div class="empty-state">
+                                <div class="empty-icon">📭</div>
+                                <div class="empty-text">No scans yet</div>
+                                <div class="empty-hint">Upload an item to get started</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div id="history-list" class="recent-list">
-                        <div class="empty-state">
-                            <div class="empty-icon">📭</div>
-                            <div class="empty-text">No scans yet</div>
-                            <div class="empty-hint">Upload an item to get started</div>
+                
+                <!-- Loadout Section (Bottom Half) -->
+                <div class="split-section loadout-section">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="card-icon">⚔️</span> My Loadout
+                        </h2>
+                        <button id="clear-loadout-btn" class="btn-text" aria-label="Clear all loadout">Clear All</button>
+                    </div>
+                    <div class="card-body card-body-compact">
+                        <div id="loadout-grid" class="loadout-grid">
+                            <!-- Loadout slots will be rendered here by JavaScript -->
                         </div>
                     </div>
                 </div>
