@@ -1,6 +1,6 @@
 // ====================================
 // HORADRIC AI - APP ENGINE  
-// Version: 11.0.0 (Dynamic Class-Based Loadout System)
+// Version: 11.0.1 (Dynamic Class-Based Loadout System + Analytics)
 // ====================================
 
 const HoradricApp = {
@@ -389,40 +389,6 @@ const HoradricApp = {
         this.showToast('🗑️ All loadout slots cleared.');
     },
 
-    saveSlot(slot, itemData) {
-        try {
-            localStorage.setItem(`sv_slot_${slot}`, JSON.stringify(itemData));
-            this.state.loadout[slot] = itemData;
-        } catch (e) {
-            console.error('Error saving slot:', e);
-        }
-    },
-
-    clearSlot(slot) {
-        try {
-            localStorage.removeItem(`sv_slot_${slot}`);
-            this.state.loadout[slot] = null;
-            this.renderLoadoutGrid();
-            this.updateBuildSynergy();
-            this.showToast(`🗑️ ${this.formatSlotName(slot)} cleared.`);
-        } catch (e) {
-            console.error('Error clearing slot:', e);
-        }
-    },
-
-    clearAllSlots() {
-        if (!confirm('Clear your entire loadout? This cannot be undone.')) return;
-        
-        const slots = ['helm', 'chest', 'gloves', 'pants', 'boots', 'amulet', 'ring1', 'ring2', 'mainHand', 'offHand'];
-        slots.forEach(slot => {
-            localStorage.removeItem(`sv_slot_${slot}`);
-            this.state.loadout[slot] = null;
-        });
-        this.renderLoadoutGrid();
-        this.updateBuildSynergy();
-        this.showToast('🗑️ All items cleared from loadout.');
-    },
-
     saveState() {
         localStorage.setItem('horadric_state', JSON.stringify(this.state));
     },
@@ -553,23 +519,6 @@ const HoradricApp = {
         this.showToast(`⚔️ ${result.title} equipped to ${this.formatSlotName(slot)}!`);
     },
     
-    equipToSlot(slot, result, isTwoHanded = false) {
-        const itemData = {
-            title: result.title,
-            type: result.type,
-            rarity: result.rarity,
-            analysis: result.analysis,
-            insight: result.insight,
-            score: result.score,
-            sanctified: result.sanctified || false,
-            isTwoHanded: isTwoHanded,
-            timestamp: Date.now()
-        };
-        
-        this.saveSlot(slot, itemData);
-        this.renderLoadoutGrid();
-        this.updateBuildSynergy();
-    },
     equipToSlot(slot, result, isTwoHanded = false) {
         const itemData = {
             title: result.title,
@@ -766,10 +715,6 @@ const HoradricApp = {
 
     // ============================================
     // BUILD SYNERGY ANALYSIS
-    // ============================================
-
-    // ============================================
-    // BUILD SYNERGY ANALYSIS (FIXED)
     // ============================================
 
     updateBuildSynergy() {
@@ -1003,6 +948,12 @@ const HoradricApp = {
 
         } catch (error) {
             console.error('Analysis error:', error);
+            
+            // ANALYTICS HOOK: Track error
+            if (typeof Analytics !== 'undefined' && Analytics.trackError) {
+                Analytics.trackError('analysis_failed', error.message);
+            }
+            
             this.showError(`Error: ${error.message}`);
         } finally {
             this.showLoading(false);
@@ -1026,6 +977,11 @@ Return ONLY the JSON object, no additional text.`;
 
     handleRejection(result) {
         const confidence = result.confidence || 'high';
+        
+        // ANALYTICS HOOK: Track rejected scan
+        if (typeof Analytics !== 'undefined' && Analytics.trackError) {
+            Analytics.trackError('scan_rejected', `${result.reject_reason}: ${result.message}`);
+        }
         
         if (result.reject_reason === 'not_game') {
             this.renderRejection(
@@ -1162,6 +1118,12 @@ Return ONLY the JSON object, no additional text.`;
 
     renderSuccess(result) {
         this.state.currentItem = result;
+        
+        // ANALYTICS HOOK: Track successful scan
+        if (typeof Analytics !== 'undefined' && Analytics.trackScan) {
+            Analytics.trackScan(result, this.state.currentClass);
+        }
+
         this.el.resultsCard.style.display = 'block';
         
         const rarity = String(result.rarity || 'common').split(' ')[0].toLowerCase();
