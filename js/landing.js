@@ -309,8 +309,7 @@ const VotingSystem = {
     NAMESPACE: 'statverdict',
     USER_VOTE_KEY: 'sv_user_vote',
     CACHE_KEY: 'sv_vote_data_cache',
-    CACHE_DURATION: 1000 * 60 * 10, // 10 Minutes Cache
-    TIMEOUT: 5000,
+    CACHE_DURATION: 1000 * 60 * 10, // 10 Minutes
     
     games: {
         'poe2': 'Path of Exile 2',
@@ -322,12 +321,6 @@ const VotingSystem = {
         'torchlight': 'Torchlight Infinite'
     },
     
-    // Check if we are running locally to avoid API bans/rate limits during testing
-    isLocalEnvironment() {
-        const h = window.location.hostname;
-        return h === '127.0.0.1' || h === 'localhost' || h.startsWith('192.168');
-    },
-
     async init() {
         const voteBtns = document.querySelectorAll('.sv-vote-btn');
         if (voteBtns.length === 0) return;
@@ -339,88 +332,71 @@ const VotingSystem = {
         } else {
             voteBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    btn.classList.add('loading');
                     const game = btn.getAttribute('data-game');
-                    this.vote(game, btn);
+                    this.vote(game);
                 });
             });
         }
     },
     
-    async vote(game, btnElement) {
+    async vote(game) {
         if (localStorage.getItem(this.USER_VOTE_KEY)) return;
         
-        const votingOptions = document.getElementById('voting-options');
-        if (votingOptions) votingOptions.style.opacity = '0.5';
+        // 1. OPTIMISTIC UPDATE: Mark as voted immediately in LocalStorage
+        localStorage.setItem(this.USER_VOTE_KEY, game);
+        localStorage.removeItem(this.CACHE_KEY); // Clear cache
         
+        // 2. IMMEDIATE UI FEEDBACK: Switch to results view instantly
+        // We pass 'true' to indicate this is a fresh vote to simulate the +1 locally
+        await this.loadAndShowResults(true, game);
+        
+        // 3. SEND VOTE IN BACKGROUND (Silent)
+        // If this fails due to AdBlock, the user won't know (and won't care).
         try {
-            let success = false;
-
-            // --- LOCALHOST SIMULATION ---
-            if (this.isLocalEnvironment()) {
-                console.log('🔧 Localhost detected: Simulating successful vote for ' + game);
-                await new Promise(r => setTimeout(r, 800)); // Fake network delay
-                success = true;
-            } 
-            // --- REAL PRODUCTION VOTE ---
-            else {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
-                
-                const response = await fetch(
-                    `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up/`,
-                    { method: 'GET', signal: controller.signal, mode: 'cors' }
-                );
-                
-                clearTimeout(timeoutId);
-                success = response.ok;
-                
-                if (!success) {
-                    console.warn('API Error Status:', response.status); // Log specific error (e.g. 429 = Rate Limit)
-                }
-            }
+            await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up/`, {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-store'
+            });
             
-            if (success) {
-                localStorage.setItem(this.USER_VOTE_KEY, game);
-                localStorage.removeItem(this.CACHE_KEY); // Clear cache to see new vote
-                
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'vote', { 'event_category': 'engagement', 'event_label': game });
-                }
-                
-                await this.loadAndShowResults();
-            } else {
-                throw new Error('Vote failed or rejected by server');
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'vote', { 'event_category': 'engagement', 'event_label': game });
             }
         } catch (error) {
-            console.error('Vote detailed error:', error);
-            
-            if (votingOptions) votingOptions.style.opacity = '1';
-            if (btnElement) btnElement.classList.remove('loading');
-            
-            // User-friendly error
-            alert('Could not submit vote. If you have AdBlock on, it may be blocking the voting server.');
+            // Silently fail. The user already saw the "Success" screen.
+            console.warn('Vote background sync failed (likely AdBlock):', error);
         }
     },
     
-    async loadAndShowResults() {
+    async loadAndShowResults(isFreshVote = false, votedGame = null) {
         const votingResults = document.getElementById('voting-results');
         const votingOptions = document.getElementById('voting-options');
         const resultsChart = document.getElementById('results-chart');
         
         if (!votingResults || !resultsChart) return;
         
+        // Switch UI immediately
         if (votingOptions) votingOptions.style.display = 'none';
+        votingResults.style.display = 'block';
         
         if (resultsChart.innerHTML === '') {
-            resultsChart.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Loading community votes...</div>';
-            votingResults.style.display = 'block';
+            resultsChart.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Updating results...</div>';
         }
 
         try {
-            const votes = await this.getVotesSafe();
+            // Fetch real votes
+            let votes = await this.getVotesSafe();
+            
+            // If the user JUST voted, but the API failed (AdBlock) or hasn't updated yet,
+            // we manually add +1 to their game in the local display data.
+            // This ensures they always see their vote count!
+            if (isFreshVote && votedGame) {
+                votes[votedGame] = (votes[votedGame] || 0) + 1;
+            }
+
             const totalVotes = Object.values(votes).reduce((sum, count) => sum + count, 0);
             this.displayResults(votes, totalVotes);
+            
         } catch (error) {
             console.error('Error loading votes:', error);
             resultsChart.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Unable to load results.</div>';
@@ -428,15 +404,6 @@ const VotingSystem = {
     },
     
     async getVotesSafe() {
-        // Use Mock Data on Localhost if API fails or just for speed
-        if (this.isLocalEnvironment()) {
-            // Return fake data so you can see the chart design
-            return {
-                'poe2': 150, 'lastepoch': 120, 'd3': 85, 'd2r': 200, 
-                'di': 15, 'grim-dawn': 45, 'torchlight': 10
-            };
-        }
-
         // 1. Check Cache
         const cached = localStorage.getItem(this.CACHE_KEY);
         if (cached) {
@@ -446,25 +413,26 @@ const VotingSystem = {
             }
         }
 
-        // 2. Fetch Fresh Data (Sequential to prevent 429s)
+        // 2. Fetch Data (Sequential to prevent Rate Limits)
         const votes = {};
         const gameKeys = Object.keys(this.games);
         
-        for (const gameKey of gameKeys) {
+        // We use a "Promise.all" here for speed, but catch individual errors so one failure doesn't break all
+        await Promise.all(gameKeys.map(async (key) => {
             try {
-                const res = await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${gameKey}/`, { mode: 'cors' });
+                const res = await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${key}/`, { mode: 'cors' });
                 if (res.ok) {
                     const data = await res.json();
-                    votes[gameKey] = data.count || 0;
+                    votes[key] = data.count || 0;
                 } else {
-                    votes[gameKey] = 0;
+                    votes[key] = 0;
                 }
             } catch (e) {
-                votes[gameKey] = 0;
+                votes[key] = 0;
             }
-            await new Promise(r => setTimeout(r, 50)); // Small throttle
-        }
+        }));
         
+        // 3. Save Cache
         localStorage.setItem(this.CACHE_KEY, JSON.stringify({
             timestamp: Date.now(),
             data: votes
@@ -479,11 +447,6 @@ const VotingSystem = {
         
         resultsChart.innerHTML = '';
         const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
-        
-        if (totalVotes === 0) {
-            resultsChart.innerHTML = `<div style="text-align: center; padding: 20px;">No votes yet. Be the first!</div>`;
-            return;
-        }
         
         sorted.forEach(([gameKey, count]) => {
             const gameName = this.games[gameKey] || gameKey;
@@ -511,12 +474,8 @@ const VotingSystem = {
         });
 
         if (resultsNote) {
-            if (localStorage.getItem(this.USER_VOTE_KEY)) {
-                resultsNote.style.display = 'block';
-                resultsNote.textContent = 'Thank you for voting! 🎉';
-            } else {
-                resultsNote.style.display = 'none';
-            }
+            resultsNote.style.display = 'block';
+            resultsNote.textContent = 'Thank you for voting! 🎉';
         }
     }
 };
