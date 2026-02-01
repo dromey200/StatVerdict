@@ -1,12 +1,12 @@
 // ====================================
 // STATVERDICT LANDING PAGE LOGIC
-// Version: 3.0.1 - Fixed CORS Issues with CounterAPI
+// Version: 3.1.0 - CORS Fixed with Proper CounterAPI Implementation
 // ====================================
 
 const StatsLoader = {
     NAMESPACE: 'statverdict',
-    TIMEOUT: 2000,
-    MAX_RETRIES: 1,
+    TIMEOUT: 3000,
+    MAX_RETRIES: 2,
     
     async init() {
         const isLocal = this.isLocalEnvironment();
@@ -40,6 +40,7 @@ const StatsLoader = {
                 this.timeoutPromise(this.TIMEOUT)
             ]);
         } catch (error) {
+            console.warn('Stats loading timed out, using fallback');
             this.displayFallback();
         }
     },
@@ -84,31 +85,35 @@ const StatsLoader = {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
             
-            // FIXED: Proper CounterAPI URL format
+            // FIXED: Proper CounterAPI URL - NO trailing slash
             const res = await fetch(
-                `https://api.counterapi.dev/v1/${this.NAMESPACE}/scans/`,
+                `https://api.counterapi.dev/v1/${this.NAMESPACE}/scans`,
                 { 
                     signal: controller.signal,
-                    cache: 'no-store',
-                    mode: 'cors'
+                    cache: 'no-store'
                 }
             );
             
             clearTimeout(timeoutId);
             
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (!res.ok) {
+                console.warn(`Scans API returned ${res.status}`);
+                throw new Error(`HTTP ${res.status}`);
+            }
             
             const data = await res.json();
             
-            if (data?.count !== undefined) {
+            if (data && typeof data.count === 'number') {
                 el.innerHTML = `<strong>${this.formatNumber(data.count)}</strong> Items Analyzed`;
                 el.classList.add('sv-stat-loaded');
             } else {
-                throw new Error('Invalid data');
+                throw new Error('Invalid data structure');
             }
         } catch (error) {
+            console.warn('Error loading scan count:', error.message);
+            
             if (retryCount < this.MAX_RETRIES) {
-                await this.delay(300);
+                await this.delay(500);
                 return this.loadScanCount(retryCount + 1);
             }
             
@@ -124,27 +129,29 @@ const StatsLoader = {
         try {
             const counted = localStorage.getItem('sv_user_counted');
             
-            // FIXED: Proper CounterAPI URL format with trailing slash
+            // FIXED: Proper CounterAPI URL - NO trailing slash
             const url = counted 
-                ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/` 
-                : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up/`;
+                ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users` 
+                : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up`;
             
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
             
             const res = await fetch(url, { 
                 signal: controller.signal,
-                cache: 'no-store',
-                mode: 'cors'
+                cache: 'no-store'
             });
             
             clearTimeout(timeoutId);
             
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (!res.ok) {
+                console.warn(`Users API returned ${res.status}`);
+                throw new Error(`HTTP ${res.status}`);
+            }
             
             const data = await res.json();
             
-            if (data?.count !== undefined) {
+            if (data && typeof data.count === 'number') {
                 if (!counted) {
                     localStorage.setItem('sv_user_counted', 'true');
                 }
@@ -152,11 +159,13 @@ const StatsLoader = {
                 el.innerHTML = `<strong>${this.formatNumber(data.count)}</strong> Community Members`;
                 el.classList.add('sv-stat-loaded');
             } else {
-                throw new Error('Invalid data');
+                throw new Error('Invalid data structure');
             }
         } catch (error) {
+            console.warn('Error loading user count:', error.message);
+            
             if (retryCount < this.MAX_RETRIES) {
-                await this.delay(300);
+                await this.delay(500);
                 return this.loadUserCount(retryCount + 1);
             }
             
@@ -308,7 +317,8 @@ const UIHandlers = {
 const VotingSystem = {
     NAMESPACE: 'statverdict',
     USER_VOTE_KEY: 'sv_user_vote',
-    TIMEOUT: 3000,
+    TIMEOUT: 5000,
+    MAX_RETRIES: 2,
     
     games: {
         'poe2': 'Path of Exile 2',
@@ -330,7 +340,7 @@ const VotingSystem = {
             await this.loadAndShowResults();
         } else {
             voteBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', () => {
                     const game = btn.getAttribute('data-game');
                     this.vote(game);
                 });
@@ -344,7 +354,6 @@ const VotingSystem = {
         }
         
         const votingOptions = document.getElementById('voting-options');
-        const votingResults = document.getElementById('voting-results');
         
         if (votingOptions) votingOptions.style.opacity = '0.5';
         
@@ -352,20 +361,22 @@ const VotingSystem = {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
             
-            // FIXED: Proper CounterAPI URL format with trailing slash
+            // FIXED: Proper CounterAPI URL - NO trailing slash
             const response = await fetch(
-                `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up/`,
+                `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up`,
                 {
                     method: 'GET',
                     signal: controller.signal,
-                    cache: 'no-store',
-                    mode: 'cors'
+                    cache: 'no-store'
                 }
             );
             
             clearTimeout(timeoutId);
             
             if (response.ok) {
+                const data = await response.json();
+                console.log('Vote successful:', data);
+                
                 localStorage.setItem(this.USER_VOTE_KEY, game);
                 
                 if (typeof gtag !== 'undefined') {
@@ -377,6 +388,7 @@ const VotingSystem = {
                 
                 await this.loadAndShowResults();
             } else {
+                console.error('Vote failed with status:', response.status);
                 throw new Error('Vote failed');
             }
         } catch (error) {
@@ -384,7 +396,7 @@ const VotingSystem = {
             
             if (votingOptions) votingOptions.style.opacity = '1';
             
-            alert('Failed to submit vote. Please try again.');
+            alert('Failed to submit vote. The service may be temporarily unavailable. Please try again later.');
         }
     },
     
@@ -412,13 +424,12 @@ const VotingSystem = {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
                 
-                // FIXED: Proper CounterAPI URL format with trailing slash
+                // FIXED: Proper CounterAPI URL - NO trailing slash  
                 const response = await fetch(
-                    `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${gameKey}/`,
+                    `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${gameKey}`,
                     {
                         signal: controller.signal,
-                        cache: 'no-store',
-                        mode: 'cors'
+                        cache: 'no-store'
                     }
                 );
                 
@@ -428,10 +439,11 @@ const VotingSystem = {
                     const data = await response.json();
                     votes[gameKey] = data.count || 0;
                 } else {
+                    console.warn(`Failed to fetch votes for ${gameKey}: ${response.status}`);
                     votes[gameKey] = 0;
                 }
             } catch (error) {
-                console.error(`Error fetching votes for ${gameKey}:`, error);
+                console.warn(`Error fetching votes for ${gameKey}:`, error.message);
                 votes[gameKey] = 0;
             }
         });
@@ -468,7 +480,7 @@ const VotingSystem = {
         } else {
             sorted.forEach(([gameKey, count]) => {
                 const gameName = this.games[gameKey] || gameKey;
-                const percentage = Math.round((count / totalVotes) * 100);
+                const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
                 
                 const barDiv = document.createElement('div');
                 barDiv.className = 'sv-result-bar';
