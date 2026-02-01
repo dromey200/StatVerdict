@@ -725,6 +725,10 @@ const HoradricApp = {
     // BUILD SYNERGY ANALYSIS
     // ============================================
 
+    // ============================================
+    // BUILD SYNERGY ANALYSIS (FIXED)
+    // ============================================
+
     updateBuildSynergy() {
         if (!this.el.buildSynergy) return;
         
@@ -734,62 +738,67 @@ const HoradricApp = {
             return;
         }
         
-        // Define synergy keywords for each mechanic (ALL CLASSES INCLUDING PALADIN)
+        // NORMALIZED: Keys now match config.js values (e.g. "Thorns Build" -> "thorns-build")
         const synergyKeywords = {
-            // Barbarian mechanics
-            'thorns': ['thorns', 'reflect', 'return damage', 'retaliate'],
-            'overpower': ['overpower', 'lucky hit', 'critical strike', 'crit'],
-            'berserking': ['berserking', 'berserk', 'fury', 'rage'],
-            'bleed': ['bleed', 'bleeding', 'hemorrhage', 'lacerate'],
-            'fortify': ['fortify', 'fortified', 'fortification'],
+            // --- BARBARIAN ---
+            'thorns-build': ['thorns', 'reflect', 'return damage', 'retaliate'],
+            'overpower-stack': ['overpower', 'lucky hit', 'critical strike', 'crit'],
+            'berserking-uptime': ['berserking', 'berserk', 'fury', 'rage'],
+            'bleed-damage': ['bleed', 'bleeding', 'hemorrhage', 'lacerate', 'rupture'],
+            'fortify-generation': ['fortify', 'fortified', 'fortification', 'damage reduction'],
             
-            // Druid mechanics
-            'spirit': ['spirit', 'spirit generation', 'spirit boons'],
-            'nature': ['nature', 'nature magic', 'earth', 'storm'],
-            'shapeshifting': ['werebear', 'werewolf', 'shapeshifting', 'transform'],
+            // --- DRUID ---
+            'spirit-generation': ['spirit', 'resource', 'energize'],
+            'nature-magic-damage': ['nature', 'storm', 'earth', 'lightning', 'tornado', 'hurricane'],
+            'shapeshifting': ['werewolf', 'werebear', 'shapeshifting', 'transform', 'grizzly rage'],
             
-            // Necromancer mechanics
-            'minion': ['minion', 'summon', 'skeleton', 'golem', 'companion', 'pet'],
-            'blood-orb': ['blood orb', 'blood', 'essence', 'corpse'],
-            'essence': ['essence', 'essence generation', 'essence regen'],
+            // --- NECROMANCER ---
+            'minion-only': ['minion', 'summon', 'skeleton', 'golem', 'warrior', 'mage', 'priest'],
+            'blood-orb-generation': ['blood orb', 'blood', 'tides of blood', 'coagulate'],
+            'essence-generation': ['essence', 'resource', 'exposed flesh'],
+            'corpse-consumption': ['corpse', 'flesh', 'grim harvest', 'corpse explosion'],
             
-            // Paladin mechanics
-            'block-chance': ['block', 'block chance', 'blocking', 'shield block', 'block rating'],
-            'holy-damage': ['holy', 'holy damage', 'divine', 'sacred', 'light damage', 'radiant'],
-            'fortify-generation': ['fortify', 'fortified', 'fortification', 'fortify generation'],
-            'auras': ['aura', 'auras', 'aura effect', 'sanctify', 'consecrate'],
-            'divine-wrath': ['divine wrath', 'wrath', 'divine', 'smite', 'judgment'],
-            'consecrated-ground': ['consecrated ground', 'consecrated', 'holy ground', 'sanctified ground'],
+            // --- ROGUE ---
+            'critical-strike': ['critical strike', 'crit', 'cutthroat', 'marksman'],
+            'vulnerable-damage': ['vulnerable', 'victimise', 'exploit'],
+            'lucky-hit': ['lucky hit', 'proc', 'effect chance'],
+            'energy-generation': ['energy', 'resource', 'innervation'],
+            'shadow-imbuement': ['shadow', 'imbuement', 'darkness', 'shroud'],
             
-            // Rogue mechanics
-            'critical-strike': ['critical strike', 'crit', 'critical damage'],
-            'vulnerable': ['vulnerable', 'vulnerability', 'vulnerable damage'],
-            'lucky-hit': ['lucky hit', 'lucky hit chance'],
-            'energy': ['energy', 'energy generation', 'energy regen'],
-            'shadow': ['shadow', 'shadow imbuement', 'darkness'],
+            // --- SORCERER ---
+            'mana-generation': ['mana', 'resource', 'prodigy'],
+            'cooldown-reduction': ['cooldown', 'cdr', 'rapid'],
+            'barrier-generation': ['barrier', 'shield', 'protection', 'ice armor'],
+            'crackling-energy': ['crackling', 'lightning', 'shock', 'stun'],
+            'lucky-hit': ['lucky hit', 'proc', 'effect chance'],
             
-            // Sorcerer mechanics
-            'mana': ['mana', 'mana generation', 'mana regen'],
-            'cooldown': ['cooldown', 'cooldown reduction', 'cdr'],
-            'barrier': ['barrier', 'barrier generation', 'shields'],
-            'crackling': ['crackling', 'crackling energy', 'shock'],
-            
-            // Spiritborn mechanics
-            'vigor': ['vigor', 'vigor generation'],
-            'dodge': ['dodge', 'dodge chance', 'evade'],
-            'resolve': ['resolve', 'resolve stacks'],
-            'spirit-bonds': ['spirit', 'bond', 'spirit bonds'],
-            
-            // Legacy/alternate names
-            'low-life': ['low life', 'injured', 'below', 'when hurt', 'damage taken'],
-            'minion-only': ['minion', 'summon', 'skeleton', 'golem', 'companion', 'pet']
+            // --- PALADIN ---
+            'block-chance': ['block', 'shield', 'deflection'],
+            'holy-damage': ['holy', 'radiant', 'sacred', 'divine'],
+            'auras': ['aura', 'nearby allies', 'radius'],
+            'divine-wrath': ['wrath', 'smite', 'judgment'],
+            'consecrated-ground': ['consecrated', 'ground effect', 'area'],
+
+             // --- SPIRITBORN ---
+            'vigor-generation': ['vigor', 'resource', 'soar'],
+            'dodge-chance': ['dodge', 'evade', 'elusive'],
+            'resolve-stacks': ['resolve', 'counter', 'block'],
+            'spirit-bonds': ['spirit', 'bond', 'guardian']
         };
         
         // Normalize mechanic value to match keyword keys
         const mechanicKey = mechanic.toLowerCase().replace(/ /g, '-');
-        const keywords = synergyKeywords[mechanicKey] || [];
         
-        if (keywords.length === 0) {
+        // Fallback: Check for partial matches if exact key fails
+        let keywords = synergyKeywords[mechanicKey];
+        if (!keywords) {
+            // Try to find a partial match (e.g. "thorns" within "thorns-build")
+            const partialKey = Object.keys(synergyKeywords).find(k => k.includes(mechanicKey) || mechanicKey.includes(k));
+            keywords = partialKey ? synergyKeywords[partialKey] : [];
+        }
+        
+        if (!keywords || keywords.length === 0) {
+            console.log(`No keywords found for mechanic: ${mechanicKey}`);
             this.el.buildSynergy.style.display = 'none';
             return;
         }
@@ -802,7 +811,8 @@ const HoradricApp = {
             if (!item) return;
             totalItems++;
             
-            const itemText = `${item.title} ${item.analysis} ${item.insight}`.toLowerCase();
+            // Broaden search to title + type + analysis + insight
+            const itemText = `${item.title} ${item.type} ${item.analysis} ${item.insight}`.toLowerCase();
             const hasMatch = keywords.some(keyword => itemText.includes(keyword));
             if (hasMatch) matchCount++;
         });
@@ -816,27 +826,34 @@ const HoradricApp = {
         let message = '';
         let iconClass = '';
         
+        // Updated text to be more concise for the loadout view
+        const mechanicName = this.el.keyMechanic.options[this.el.keyMechanic.selectedIndex].text;
+        
         if (percentage >= 70) {
-            message = `✅ Excellent synergy! ${matchCount}/${totalItems} items support your ${this.el.keyMechanic.options[this.el.keyMechanic.selectedIndex].text} build.`;
+            message = `🔥 <strong>Excellent!</strong> ${matchCount}/${totalItems} items fit your ${mechanicName} build.`;
             iconClass = 'synergy-high';
         } else if (percentage >= 40) {
-            message = `⚠️ Moderate synergy. ${matchCount}/${totalItems} items support your ${this.el.keyMechanic.options[this.el.keyMechanic.selectedIndex].text} build.`;
+            message = `⚠️ <strong>Moderate.</strong> ${matchCount}/${totalItems} items fit your ${mechanicName} build.`;
             iconClass = 'synergy-medium';
         } else {
-            message = `❌ Low synergy. Only ${matchCount}/${totalItems} items support your ${this.el.keyMechanic.options[this.el.keyMechanic.selectedIndex].text} build.`;
+            message = `❌ <strong>Low Synergy.</strong> ${matchCount}/${totalItems} items fit your ${mechanicName} build.`;
             iconClass = 'synergy-low';
         }
         
         this.el.buildSynergy.className = `build-synergy ${iconClass}`;
         this.el.buildSynergy.innerHTML = `
+            <div class="synergy-header" style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem;">
+                <span>Build Synergy</span>
+                <span>${percentage}%</span>
+            </div>
             <div class="synergy-bar">
                 <div class="synergy-fill" style="width: ${percentage}%;"></div>
             </div>
-            <div class="synergy-text">${message}</div>
+            <div class="synergy-text" style="margin-top:5px; font-size:0.85rem;">${message}</div>
         `;
         this.el.buildSynergy.style.display = 'block';
     },
-
+    
     // ============================================
     // CONTEXT-AWARE COMPARISON
     // ============================================

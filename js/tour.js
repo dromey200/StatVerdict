@@ -33,7 +33,7 @@ const TourGuide = {
         },
         {
             title: "4. Advanced Options ⚙️",
-            description: "Click here to specify your Build Style (e.g., Thorns, Minions) and specific stat requirements.",
+            description: "Click here to specify your Build Style (e.g., Thorns, Minions). This enables the 'Build Synergy' calculator!",
             target: "#toggle-advanced", 
             position: "bottom"
         },
@@ -49,6 +49,14 @@ const TourGuide = {
             target: "#demo-btn",
             position: "top"
         },
+        // --- NEW STEP ADDED BELOW ---
+        {
+            title: "Your Loadout 🛡️",
+            description: "When you find a good item, click 'Equip'. The AI will use your loadout to make smarter comparisons for future drops.",
+            target: ".loadout-section", // Targets the new section in the bottom right
+            position: "left"
+        },
+        // ----------------------------
         {
             title: "Ready to Hunt! 🚀",
             description: "You're all set. Good luck finding those triple-greater-affix items, Nephalem!",
