@@ -315,6 +315,134 @@ const UIHandlers = {
     }
 };
 
+const VotingSystem = {
+    STORAGE_KEY: 'sv_game_votes',
+    USER_VOTE_KEY: 'sv_user_vote',
+    
+    games: {
+        'poe2': 'Path of Exile 2',
+        'lastepoch': 'Last Epoch',
+        'd3': 'Diablo III',
+        'd2r': 'D2: Resurrected',
+        'di': 'Diablo Immortal',
+        'grim-dawn': 'Grim Dawn',
+        'torchlight': 'Torchlight Infinite'
+    },
+    
+    init() {
+        const voteBtns = document.querySelectorAll('.sv-vote-btn');
+        if (voteBtns.length === 0) return;
+        
+        // Check if user already voted
+        const userVote = localStorage.getItem(this.USER_VOTE_KEY);
+        if (userVote) {
+            this.showResults();
+        } else {
+            // Attach vote handlers
+            voteBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const game = btn.getAttribute('data-game');
+                    this.vote(game);
+                });
+            });
+        }
+    },
+    
+    vote(game) {
+        // Check if already voted
+        if (localStorage.getItem(this.USER_VOTE_KEY)) {
+            return;
+        }
+        
+        // Get current votes
+        const votes = this.getVotes();
+        
+        // Increment vote
+        votes[game] = (votes[game] || 0) + 1;
+        
+        // Save votes
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(votes));
+        localStorage.setItem(this.USER_VOTE_KEY, game);
+        
+        // Show results
+        this.showResults();
+        
+        // Analytics
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'vote', { 
+                'event_category': 'engagement',
+                'event_label': game
+            });
+        }
+    },
+    
+    getVotes() {
+        try {
+            const stored = localStorage.getItem(this.STORAGE_KEY);
+            return stored ? JSON.parse(stored) : {};
+        } catch (e) {
+            return {};
+        }
+    },
+    
+    showResults() {
+        const votingOptions = document.getElementById('voting-options');
+        const votingResults = document.getElementById('voting-results');
+        const resultsChart = document.getElementById('results-chart');
+        
+        if (!votingOptions || !votingResults || !resultsChart) return;
+        
+        // Hide voting buttons
+        votingOptions.style.display = 'none';
+        
+        // Get votes
+        const votes = this.getVotes();
+        const totalVotes = Object.values(votes).reduce((sum, count) => sum + count, 0);
+        
+        // If no votes yet, show at least user's vote
+        const userVote = localStorage.getItem(this.USER_VOTE_KEY);
+        if (totalVotes === 0 && userVote) {
+            votes[userVote] = 1;
+        }
+        
+        // Sort by votes (descending)
+        const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+        
+        // Calculate total for percentages
+        const total = Math.max(totalVotes, Object.values(votes).reduce((sum, count) => sum + count, 0));
+        
+        // Build chart
+        resultsChart.innerHTML = '';
+        sorted.forEach(([gameKey, count]) => {
+            const gameName = this.games[gameKey] || gameKey;
+            const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+            
+            const barDiv = document.createElement('div');
+            barDiv.className = 'sv-result-bar';
+            
+            barDiv.innerHTML = `
+                <div class="sv-result-name">${gameName}</div>
+                <div class="sv-result-bar-container">
+                    <div class="sv-result-bar-fill" style="width: ${percentage}%">
+                        <span class="sv-result-percentage">${percentage}%</span>
+                    </div>
+                </div>
+                <div class="sv-result-votes">${count} vote${count !== 1 ? 's' : ''}</div>
+            `;
+            
+            resultsChart.appendChild(barDiv);
+        });
+        
+        // Show results
+        votingResults.style.display = 'block';
+        
+        // Scroll to results
+        setTimeout(() => {
+            votingResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+};
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeLanding);
 } else {
@@ -325,6 +453,7 @@ function initializeLanding() {
     StatsLoader.init();
     BetaSignup.init();
     UIHandlers.init();
+    VotingSystem.init();
     
     if (typeof gtag !== 'undefined') {
         gtag('event', 'page_view', { 'page_title': 'Landing Page' });
@@ -332,5 +461,5 @@ function initializeLanding() {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { StatsLoader, BetaSignup, UIHandlers };
+    module.exports = { StatsLoader, BetaSignup, UIHandlers, VotingSystem };
 }

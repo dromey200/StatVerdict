@@ -1,6 +1,6 @@
 // ====================================
 // HORADRIC AI - CONFIGURATION
-// Version: 9.3.0 (Path 1A: D4 Excellence + Multi-Game Foundation)
+// Version: 10.0.0 (Slot-Based Loadout System)
 // ====================================
 
 const CONFIG = {
@@ -74,7 +74,151 @@ const CONFIG = {
         }
     },
 
-    // D4 CLASS DATABASE (Complete - Season 7 / Vessel of Hatred)
+    // NEW FORMAT: GAME_CLASSES (Required by app.js)
+    // Array of class objects with id, name, builds, and mechanics
+    GAME_CLASSES: {
+        'd4': [
+            {
+                id: 'barbarian',
+                name: 'Barbarian',
+                builds: [
+                    'Whirlwind',
+                    'Hammer of the Ancients',
+                    'Upheaval',
+                    'Thorns',
+                    'Double Swing',
+                    'Bash',
+                    'Dust Devils'
+                ],
+                mechanics: [
+                    'Thorns Build',
+                    'Overpower Stack',
+                    'Berserking Uptime',
+                    'Bleed Damage',
+                    'Fortify Generation'
+                ]
+            },
+            {
+                id: 'druid',
+                name: 'Druid',
+                builds: [
+                    'Werewolf Tornado',
+                    'Pulverize',
+                    'Stormclaw',
+                    'Landslide',
+                    'Lightning Storm',
+                    'Werebear'
+                ],
+                mechanics: [
+                    'Overpower Stack',
+                    'Spirit Generation',
+                    'Fortify Generation',
+                    'Nature Magic Damage',
+                    'Shapeshifting'
+                ]
+            },
+            {
+                id: 'necromancer',
+                name: 'Necromancer',
+                builds: [
+                    'Bone Spear',
+                    'Minion Army',
+                    'Blood Surge',
+                    'Infinimist',
+                    'Bone Spirit',
+                    'Sever'
+                ],
+                mechanics: [
+                    'Minion Only',
+                    'Blood Orb Generation',
+                    'Overpower Stack',
+                    'Essence Generation',
+                    'Corpse Consumption'
+                ]
+            },
+            {
+                id: 'paladin',
+                name: 'Paladin',
+                builds: [
+                    'Juggernaut (Shield)',
+                    'Zealot (Melee DPS)',
+                    'Judicator (Holy Conjuration)',
+                    'Disciple (Angelic Form)'
+                ],
+                mechanics: [
+                    'Block Chance',
+                    'Holy Damage',
+                    'Fortify Generation',
+                    'Auras',
+                    'Divine Wrath',
+                    'Consecrated Ground'
+                ]
+            },
+            {
+                id: 'rogue',
+                name: 'Rogue',
+                builds: [
+                    'Twisting Blades',
+                    'Penetrating Shot',
+                    'Rapid Fire',
+                    'Barrage',
+                    'Heartseeker',
+                    'Victimize'
+                ],
+                mechanics: [
+                    'Critical Strike',
+                    'Vulnerable Damage',
+                    'Lucky Hit',
+                    'Energy Generation',
+                    'Shadow Imbuement'
+                ]
+            },
+            {
+                id: 'sorcerer',
+                name: 'Sorcerer',
+                builds: [
+                    'Ice Shards',
+                    'Firewall',
+                    'Ball Lightning',
+                    'Meteor',
+                    'Frozen Orb',
+                    'Arc Lash',
+                    'Chain Lightning'
+                ],
+                mechanics: [
+                    'Critical Strike',
+                    'Lucky Hit',
+                    'Mana Generation',
+                    'Cooldown Reduction',
+                    'Barrier Generation'
+                ]
+            },
+            {
+                id: 'spiritborn',
+                name: 'Spiritborn',
+                builds: [
+                    'Jaguar Rush',
+                    'Eagle Evade',
+                    'Centipede Poison',
+                    'Gorilla Tank',
+                    'Quill Volley',
+                    'The Seeker'
+                ],
+                mechanics: [
+                    'Vigor Generation',
+                    'Critical Strike',
+                    'Dodge Chance',
+                    'Barrier Generation',
+                    'Resolve Stacks'
+                ]
+            }
+        ],
+        'd3': [], // Coming soon
+        'd2r': [], // Coming soon
+        'di': []  // Coming soon
+    },
+
+    // LEGACY FORMAT: Kept for backward compatibility
     CLASS_DEFINITIONS: {
         'd4': {
             'Barbarian': {
@@ -92,11 +236,6 @@ const CONFIG = {
                 mechanics: ['Minion Health', 'Overpower', 'Essence Regen', 'Corpse Consumption', 'Lucky Hit', 'Blood Orbs'],
                 key_stats: ['Intelligence', 'Minion Damage', 'Critical Strike Damage', 'Lucky Hit Chance']
             },
-            'Paladin': {
-                builds: ['Juggernaut (Shield)', 'Zealot (Melee DPS)', 'Judicator (Holy Conjuration)', 'Disciple (Angelic Form)'],
-                mechanics: ['Block Chance', 'Holy Damage', 'Fortify', 'Auras', 'Divine Wrath', 'Consecrated Ground'],
-                key_stats: ['Strength', 'Block Chance', 'Holy Damage', 'Critical Strike Damage']
-            },
             'Rogue': {
                 builds: ['Twisting Blades', 'Penetrating Shot', 'Rapid Fire', 'Barrage', 'Heartseeker', 'Victimize'],
                 mechanics: ['Lucky Hit', 'Critical Strike', 'Energy Regen', 'Vulnerable', 'Combo Points', 'Shadow Imbuement'],
@@ -113,16 +252,15 @@ const CONFIG = {
                 key_stats: ['Dexterity', 'Critical Strike Damage', 'Maximum Life', 'Dodge Chance']
             }
         }
-        // D3, D2R, D:I sections reserved for future expansion
     }
 };
 
 const PROMPT_TEMPLATES = {
     /**
      * D4-OPTIMIZED SINGLE-CALL ANALYSIS
-     * Enhanced with detailed visual recognition and comparison screenshot support + MEMORY CONTEXT
+     * Enhanced with SLOT-BASED LOADOUT CONTEXT
      */
-    analyzeOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedItem) => {
+    analyzeOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedContext) => {
         // Only D4 is supported right now
         if (selectedGame !== 'd4') {
             return PROMPT_TEMPLATES.unsupportedGame(selectedGame);
@@ -136,10 +274,16 @@ const PROMPT_TEMPLATES = {
              if (needed.length) contextLayer += `\nUser Needs: ${needed.join(', ').toUpperCase()}`;
         }
 
-        // MEMORY CONTEXT INJECTION
-        let memoryContext = '';
-        if (equippedItem) {
-            memoryContext = `\n\n🧠 EQUIPPED ITEM MEMORY:\nThe user currently has this item equipped:\n- Item: ${equippedItem.title}\n- Type: ${equippedItem.type}\n- Rarity: ${equippedItem.rarity}\n- Score: ${equippedItem.score}\n- Key Analysis: ${equippedItem.insight}\n\n💡 IMPORTANT: Compare the NEW item in the screenshot against this EQUIPPED item. In your verdict and insight, explicitly mention if the new item is an UPGRADE, DOWNGRADE, or SIDEGRADE compared to what they have equipped. Consider Item Power, stats, and build synergy.`;
+        // SLOT-BASED LOADOUT CONTEXT (replaces old single-item memory)
+        let loadoutContext = '';
+        if (equippedContext && Array.isArray(equippedContext) && equippedContext.length > 0) {
+            loadoutContext = '\n\n⚔️ EQUIPPED LOADOUT CONTEXT:\nUser has these items equipped:\n';
+            equippedContext.forEach((item, index) => {
+                if (item) {
+                    loadoutContext += `\n${index + 1}. ${item.title} (${item.type || item.rarity})\n   - Score: ${item.score || 'N/A'}\n   - Key Stats: ${item.insight || 'N/A'}`;
+                }
+            });
+            loadoutContext += '\n\n💡 COMPARISON NOTE: Compare this NEW item against the equipped item(s) in the SAME SLOT. Mention if this is an upgrade, downgrade, or sidegrade.';
         }
 
         return `
@@ -178,7 +322,7 @@ const PROMPT_TEMPLATES = {
         STEP 2: ANALYSIS (Only if D4 confirmed)
         ═══════════════════════════════════════════════════════════
         
-        Context: ${contextLayer}${memoryContext}
+        Context: ${contextLayer}${loadoutContext}
         
         SEASON 7 KEY FEATURES:
         • Sanctified Items: Can be forged at the Heavenly Forge
@@ -212,45 +356,51 @@ const PROMPT_TEMPLATES = {
             "game": "d4",
             "confidence": "high" | "medium",
             "title": "Item Name",
-            "type": "Item Type (Boots, Helm, Weapon, etc.)",
+            "type": "Item Type (Helm, Chest Armor, Boots, Two-Handed Sword, Ring, etc.)",
             "rarity": "Legendary | Unique | Mythic",
             "sanctified": true | false,
             "item_power": 800,
             "score": "S | A | B | C | D",
-            "verdict": "KEEP | SALVAGE | UPGRADE",
-            "insight": "1-2 sentence analysis. Mention Sanctified status if present.",
-            "analysis": "### Stats Breakdown\\n- Item Power: XXX/925\\n- Key Stats: List main stats\\n- Synergy: How it fits the build\\n- Trade Value: Untradable (if Sanctified) or market estimate\\n\\n### Verdict\\nWhy keep or salvage.",
+            "verdict": "KEEP | SALVAGE | UPGRADE | EQUIP",
+            "insight": "1-2 sentence analysis. If comparing against equipped item, mention if this is better/worse.",
+            "analysis": "### Stats Breakdown\\n- Item Power: XXX/925\\n- Key Stats: List main stats\\n- Synergy: How it fits the build\\n- Trade Value: Untradable (if Sanctified) or market estimate\\n\\n### Verdict\\nWhy keep or salvage. If comparing, explain the difference.",
             "trade_query": "Clean item name for trade searches"
         }
         
-        CRITICAL: If you're uncertain whether this is D4, set confidence to "medium" or "low" and explain why.
+        CRITICAL: Always include accurate "type" field (Helm, Chest Armor, Gloves, Pants, Boots, Amulet, Ring, Sword, Two-Handed Axe, Shield, etc.) for slot detection.
         `;
     },
 
     /**
-     * D4 COMPARISON MODE (Side-by-side items) + MEMORY CONTEXT
+     * D4 COMPARISON MODE (Side-by-side items) + SLOT-BASED CONTEXT
      */
-    compareOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedItem) => {
+    compareOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedContext) => {
         if (selectedGame !== 'd4') {
             return PROMPT_TEMPLATES.unsupportedGame(selectedGame);
         }
 
-        // MEMORY CONTEXT INJECTION
-        let memoryContext = '';
-        if (equippedItem) {
-            memoryContext = `\n\n🧠 EQUIPPED ITEM MEMORY:\nUser also has this item in memory:\n- ${equippedItem.title} (${equippedItem.rarity}, Score: ${equippedItem.score})\n\nNote: This comparison screenshot shows two items side-by-side. Additionally reference the memory item if relevant.`;
+        // SLOT-BASED LOADOUT CONTEXT
+        let loadoutContext = '';
+        if (equippedContext && Array.isArray(equippedContext) && equippedContext.length > 0) {
+            loadoutContext = '\n\n⚔️ EQUIPPED ITEMS FOR COMPARISON:\n';
+            equippedContext.forEach((item, index) => {
+                if (item) {
+                    loadoutContext += `\n${index + 1}. ${item.title} (${item.type || item.rarity})\n   - Item Power: ${item.item_power || 'Unknown'}\n   - Score: ${item.score || 'N/A'}\n   - Analysis: ${item.insight || 'N/A'}`;
+                }
+            });
+            loadoutContext += '\n\n💡 Compare the NEW item in this screenshot against these equipped items. Focus on the same slot type.';
         }
 
         return `
         ROLE: Expert Diablo IV Item Comparison Analyst
-        TASK: Compare two D4 items side-by-side (typically EQUIPPED vs NEW)
+        TASK: Compare two D4 items OR compare a new item against equipped gear
         
         VALIDATION:
-        • This should show TWO item tooltips
-        • Both should have D4 markers (Item Power, Ancestral, etc.)
-        • One is usually labeled "EQUIPPED"
+        • May show TWO item tooltips side-by-side
+        • Or ONE new item (compare against equipped items provided below)
+        • All should have D4 markers (Item Power, Ancestral, etc.)
         
-        COMPARISON FOR: ${playerClass} - ${buildStyle || 'General Build'}${memoryContext}
+        COMPARISON FOR: ${playerClass} - ${buildStyle || 'General Build'}${loadoutContext}
         
         EVALUATE:
         1. Item Power difference
@@ -258,6 +408,7 @@ const PROMPT_TEMPLATES = {
         3. Greater Affix advantage
         4. Sanctified status (huge advantage)
         5. Build synergy
+        6. Same slot comparison (e.g., new Helm vs equipped Helm)
         
         OUTPUT FORMAT (JSON Only):
         
@@ -272,13 +423,19 @@ const PROMPT_TEMPLATES = {
         {
             "status": "success",
             "game": "d4",
-            "title": "Item Comparison: [LEFT] vs [RIGHT]",
+            "title": "Item Name (NEW ITEM)",
+            "type": "Item Type for slot detection",
+            "rarity": "Legendary | Unique | Mythic",
+            "sanctified": true | false,
+            "item_power": 850,
             "winner": "NEW" | "EQUIPPED" | "SIMILAR",
-            "score_diff": "+15% DPS" | "-5% survivability" | "Marginal",
+            "score_diff": "+15% better" | "-5% worse" | "Marginal difference",
             "verdict": "EQUIP NEW" | "KEEP EQUIPPED" | "SIDEGRADE",
-            "insight": "Why one item wins. Mention Sanctified if relevant.",
-            "analysis": "### Left Item\\n- Stats summary\\n\\n### Right Item\\n- Stats summary\\n\\n### Comparison\\n| Stat | Left | Right | Winner |\\n|------|------|-------|--------|\\n| Power | XXX | YYY | Right |\\n\\n### Recommendation\\nFinal verdict with reasoning."
+            "insight": "Why one item wins. Consider Item Power, stats, and build synergy.",
+            "analysis": "### New Item\\n- Stats summary\\n\\n### Equipped Item\\n- Stats summary\\n\\n### Comparison\\n| Stat | New | Equipped | Winner |\\n|------|-----|----------|--------|\\n| Power | XXX | YYY | New |\\n\\n### Recommendation\\nFinal verdict with detailed reasoning. Explain upgrade percentage if applicable."
         }
+        
+        CRITICAL: Always include accurate "type" field for slot detection.
         `;
     },
 
