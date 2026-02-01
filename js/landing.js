@@ -1,6 +1,6 @@
 // ====================================
 // STATVERDICT LANDING PAGE LOGIC
-// Version: 3.0.0 - Real Voting System with CounterAPI
+// Version: 3.0.1 - Fixed CORS Issues with CounterAPI
 // ====================================
 
 const StatsLoader = {
@@ -84,8 +84,9 @@ const StatsLoader = {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
             
+            // FIXED: Proper CounterAPI URL format
             const res = await fetch(
-                `https://api.counterapi.dev/v1/${this.NAMESPACE}/scans`,
+                `https://api.counterapi.dev/v1/${this.NAMESPACE}/scans/`,
                 { 
                     signal: controller.signal,
                     cache: 'no-store',
@@ -99,7 +100,7 @@ const StatsLoader = {
             
             const data = await res.json();
             
-            if (data?.count) {
+            if (data?.count !== undefined) {
                 el.innerHTML = `<strong>${this.formatNumber(data.count)}</strong> Items Analyzed`;
                 el.classList.add('sv-stat-loaded');
             } else {
@@ -123,9 +124,10 @@ const StatsLoader = {
         try {
             const counted = localStorage.getItem('sv_user_counted');
             
+            // FIXED: Proper CounterAPI URL format with trailing slash
             const url = counted 
-                ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users` 
-                : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up`;
+                ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/` 
+                : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up/`;
             
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
@@ -142,7 +144,7 @@ const StatsLoader = {
             
             const data = await res.json();
             
-            if (data?.count) {
+            if (data?.count !== undefined) {
                 if (!counted) {
                     localStorage.setItem('sv_user_counted', 'true');
                 }
@@ -235,11 +237,9 @@ const BetaSignup = {
             if (msg !== element) msg.style.display = 'none';
         });
         
-        if (element.classList.contains('sv-beta-success')) {
-            setTimeout(() => {
-                element.style.display = 'none';
-            }, 5000);
-        }
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 8000);
     }
 };
 
@@ -250,54 +250,49 @@ const UIHandlers = {
     },
     
     setupMobileMenu() {
-        const menuBtn = document.getElementById('sv-mobile-menu-btn');
-        const mobileNav = document.getElementById('sv-mobile-nav');
-        const mobileLinks = document.querySelectorAll('.sv-mobile-link');
-
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileNav = document.getElementById('mobile-nav');
+        
         if (!menuBtn || !mobileNav) return;
-
+        
         menuBtn.addEventListener('click', () => {
-            const isActive = menuBtn.classList.toggle('active');
-            mobileNav.classList.toggle('active');
-            menuBtn.setAttribute('aria-expanded', isActive);
-        });
-
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
+            const isOpen = menuBtn.classList.contains('active');
+            
+            if (isOpen) {
                 menuBtn.classList.remove('active');
-                mobileNav.classList.remove('active');
-                menuBtn.setAttribute('aria-expanded', 'false');
-            });
+                mobileNav.classList.remove('open');
+            } else {
+                menuBtn.classList.add('active');
+                mobileNav.classList.add('open');
+            }
         });
         
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
+        const navLinks = mobileNav.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
                 menuBtn.classList.remove('active');
-                mobileNav.classList.remove('active');
-                menuBtn.setAttribute('aria-expanded', 'false');
-            }
+                mobileNav.classList.remove('open');
+            });
         });
     },
     
     setupPrivacyModal() {
-        const privacyTrigger = document.getElementById('privacy-trigger');
+        const privacyLink = document.getElementById('privacy-link');
         const privacyModal = document.getElementById('privacy-modal');
-        const privacyClose = document.getElementById('privacy-close-btn');
-
-        if (!privacyTrigger || !privacyModal || !privacyClose) return;
-
-        privacyTrigger.addEventListener('click', () => {
-            privacyModal.classList.add('open');
-            document.body.style.overflow = 'hidden';
+        const closeBtn = document.getElementById('privacy-close');
+        
+        if (!privacyLink || !privacyModal || !closeBtn) return;
+        
+        const openModal = () => privacyModal.classList.add('open');
+        const closeModal = () => privacyModal.classList.remove('open');
+        
+        privacyLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal();
         });
-
-        const closeModal = () => {
-            privacyModal.classList.remove('open');
-            document.body.style.overflow = '';
-        };
-
-        privacyClose.addEventListener('click', closeModal);
-
+        
+        closeBtn.addEventListener('click', closeModal);
+        
         privacyModal.addEventListener('click', (e) => {
             if (e.target === privacyModal) closeModal();
         });
@@ -357,8 +352,9 @@ const VotingSystem = {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
             
+            // FIXED: Proper CounterAPI URL format with trailing slash
             const response = await fetch(
-                `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up`,
+                `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up/`,
                 {
                     method: 'GET',
                     signal: controller.signal,
@@ -416,8 +412,9 @@ const VotingSystem = {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
                 
+                // FIXED: Proper CounterAPI URL format with trailing slash
                 const response = await fetch(
-                    `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${gameKey}`,
+                    `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${gameKey}/`,
                     {
                         signal: controller.signal,
                         cache: 'no-store',
@@ -434,6 +431,7 @@ const VotingSystem = {
                     votes[gameKey] = 0;
                 }
             } catch (error) {
+                console.error(`Error fetching votes for ${gameKey}:`, error);
                 votes[gameKey] = 0;
             }
         });
