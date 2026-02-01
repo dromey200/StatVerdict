@@ -1,6 +1,6 @@
 // ====================================
-// HORADRIC AI - APP ENGINE
-// Version: 10.0.0 (Slot-Based Loadout System)
+// HORADRIC AI - APP ENGINE  
+// Version: 11.0.0 (Dynamic Class-Based Loadout System)
 // ====================================
 
 const HoradricApp = {
@@ -9,21 +9,101 @@ const HoradricApp = {
         history: [],
         currentItem: null,
         mode: 'identify',
-        loadout: {
-            helm: null,
-            chest: null,
-            gloves: null,
-            pants: null,
-            boots: null,
-            amulet: null,
-            ring1: null,
-            ring2: null,
-            mainHand: null,
-            offHand: null
-        }
+        currentClass: 'barbarian',  // NEW: Track current class
+        loadout: {}  // CHANGED: Dynamic loadout object
     },
     
-    // Slot type mappings for item detection
+    // NEW: CLASS-SPECIFIC SLOT CONFIGURATIONS
+    CLASS_SLOTS: {
+        barbarian: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: '2hBludgeoning', icon: '🔨', name: '2H Bludgeoning', category: 'weapon' },
+            { id: '2hSlashing', icon: '⚔️', name: '2H Slashing', category: 'weapon' },
+            { id: 'mainHand', icon: '🗡️', name: 'Main Hand', category: 'weapon' },
+            { id: 'offHand', icon: '🛡️', name: 'Off-Hand', category: 'weapon' }
+        ],
+        druid: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: 'mainHand', icon: '🪄', name: 'Main Hand', category: 'weapon' },
+            { id: 'offHand', icon: '🔮', name: 'Off-Hand', category: 'weapon' }
+        ],
+        necromancer: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: 'mainHand', icon: '💀', name: 'Main Hand', category: 'weapon' },
+            { id: 'offHand', icon: '📖', name: 'Off-Hand', category: 'weapon' }
+        ],
+        paladin: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: 'mainHand', icon: '⚔️', name: 'Main Hand', category: 'weapon' },
+            { id: 'offHand', icon: '🛡️', name: 'Off-Hand', category: 'weapon' }
+        ],
+        rogue: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: 'ranged', icon: '🏹', name: 'Ranged', category: 'weapon' },
+            { id: 'mainHand', icon: '🗡️', name: 'Main Hand', category: 'weapon' },
+            { id: 'offHand', icon: '🗡️', name: 'Off-Hand', category: 'weapon' }
+        ],
+        sorcerer: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: 'mainHand', icon: '🪄', name: 'Main Hand', category: 'weapon' },
+            { id: 'offHand', icon: '🔮', name: 'Off-Hand', category: 'weapon' }
+        ],
+        spiritborn: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: 'twoHanded', icon: '🗡️', name: 'Two-Handed', category: 'weapon' }
+        ]
+    },
+    
+    // UPDATED: Slot type mappings for item detection
     SLOT_KEYWORDS: {
         helm: ['helm', 'helmet', 'crown', 'cowl', 'cap', 'hood', 'circlet', 'mask'],
         chest: ['chest', 'armor', 'tunic', 'mail', 'plate', 'robe', 'vest', 'cuirass', 'body armor'],
@@ -32,7 +112,12 @@ const HoradricApp = {
         boots: ['boots', 'shoes', 'treads', 'sabatons', 'footwear', 'greaves'],
         amulet: ['amulet', 'necklace', 'pendant', 'talisman', 'periapt'],
         ring: ['ring', 'band', 'loop'],
-        mainHand: ['sword', 'axe', 'mace', 'dagger', 'wand', 'staff', 'bow', 'crossbow', 'scythe', 'polearm', 'spear', 'two-hand', '2h', 'two hand'],
+        // Class-specific weapon slots
+        ranged: ['bow', 'crossbow'],
+        '2hBludgeoning': ['mace', 'hammer', 'two-handed mace', '2h mace', 'maul'],
+        '2hSlashing': ['two-handed sword', '2h sword', 'two-handed axe', '2h axe', 'polearm', 'two handed sword', 'two handed axe'],
+        twoHanded: ['glaive', 'quarterstaff', 'staff', 'scythe', 'two-hand', '2h '],
+        mainHand: ['sword', 'axe', 'dagger', 'wand', 'one-handed', '1h '],
         offHand: ['shield', 'focus', 'totem', 'quiver', 'off-hand', 'offhand']
     },
     
@@ -48,7 +133,7 @@ const HoradricApp = {
         
         this.cacheElements();
         this.loadState();
-        this.loadLoadout();
+        this.initializeLoadout();  // CHANGED: Use new function name
         this.attachEventListeners();
         this.updateGameSelector();
         this.updateClassOptions();
@@ -64,7 +149,7 @@ const HoradricApp = {
             this.el.compareBtn.disabled = true;
         }
         
-        console.log('👁️ Horadric Pipeline Active (Slot-Based Loadout System)');
+        console.log('👁️ Horadric Pipeline Active (Dynamic Class-Based Loadout System v11.0)');
     },
     
     cacheElements() {
@@ -112,7 +197,15 @@ const HoradricApp = {
 
     attachEventListeners() {
         this.el.gameVersion.addEventListener('change', () => this.handleGameChange());
-        this.el.playerClass.addEventListener('change', () => this.updateBuildOptions());
+        // UPDATED: Class change listener with dynamic slot rendering
+        this.el.playerClass.addEventListener('change', () => {
+            const selectedClass = this.el.playerClass.value.toLowerCase();
+            this.state.currentClass = selectedClass;
+            this.saveState();
+            this.updateBuildOptions();
+            this.renderLoadoutGrid();  // Re-render slots for new class
+            this.updateBuildSynergy();
+        });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
         this.el.toggleAdvanced.addEventListener('click', () => this.toggleAdvanced());
         this.el.analyzeBtn.addEventListener('click', () => { this.state.mode = 'identify'; this.handleAnalyze(); });
@@ -234,18 +327,61 @@ const HoradricApp = {
     // SLOT-BASED LOADOUT SYSTEM
     // ============================================
 
-    loadLoadout() {
-        try {
-            const slots = ['helm', 'chest', 'gloves', 'pants', 'boots', 'amulet', 'ring1', 'ring2', 'mainHand', 'offHand'];
-            slots.forEach(slot => {
-                const stored = localStorage.getItem(`sv_slot_${slot}`);
-                if (stored) {
-                    this.state.loadout[slot] = JSON.parse(stored);
-                }
-            });
-        } catch (e) {
-            console.error('Error loading loadout:', e);
+    // NEW: Initialize loadout from localStorage
+    initializeLoadout() {
+        const savedLoadout = localStorage.getItem('sv_loadout');
+        if (savedLoadout) {
+            try {
+                this.state.loadout = JSON.parse(savedLoadout);
+            } catch (e) {
+                console.error('Error loading loadout:', e);
+                this.state.loadout = {};
+            }
+        } else {
+            this.state.loadout = {};
         }
+        
+        // Set current class from dropdown or localStorage
+        const savedClass = localStorage.getItem('sv_current_class');
+        if (savedClass) {
+            this.state.currentClass = savedClass;
+        } else if (this.el.playerClass && this.el.playerClass.value) {
+            this.state.currentClass = this.el.playerClass.value.toLowerCase();
+        } else {
+            this.state.currentClass = 'barbarian';
+        }
+    },
+    
+    // UPDATED: Save entire loadout object
+    saveLoadout() {
+        localStorage.setItem('sv_loadout', JSON.stringify(this.state.loadout));
+        localStorage.setItem('sv_current_class', this.state.currentClass);
+    },
+    
+    // UPDATED: Save individual slot
+    saveSlot(slot, itemData) {
+        this.state.loadout[slot] = itemData;
+        this.saveLoadout();
+    },
+    
+    // UPDATED: Clear individual slot
+    clearSlot(slot) {
+        delete this.state.loadout[slot];
+        this.saveLoadout();
+        this.renderLoadoutGrid();
+        this.updateBuildSynergy();
+        this.showToast(`🗑️ ${this.formatSlotName(slot)} cleared.`);
+    },
+    
+    // UPDATED: Clear all slots
+    clearAllSlots() {
+        if (!confirm('Are you sure you want to clear your entire loadout?')) return;
+        
+        this.state.loadout = {};
+        this.saveLoadout();
+        this.renderLoadoutGrid();
+        this.updateBuildSynergy();
+        this.showToast('🗑️ All loadout slots cleared.');
     },
 
     saveSlot(slot, itemData) {
@@ -282,46 +418,62 @@ const HoradricApp = {
         this.showToast('🗑️ All items cleared from loadout.');
     },
 
+    saveState() {
+        localStorage.setItem('horadric_state', JSON.stringify(this.state));
+    },
+
+    // UPDATED: Detect item slot based on current class
     detectItemSlot(result) {
         const searchText = `${result.title} ${result.type} ${result.analysis}`.toLowerCase();
+        const currentSlots = this.CLASS_SLOTS[this.state.currentClass] || this.CLASS_SLOTS.barbarian;
         
-        // Check for two-handed weapons first
-        const twoHandedKeywords = ['two-hand', '2h', 'two hand', 'staff', 'bow', 'crossbow', 'polearm'];
-        const isTwoHanded = twoHandedKeywords.some(keyword => searchText.includes(keyword));
+        // Check for ring first (needs user selection)
+        if (this.SLOT_KEYWORDS.ring.some(keyword => searchText.includes(keyword))) {
+            if (currentSlots.find(s => s.id === 'ring1')) {
+                return null; // Trigger ring selection modal
+            }
+        }
         
-        // Check each slot type
-        for (const [slot, keywords] of Object.entries(this.SLOT_KEYWORDS)) {
-            if (slot === 'mainHand' || slot === 'offHand') continue; // Handle weapons separately
-            
-            for (const keyword of keywords) {
-                if (searchText.includes(keyword)) {
-                    return slot === 'ring' ? null : slot; // Ring needs user selection
+        // Check each slot type for the current class
+        for (const slot of currentSlots) {
+            const keywords = this.SLOT_KEYWORDS[slot.id];
+            if (keywords && keywords.some(keyword => searchText.includes(keyword))) {
+                return slot.id;
+            }
+        }
+        
+        // Fallback: check standard armor slots
+        const standardSlots = ['helm', 'chest', 'gloves', 'pants', 'boots', 'amulet'];
+        for (const slotName of standardSlots) {
+            const keywords = this.SLOT_KEYWORDS[slotName];
+            if (keywords && keywords.some(keyword => searchText.includes(keyword))) {
+                if (currentSlots.find(s => s.id === slotName)) {
+                    return slotName;
                 }
             }
         }
         
-        // Weapon detection
-        const isWeapon = this.SLOT_KEYWORDS.mainHand.some(keyword => searchText.includes(keyword));
-        const isOffHand = this.SLOT_KEYWORDS.offHand.some(keyword => searchText.includes(keyword));
+        // Check for generic mainHand/offHand if class has them
+        const hasMainHand = currentSlots.find(s => s.id === 'mainHand');
+        const hasOffHand = currentSlots.find(s => s.id === 'offHand');
         
-        if (isOffHand) return 'offHand';
-        if (isWeapon) {
-            return isTwoHanded ? 'twoHanded' : 'mainHand';
+        if (this.SLOT_KEYWORDS.offHand.some(keyword => searchText.includes(keyword)) && hasOffHand) {
+            return 'offHand';
         }
         
-        // Check for ring
-        if (this.SLOT_KEYWORDS.ring.some(keyword => searchText.includes(keyword))) {
-            return null; // Trigger ring selection modal
+        if (this.SLOT_KEYWORDS.mainHand.some(keyword => searchText.includes(keyword)) && hasMainHand) {
+            return 'mainHand';
         }
         
         return 'unknown';
     },
 
+    // UPDATED: Equip item with class-specific logic
     equipItem(result) {
         const slot = this.detectItemSlot(result);
         
         if (slot === 'unknown') {
-            this.showToast('⚠️ Could not detect item type. Please try again or contact support.', 'error');
+            this.showToast('⚠️ This item cannot be equipped by your current class.', 'error');
             return;
         }
         
@@ -331,9 +483,19 @@ const HoradricApp = {
             return;
         }
         
-        // Two-handed weapon logic
-        if (slot === 'twoHanded') {
-            this.equipToSlot('mainHand', result, true);
+        // Check if equipping a two-handed weapon for hybrid classes
+        const searchText = `${result.title} ${result.type} ${result.analysis}`.toLowerCase();
+        const isTwoHandedWeapon = this.SLOT_KEYWORDS.twoHanded.some(keyword => searchText.includes(keyword)) ||
+                                  slot === 'twoHanded' || 
+                                  slot === '2hBludgeoning' || 
+                                  slot === '2hSlashing';
+        
+        // For classes with hybrid weapon logic (Paladin, Sorcerer, Druid, Necromancer)
+        const hybridClasses = ['paladin', 'sorcerer', 'druid', 'necromancer'];
+        if (hybridClasses.includes(this.state.currentClass) && 
+            isTwoHandedWeapon && 
+            (slot === 'mainHand' || slot === 'twoHanded')) {
+            this.equipToSlot(slot, result, true);
             if (this.state.loadout.offHand) {
                 this.clearSlot('offHand');
                 this.showToast('⚔️ Two-handed weapon equipped. Off-hand cleared.');
@@ -344,10 +506,27 @@ const HoradricApp = {
         }
         
         // Normal slot equip
-        this.equipToSlot(slot, result);
+        this.equipToSlot(slot, result, isTwoHandedWeapon);
         this.showToast(`⚔️ ${result.title} equipped to ${this.formatSlotName(slot)}!`);
     },
-
+    
+    equipToSlot(slot, result, isTwoHanded = false) {
+        const itemData = {
+            title: result.title,
+            type: result.type,
+            rarity: result.rarity,
+            analysis: result.analysis,
+            insight: result.insight,
+            score: result.score,
+            sanctified: result.sanctified || false,
+            isTwoHanded: isTwoHanded,
+            timestamp: Date.now()
+        };
+        
+        this.saveSlot(slot, itemData);
+        this.renderLoadoutGrid();
+        this.updateBuildSynergy();
+    },
     equipToSlot(slot, result, isTwoHanded = false) {
         const itemData = {
             title: result.title,
@@ -405,6 +584,7 @@ const HoradricApp = {
         });
     },
 
+    // UPDATED: Format slot names including new slots
     formatSlotName(slot) {
         const names = {
             helm: 'Helm',
@@ -416,7 +596,11 @@ const HoradricApp = {
             ring1: 'Ring 1',
             ring2: 'Ring 2',
             mainHand: 'Main Hand',
-            offHand: 'Off-Hand'
+            offHand: 'Off-Hand',
+            ranged: 'Ranged',
+            '2hBludgeoning': '2H Bludgeoning',
+            '2hSlashing': '2H Slashing',
+            twoHanded: 'Two-Handed'
         };
         return names[slot] || slot;
     },
@@ -434,38 +618,46 @@ const HoradricApp = {
         return rarityMap[cleanRarity] || rarityMap.common;
     },
 
+    // UPDATED: Dynamic slot grid rendering based on current class
     renderLoadoutGrid() {
         if (!this.el.loadoutGrid) return;
         
-        const slots = [
-            { id: 'helm', icon: '🎩', name: 'Helm' },
-            { id: 'chest', icon: '🛡️', name: 'Chest' },
-            { id: 'gloves', icon: '🧤', name: 'Gloves' },
-            { id: 'pants', icon: '👖', name: 'Pants' },
-            { id: 'boots', icon: '👢', name: 'Boots' },
-            { id: 'amulet', icon: '📿', name: 'Amulet' },
-            { id: 'ring1', icon: '💍', name: 'Ring 1' },
-            { id: 'ring2', icon: '💍', name: 'Ring 2' },
-            { id: 'mainHand', icon: '⚔️', name: 'Main Hand' },
-            { id: 'offHand', icon: '🛡️', name: 'Off-Hand' }
-        ];
+        const currentSlots = this.CLASS_SLOTS[this.state.currentClass.toLowerCase()] || this.CLASS_SLOTS.barbarian;
         
-        this.el.loadoutGrid.innerHTML = slots.map(slot => {
+        // Set data attribute for CSS targeting
+        this.el.loadoutGrid.setAttribute('data-class', this.state.currentClass);
+        
+        this.el.loadoutGrid.innerHTML = currentSlots.map(slot => {
             const item = this.state.loadout[slot.id];
             const isEmpty = !item;
             const rarityColor = isEmpty ? '#555' : this.getRarityColor(item.rarity);
-            const isDisabled = slot.id === 'offHand' && this.state.loadout.mainHand?.isTwoHanded;
+            
+            // Check if slot should be disabled
+            let isDisabled = false;
+            let disabledReason = '';
+            
+            // Off-hand disabled when 2H weapon equipped (hybrid classes only)
+            const hybridClasses = ['paladin', 'sorcerer', 'druid', 'necromancer'];
+            if (slot.id === 'offHand' && hybridClasses.includes(this.state.currentClass)) {
+                const mainHandItem = this.state.loadout.mainHand;
+                const twoHandedItem = this.state.loadout.twoHanded;
+                if (mainHandItem?.isTwoHanded || twoHandedItem) {
+                    isDisabled = true;
+                    disabledReason = '🔒 Locked';
+                }
+            }
             
             return `
                 <div class="loadout-slot ${isEmpty ? 'empty' : 'filled'} ${isDisabled ? 'disabled' : ''}" 
                      data-slot="${slot.id}"
+                     data-category="${slot.category}"
                      style="border-color: ${rarityColor};">
                     <div class="slot-header">
                         <span class="slot-icon">${slot.icon}</span>
                         <span class="slot-name">${slot.name}</span>
                     </div>
                     ${isEmpty ? 
-                        `<div class="slot-empty-text">${isDisabled ? 'Two-Handed' : 'Empty'}</div>` :
+                        `<div class="slot-empty-text">${isDisabled ? disabledReason : 'Empty'}</div>` :
                         `<div class="slot-item-name" style="color: ${rarityColor};">${item.title}</div>`
                     }
                 </div>
@@ -477,7 +669,7 @@ const HoradricApp = {
             slotEl.addEventListener('click', () => {
                 const slotId = slotEl.dataset.slot;
                 const item = this.state.loadout[slotId];
-                if (item) {
+                if (item && !slotEl.classList.contains('disabled')) {
                     this.showSlotDetails(slotId, item);
                 }
             });
@@ -959,8 +1151,11 @@ Return ONLY the JSON object, no additional text.`;
 
     // UTILITIES
     toggleAdvanced() {
-        this.el.advancedPanel.classList.toggle('hidden');
+        if (this.el.advancedPanel) {
+            this.el.advancedPanel.classList.toggle('hidden');
+        }
     },
+
     handleFileSelect(e) {
         const file = e.target.files[0];
         if(!file || !file.type.startsWith('image/')) return;
