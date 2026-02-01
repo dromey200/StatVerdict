@@ -308,7 +308,9 @@ const UIHandlers = {
 const VotingSystem = {
     NAMESPACE: 'statverdict',
     USER_VOTE_KEY: 'sv_user_vote',
-    TIMEOUT: 3000,
+    CACHE_KEY: 'sv_vote_data_cache',
+    CACHE_DURATION: 1000 * 60 * 10, // 10 Minutes Cache
+    TIMEOUT: 5000,
     
     games: {
         'poe2': 'Path of Exile 2',
@@ -320,6 +322,12 @@ const VotingSystem = {
         'torchlight': 'Torchlight Infinite'
     },
     
+    // Check if we are running locally to avoid API bans/rate limits during testing
+    isLocalEnvironment() {
+        const h = window.location.hostname;
+        return h === '127.0.0.1' || h === 'localhost' || h.startsWith('192.168');
+    },
+
     async init() {
         const voteBtns = document.querySelectorAll('.sv-vote-btn');
         if (voteBtns.length === 0) return;
@@ -331,183 +339,185 @@ const VotingSystem = {
         } else {
             voteBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    btn.classList.add('loading');
                     const game = btn.getAttribute('data-game');
-                    this.vote(game);
+                    this.vote(game, btn);
                 });
             });
         }
     },
     
-    async vote(game) {
-        if (localStorage.getItem(this.USER_VOTE_KEY)) {
-            return;
-        }
+    async vote(game, btnElement) {
+        if (localStorage.getItem(this.USER_VOTE_KEY)) return;
         
         const votingOptions = document.getElementById('voting-options');
-        const votingResults = document.getElementById('voting-results');
-        
         if (votingOptions) votingOptions.style.opacity = '0.5';
         
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
-            
-            // FIXED: Proper CounterAPI URL format with trailing slash
-            const response = await fetch(
-                `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up/`,
-                {
-                    method: 'GET',
-                    signal: controller.signal,
-                    cache: 'no-store',
-                    mode: 'cors'
+            let success = false;
+
+            // --- LOCALHOST SIMULATION ---
+            if (this.isLocalEnvironment()) {
+                console.log('🔧 Localhost detected: Simulating successful vote for ' + game);
+                await new Promise(r => setTimeout(r, 800)); // Fake network delay
+                success = true;
+            } 
+            // --- REAL PRODUCTION VOTE ---
+            else {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
+                
+                const response = await fetch(
+                    `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up/`,
+                    { method: 'GET', signal: controller.signal, mode: 'cors' }
+                );
+                
+                clearTimeout(timeoutId);
+                success = response.ok;
+                
+                if (!success) {
+                    console.warn('API Error Status:', response.status); // Log specific error (e.g. 429 = Rate Limit)
                 }
-            );
+            }
             
-            clearTimeout(timeoutId);
-            
-            if (response.ok) {
+            if (success) {
                 localStorage.setItem(this.USER_VOTE_KEY, game);
+                localStorage.removeItem(this.CACHE_KEY); // Clear cache to see new vote
                 
                 if (typeof gtag !== 'undefined') {
-                    gtag('event', 'vote', { 
-                        'event_category': 'engagement',
-                        'event_label': game
-                    });
+                    gtag('event', 'vote', { 'event_category': 'engagement', 'event_label': game });
                 }
                 
                 await this.loadAndShowResults();
             } else {
-                throw new Error('Vote failed');
+                throw new Error('Vote failed or rejected by server');
             }
         } catch (error) {
-            console.error('Vote error:', error);
+            console.error('Vote detailed error:', error);
             
             if (votingOptions) votingOptions.style.opacity = '1';
+            if (btnElement) btnElement.classList.remove('loading');
             
-            alert('Failed to submit vote. Please try again.');
+            // User-friendly error
+            alert('Could not submit vote. If you have AdBlock on, it may be blocking the voting server.');
         }
     },
     
-    async loadAndShowResults(showOnlyIfVotesExist = false) {
+    async loadAndShowResults() {
+        const votingResults = document.getElementById('voting-results');
+        const votingOptions = document.getElementById('voting-options');
+        const resultsChart = document.getElementById('results-chart');
+        
+        if (!votingResults || !resultsChart) return;
+        
+        if (votingOptions) votingOptions.style.display = 'none';
+        
+        if (resultsChart.innerHTML === '') {
+            resultsChart.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Loading community votes...</div>';
+            votingResults.style.display = 'block';
+        }
+
         try {
-            const votes = await this.fetchAllVotes();
+            const votes = await this.getVotesSafe();
             const totalVotes = Object.values(votes).reduce((sum, count) => sum + count, 0);
-            
-            if (showOnlyIfVotesExist && totalVotes === 0) {
-                return;
-            }
-            
             this.displayResults(votes, totalVotes);
         } catch (error) {
             console.error('Error loading votes:', error);
+            resultsChart.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Unable to load results.</div>';
         }
     },
     
-    async fetchAllVotes() {
+    async getVotesSafe() {
+        // Use Mock Data on Localhost if API fails or just for speed
+        if (this.isLocalEnvironment()) {
+            // Return fake data so you can see the chart design
+            return {
+                'poe2': 150, 'lastepoch': 120, 'd3': 85, 'd2r': 200, 
+                'di': 15, 'grim-dawn': 45, 'torchlight': 10
+            };
+        }
+
+        // 1. Check Cache
+        const cached = localStorage.getItem(this.CACHE_KEY);
+        if (cached) {
+            const { timestamp, data } = JSON.parse(cached);
+            if (Date.now() - timestamp < this.CACHE_DURATION) {
+                return data;
+            }
+        }
+
+        // 2. Fetch Fresh Data (Sequential to prevent 429s)
         const votes = {};
         const gameKeys = Object.keys(this.games);
         
-        const promises = gameKeys.map(async (gameKey) => {
+        for (const gameKey of gameKeys) {
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
-                
-                // FIXED: Proper CounterAPI URL format with trailing slash
-                const response = await fetch(
-                    `https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${gameKey}/`,
-                    {
-                        signal: controller.signal,
-                        cache: 'no-store',
-                        mode: 'cors'
-                    }
-                );
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    const data = await response.json();
+                const res = await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${gameKey}/`, { mode: 'cors' });
+                if (res.ok) {
+                    const data = await res.json();
                     votes[gameKey] = data.count || 0;
                 } else {
                     votes[gameKey] = 0;
                 }
-            } catch (error) {
-                console.error(`Error fetching votes for ${gameKey}:`, error);
+            } catch (e) {
                 votes[gameKey] = 0;
             }
-        });
+            await new Promise(r => setTimeout(r, 50)); // Small throttle
+        }
         
-        await Promise.all(promises);
+        localStorage.setItem(this.CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            data: votes
+        }));
         
         return votes;
     },
     
     displayResults(votes, totalVotes) {
-        const votingOptions = document.getElementById('voting-options');
-        const votingResults = document.getElementById('voting-results');
         const resultsChart = document.getElementById('results-chart');
-        const resultsNote = votingResults?.querySelector('.sv-results-note');
-        
-        if (!votingOptions || !votingResults || !resultsChart) return;
-        
-        votingOptions.style.display = 'none';
-        
-        const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+        const resultsNote = document.querySelector('.sv-results-note');
         
         resultsChart.innerHTML = '';
+        const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
         
         if (totalVotes === 0) {
-            resultsChart.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #888;">
-                    <div style="font-size: 3rem; margin-bottom: 15px;">🗳️</div>
-                    <p style="font-size: 1.1rem; margin-bottom: 10px;">No votes yet</p>
-                    <p style="font-size: 0.9rem; color: #666;">Be the first to vote for the next game!</p>
-                </div>
-            `;
-            
-            if (resultsNote) resultsNote.style.display = 'none';
-        } else {
-            sorted.forEach(([gameKey, count]) => {
-                const gameName = this.games[gameKey] || gameKey;
-                const percentage = Math.round((count / totalVotes) * 100);
-                
-                const barDiv = document.createElement('div');
-                barDiv.className = 'sv-result-bar';
-                
-                const userVote = localStorage.getItem(this.USER_VOTE_KEY);
-                const isUserVote = userVote === gameKey;
-                const highlightClass = isUserVote ? ' user-voted' : '';
-                
-                barDiv.innerHTML = `
-                    <div class="sv-result-name${highlightClass}">
-                        ${isUserVote ? '👉 ' : ''}${gameName}${isUserVote ? ' (Your Vote)' : ''}
-                    </div>
-                    <div class="sv-result-bar-container">
-                        <div class="sv-result-bar-fill${highlightClass}" style="width: ${percentage}%">
-                            ${percentage > 8 ? `<span class="sv-result-percentage">${percentage}%</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="sv-result-votes">${count} vote${count !== 1 ? 's' : ''}</div>
-                `;
-                
-                resultsChart.appendChild(barDiv);
-            });
-            
-            if (resultsNote) {
-                const userVote = localStorage.getItem(this.USER_VOTE_KEY);
-                if (userVote) {
-                    resultsNote.textContent = 'Thank you for voting! 🎉';
-                    resultsNote.style.display = 'block';
-                } else {
-                    resultsNote.style.display = 'none';
-                }
-            }
+            resultsChart.innerHTML = `<div style="text-align: center; padding: 20px;">No votes yet. Be the first!</div>`;
+            return;
         }
         
-        votingResults.style.display = 'block';
-        
-        setTimeout(() => {
-            votingResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 100);
+        sorted.forEach(([gameKey, count]) => {
+            const gameName = this.games[gameKey] || gameKey;
+            const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+            
+            const barDiv = document.createElement('div');
+            barDiv.className = 'sv-result-bar';
+            
+            const userVote = localStorage.getItem(this.USER_VOTE_KEY);
+            const isUserVote = userVote === gameKey;
+            const highlightClass = isUserVote ? ' user-voted' : '';
+            
+            barDiv.innerHTML = `
+                <div class="sv-result-name${highlightClass}">
+                    ${isUserVote ? '👉 ' : ''}${gameName}
+                </div>
+                <div class="sv-result-bar-container">
+                    <div class="sv-result-bar-fill${highlightClass}" style="width: ${percentage}%"></div>
+                </div>
+                <div class="sv-result-votes">
+                    <strong>${percentage}%</strong> <span style="opacity:0.7">(${count})</span>
+                </div>
+            `;
+            resultsChart.appendChild(barDiv);
+        });
+
+        if (resultsNote) {
+            if (localStorage.getItem(this.USER_VOTE_KEY)) {
+                resultsNote.style.display = 'block';
+                resultsNote.textContent = 'Thank you for voting! 🎉';
+            } else {
+                resultsNote.style.display = 'none';
+            }
+        }
     }
 };
 
