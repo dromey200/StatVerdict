@@ -478,6 +478,219 @@
     min-height: 36px;
 }
 
+/* ====================================
+   SLOT-BASED LOADOUT SYSTEM STYLES
+   APPEND THESE TO THE END OF style.css
+   ==================================== */
+
+/* Loadout Header */
+.loadout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.btn-text-small {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    transition: color var(--transition-fast);
+}
+
+.btn-text-small:hover {
+    color: #ff6b6b;
+}
+
+/* Loadout Grid Layout */
+.loadout-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .loadout-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm);
+    }
+}
+
+/* Individual Slot Boxes */
+.loadout-slot {
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid #555;
+    border-radius: var(--border-radius-md);
+    padding: 10px;
+    min-height: 85px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.loadout-slot.empty {
+    border-style: dashed;
+    cursor: default;
+}
+
+.loadout-slot.filled:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.loadout-slot.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-style: dotted;
+}
+
+.loadout-slot.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Slot Header */
+.slot-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
+}
+
+.slot-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.slot-name {
+    font-size: 0.75rem;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* Slot Content */
+.slot-empty-text {
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-top: var(--space-sm);
+}
+
+.slot-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Build Synergy Indicator */
+.build-synergy {
+    background: rgba(156, 39, 176, 0.1);
+    border: 1px solid rgba(156, 39, 176, 0.3);
+    border-radius: var(--border-radius-md);
+    padding: var(--space-md);
+    margin-top: var(--space-lg);
+}
+
+.build-synergy.synergy-high {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.4);
+}
+
+.build-synergy.synergy-medium {
+    background: rgba(255, 152, 0, 0.1);
+    border-color: rgba(255, 152, 0, 0.4);
+}
+
+.build-synergy.synergy-low {
+    background: rgba(244, 67, 54, 0.1);
+    border-color: rgba(244, 67, 54, 0.4);
+}
+
+.synergy-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--space-sm);
+}
+
+.synergy-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b 0%, #ffa500 50%, #4caf50 100%);
+    transition: width 0.5s ease;
+    border-radius: 4px;
+}
+
+.build-synergy.synergy-high .synergy-fill {
+    background: var(--color-success);
+}
+
+.build-synergy.synergy-medium .synergy-fill {
+    background: var(--color-warning);
+}
+
+.build-synergy.synergy-low .synergy-fill {
+    background: var(--color-error);
+}
+
+.synergy-text {
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    line-height: 1.4;
+}
+
+/* Modal Enhancements for Slot Details */
+.modal-overlay .result-header {
+    border-bottom: 3px solid;
+    padding-bottom: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.modal-overlay .insight-box {
+    background: rgba(211, 47, 47, 0.1);
+    border-left: 4px solid var(--accent-color);
+    padding: var(--space-md);
+    border-radius: var(--border-radius-sm);
+}
+
+.modal-overlay .analysis-text {
+    color: #ccc;
+    line-height: 1.6;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+    .loadout-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .slot-icon {
+        font-size: 1rem;
+    }
+    
+    .slot-name {
+        font-size: 0.7rem;
+    }
+    
+    .slot-item-name {
+        font-size: 0.85rem;
+    }
+}
+
+/* Tour Guide Buttons */
 .tour-next { background: #d32f2f; color: white; border: none; }
 .tour-skip { background: transparent; color: #888; border: 1px solid #444; }
 .tour-skip:hover { color: #fff; border-color: #777; }

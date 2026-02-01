@@ -1104,3 +1104,78 @@ option:hover {
         transform: translateY(0);
     }
 }
+
+/* ====================================
+   SPLIT CARD LAYOUT (RECENT + LOADOUT)
+   ==================================== */
+
+/* Split card container */
+.recent-loadout-split {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+.split-section {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Recent scans section (top) */
+.recent-section {
+    flex: 1;
+    border-bottom: 2px solid #333;
+    min-height: 0;
+    max-height: 50%;
+}
+
+/* Loadout section (bottom) */
+.loadout-section {
+    flex: 1;
+    min-height: 0;
+}
+
+/* Compact card body for split sections */
+.card-body-compact {
+    padding: 16px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Recent list in split view */
+.recent-section .recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Loadout grid in split view */
+.loadout-section .loadout-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .recent-section {
+        max-height: none;
+        flex: 0 0 auto;
+    }
+    
+    .loadout-section {
+        flex: 1;
+    }
+    
+    .loadout-section .loadout-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .loadout-section .loadout-grid {
+        grid-template-columns: 1fr;
+    }
+}
