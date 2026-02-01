@@ -689,6 +689,59 @@
         font-size: 0.85rem;
     }
 }
+/* ====================================
+   DYNAMIC CLASS-BASED LOADOUT ADDITIONS
+   Append these styles to the END of your style.css file
+   ==================================== */
+
+/* Locked/Disabled Slot Styling */
+.loadout-slot.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-style: dotted;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.loadout-slot.disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.loadout-slot.disabled .slot-empty-text {
+    color: #666;
+    font-size: 0.75rem;
+}
+
+/* Permanently Hidden Slot (for Spiritborn off-hand) */
+.loadout-slot.permanently-hidden {
+    display: none;
+}
+
+/* Grid adaptations for different class slot counts */
+@media (min-width: 769px) {
+    /* Barbarian: 12 slots - optimize for 3x4 or 4x3 grid */
+    .loadout-grid[data-class="barbarian"] {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Rogue: 11 slots - optimize for mixed layout */
+    .loadout-grid[data-class="rogue"] {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Spiritborn: 9 slots - optimize for 3x3 grid */
+    .loadout-grid[data-class="spiritborn"] {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Mobile: Always 2 columns regardless of class */
+@media (max-width: 768px) {
+    .loadout-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
 
 /* Tour Guide Buttons */
 .tour-next { background: #d32f2f; color: white; border: none; }
