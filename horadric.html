@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-E1JZ16DMSF', { 
-            'send_page_view': true,
-            'cookie_flags': 'SameSite=None;Secure'
-        });
-        </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Horadric AI - AI-powered Diablo loot analyzer. Instant analysis for Diablo 4, D2R, D3, and Diablo Immortal.">
@@ -86,6 +74,17 @@
             .dashboard-title { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
             body.dashboard-layout { padding-top: 10px; }
         }
+
+        /* Comparison dual-card styles */
+        .compare-item-card:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 600px) {
+            #result-area > div > div[style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
     </style>
 </head>
 <body class="dashboard-layout">
@@ -133,7 +132,20 @@
                 <div class="card-header">
                     <h2 class="card-title"><span class="card-icon">📸</span> New Scan</h2>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="position: relative;">
+                    <!-- Unsupported game overlay (shown when non-D4 game selected) -->
+                    <div id="unsupported-overlay" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--bg-card, #1a1a2e); border-radius: 8px; padding: 20px; display: none;">
+                        <div style="text-align: center; padding: 30px; color: #ffa500;">
+                            <div style="font-size: 3rem; margin-bottom: 15px;">🚧</div>
+                            <h3 style="margin-bottom: 15px; color: #ffa500;">Coming Soon</h3>
+                            <p id="unsupported-message" style="font-size: 1.1rem; color: #fff; line-height: 1.6;"></p>
+                            <div style="margin-top: 20px; padding: 15px; background: rgba(255,165,0,0.1); border-radius: 8px;">
+                                <strong>Currently Supported:</strong><br>
+                                ✅ Diablo IV (Full Analysis)
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="upload-zone" id="upload-zone">
                         <input type="file" id="image-upload" accept="image/png,image/jpeg,image/jpg,image/webp" class="upload-input" aria-label="Upload item screenshot">
                         <label for="image-upload" class="upload-label">
@@ -230,12 +242,8 @@
                             </div>
 
                         <div id="loadout-grid" class="loadout-grid">
-                            </div>
-                    </div>
-                    <div class="card-body card-body-compact">
-                        <div id="loadout-grid" class="loadout-grid">
                             <!-- Loadout slots will be rendered here by JavaScript -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -296,7 +304,7 @@
                 </div>
                 <div class="settings-section">
                     <h3 class="section-title">About</h3>
-                    <p class="about-text">Horadric AI v2.6.3 (CSP-Compliant)</p>
+                    <p class="about-text">Horadric AI v3.0.0 (Season 11 Update)</p>
                     <p class="about-text">Made with ❤️ for Sanctuary</p>
                     <div class="settings-links">
                         <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" class="settings-link">🐛 Report Issue</a>
@@ -321,7 +329,10 @@
         <p style="margin: 0;">StatVerdict and Horadric AI are not affiliated with or endorsed by Blizzard Entertainment, Inc. Diablo is a trademark or registered trademark of Blizzard Entertainment, Inc.</p>
     </footer>
 
-    <!-- Load config.js FIRST (must be available before app.js) -->
+    <!-- Load D4 item/class data FIRST -->
+    <script src="js/d4-item-data.js"></script>
+    
+    <!-- Load config.js (must be available before app.js) -->
     <script src="js/config.js"></script>
     
     <!-- Load other dependencies -->
