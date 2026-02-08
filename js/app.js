@@ -1091,7 +1091,7 @@ Return ONLY the JSON object, no additional text.`;
                     generationConfig: {
                         response_mime_type: "application/json",
                         temperature: 0.0,
-                        max_output_tokens: 4096
+                        max_output_tokens: 8192
                     }
                 })
             });
@@ -1127,8 +1127,50 @@ Return ONLY the JSON object, no additional text.`;
             console.log('Parsed JSON:', parsed);
             return parsed;
         } catch (e) {
-            console.error('JSON parse error:', e, 'Input:', str);
-            return null; 
+            console.warn('JSON parse failed, attempting truncation repair...', e.message);
+            // Attempt to repair truncated JSON from Gemini
+            try {
+                let clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
+                const start = clean.indexOf('{');
+                if (start === -1) { console.error('No JSON object found'); return null; }
+                clean = clean.substring(start);
+                
+                // Close any open strings
+                const quoteCount = (clean.match(/(?<!\\)"/g) || []).length;
+                if (quoteCount % 2 !== 0) clean += '"';
+                
+                // Close open braces/brackets
+                let depth = 0, arrDepth = 0;
+                for (let i = 0; i < clean.length; i++) {
+                    const ch = clean[i];
+                    if (ch === '"') { 
+                        // Skip string contents
+                        i++;
+                        while (i < clean.length && clean[i] !== '"') {
+                            if (clean[i] === '\\') i++; // skip escaped chars
+                            i++;
+                        }
+                        continue;
+                    }
+                    if (ch === '{') depth++;
+                    if (ch === '}') depth--;
+                    if (ch === '[') arrDepth++;
+                    if (ch === ']') arrDepth--;
+                }
+                
+                // Remove trailing comma before closing
+                clean = clean.replace(/,\s*$/, '');
+                
+                while (arrDepth > 0) { clean += ']'; arrDepth--; }
+                while (depth > 0) { clean += '}'; depth--; }
+                
+                const repaired = JSON.parse(clean);
+                console.log('Repaired truncated JSON:', repaired);
+                return repaired;
+            } catch (e2) {
+                console.error('JSON repair also failed:', e2.message, 'Input:', str.substring(0, 500) + '...');
+                return null;
+            }
         }
     },
 
@@ -1206,7 +1248,7 @@ Return ONLY the JSON object, no additional text.`;
         // ============================================
         // COMPARISON MODE: Dual-item equip selection
         // ============================================
-        if (result.mode === 'comparison' && result.item1 && result.item2) {
+        if (result.mode === 'comparison' && result.item1 && result.item2 && result.item1.title && result.item2.title) {
             this.renderComparisonResult(result, analysisHtml);
             return;
         }

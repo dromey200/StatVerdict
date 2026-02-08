@@ -514,10 +514,10 @@ const PROMPT_TEMPLATES = {
             "score_diff": "+15% better" | "-5% worse" | "Marginal difference",
             "verdict": "EQUIP ITEM1" | "EQUIP ITEM2" | "SIDEGRADE",
             "insight": "Why one item wins. Consider Item Power, stat rolls, Greater Affixes, sanctified status, and build synergy.",
-            "analysis": "### Item 1: [Name]\\n- Stats summary with values\\n- Greater Affixes noted\\n- Sanctified: Yes/No\\n- Score: X\\n\\n### Item 2: [Name]\\n- Stats summary with values\\n- Greater Affixes noted\\n- Sanctified: Yes/No\\n- Score: X\\n\\n### Comparison\\n| Stat | Item 1 | Item 2 | Winner |\\n|------|--------|--------|--------|\\n| Power | XXX | YYY | Item 2 |\\n| Sanctified | Yes/No | Yes/No | — |\\n\\n### Recommendation\\nFinal verdict with detailed reasoning."
+            "analysis": "### Item 1: [Name] (Score: X)\\nIP: XXX | GA: X | Sanctified: Y/N\\nKey stats: list top 3-4 stats briefly\\n\\n### Item 2: [Name] (Score: X)\\nIP: XXX | GA: X | Sanctified: Y/N\\nKey stats: list top 3-4 stats briefly\\n\\n### Winner: [Item 1/2/Tie]\\n2-3 sentence verdict."
         }
         
-        CRITICAL: Always include accurate "type" field for slot detection.
+        CRITICAL: Always include accurate "type" field for slot detection. Keep the "analysis" field CONCISE — do NOT list every stat on the item. Summarize the 3-4 most impactful differences. Detailed per-item info belongs in each item's "insight" field. The total JSON response must complete within token limits.
         `;
     },
 
