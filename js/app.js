@@ -550,7 +550,7 @@ const HoradricApp = {
         return 'unknown';
     },
 
-    // UPDATED: Equip item with class-specific logic
+    // UPDATED: Equip item with class-specific logic + context-aware UI
     equipItem(result) {
         const slot = this.detectItemSlot(result);
         
@@ -572,24 +572,128 @@ const HoradricApp = {
                                   slot === '2hBludgeoning' || 
                                   slot === '2hSlashing';
         
-        // For classes with hybrid weapon logic (Paladin, Sorcerer, Druid, Necromancer)
         const hybridClasses = ['paladin', 'sorcerer', 'druid', 'necromancer'];
-        if (hybridClasses.includes(this.state.currentClass) && 
-            isTwoHandedWeapon && 
-            (slot === 'mainHand' || slot === 'twoHanded')) {
-            this.equipToSlot(slot, result, true);
-            if (this.state.loadout.offHand) {
-                this.clearSlot('offHand');
-                this.showToast('⚔️ Two-handed weapon equipped. Off-hand cleared.');
+        const existingItem = this.state.loadout[slot];
+        
+        // If slot is empty, equip directly with appropriate toast
+        if (!existingItem) {
+            if (hybridClasses.includes(this.state.currentClass) && isTwoHandedWeapon && 
+                (slot === 'mainHand' || slot === 'twoHanded')) {
+                this.equipToSlot(slot, result, true);
+                if (this.state.loadout.offHand) {
+                    this.clearSlot('offHand');
+                    this.showToast(`⚔️ ${result.title} equipped to ${this.formatSlotName(slot)}. Off-hand cleared (2H weapon).`);
+                } else {
+                    this.showToast(`⚔️ ${result.title} equipped to ${this.formatSlotName(slot)}!`);
+                }
             } else {
-                this.showToast('⚔️ Two-handed weapon equipped.');
+                this.equipToSlot(slot, result, isTwoHandedWeapon);
+                this.showToast(`⚔️ ${result.title} equipped to ${this.formatSlotName(slot)}!`);
             }
             return;
         }
         
-        // Normal slot equip
-        this.equipToSlot(slot, result, isTwoHandedWeapon);
-        this.showToast(`⚔️ ${result.title} equipped to ${this.formatSlotName(slot)}!`);
+        // Slot occupied — show replacement confirmation modal
+        this.showReplaceConfirmModal(slot, result, existingItem, isTwoHandedWeapon);
+    },
+
+    // Replacement confirmation modal with synergy impact warning
+    showReplaceConfirmModal(slot, newItem, existingItem, isTwoHanded) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.display = 'flex';
+        
+        const existingColor = this.getRarityColor(existingItem.rarity);
+        const newColor = this.getRarityColor(newItem.rarity);
+        const slotName = this.formatSlotName(slot);
+        
+        // Check if existing item is high-value (S or A score)
+        const existingScore = String(existingItem.score || '').toUpperCase();
+        const newScore = String(newItem.score || '').toUpperCase();
+        const scoreOrder = ['S', 'A', 'B', 'C', 'D'];
+        const existingRank = scoreOrder.indexOf(existingScore);
+        const newRank = scoreOrder.indexOf(newScore);
+        const isDowngrade = existingRank !== -1 && newRank !== -1 && newRank > existingRank;
+        const isSanctifiedLoss = existingItem.sanctified && !newItem.sanctified;
+        
+        let warningHtml = '';
+        if (isDowngrade || isSanctifiedLoss) {
+            const warnings = [];
+            if (isDowngrade) warnings.push(`Replacing a <strong style="color: #4caf50;">${existingScore}-tier</strong> item with a <strong style="color: #f44336;">${newScore}-tier</strong> item`);
+            if (isSanctifiedLoss) warnings.push(`Removing a <strong style="color: gold;">🦋 Sanctified</strong> item (permanent optimization)`);
+            warningHtml = `
+                <div style="background: rgba(244,67,54,0.15); border: 1px solid rgba(244,67,54,0.4); border-radius: 8px; padding: 12px; margin: 12px 0;">
+                    <div style="color: #f44336; font-weight: bold; margin-bottom: 6px;">⚠️ Potential Downgrade</div>
+                    <div style="color: #ffcdd2; font-size: 0.85rem; line-height: 1.5;">${warnings.join('<br>')}</div>
+                    <div style="color: #999; font-size: 0.8rem; margin-top: 6px;">This may negatively impact your build synergy score.</div>
+                </div>
+            `;
+        }
+        
+        const existingSanctBadge = existingItem.sanctified ? ' <span style="color: gold; font-size: 0.75rem;">🦋</span>' : '';
+        const newSanctBadge = newItem.sanctified ? ' <span style="color: gold; font-size: 0.75rem;">🦋</span>' : '';
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 450px;">
+                <h3 style="margin-top: 0; color: var(--accent-color);">⚔️ Replace ${slotName} Item?</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; margin: 15px 0;">
+                    <!-- Current item -->
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(244,67,54,0.1); border: 1px solid rgba(244,67,54,0.3); border-radius: 8px;">
+                        <div style="color: #f44336; font-size: 1.2rem; flex-shrink: 0;">❌</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.75rem; color: #f44336; text-transform: uppercase; font-weight: bold;">Removing</div>
+                            <div style="color: ${existingColor}; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${existingItem.title}${existingSanctBadge}</div>
+                            <div style="color: #999; font-size: 0.8rem;">${existingItem.type || existingItem.rarity || ''} ${existingScore ? '• Score: ' + existingScore : ''}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; color: #666; font-size: 1.2rem;">↓</div>
+                    
+                    <!-- New item -->
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius: 8px;">
+                        <div style="color: #4caf50; font-size: 1.2rem; flex-shrink: 0;">✅</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.75rem; color: #4caf50; text-transform: uppercase; font-weight: bold;">Equipping</div>
+                            <div style="color: ${newColor}; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${newItem.title}${newSanctBadge}</div>
+                            <div style="color: #999; font-size: 0.8rem;">${newItem.type || newItem.rarity || ''} ${newScore ? '• Score: ' + newScore : ''}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${warningHtml}
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button id="replace-confirm-btn" class="btn-primary" style="flex: 1;">⚔️ Replace</button>
+                    <button id="replace-cancel-btn" class="btn-secondary" style="flex: 1;">Cancel</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const closeModal = () => modal.remove();
+        
+        document.getElementById('replace-confirm-btn').addEventListener('click', () => {
+            const hybridClasses = ['paladin', 'sorcerer', 'druid', 'necromancer'];
+            if (hybridClasses.includes(this.state.currentClass) && isTwoHanded && 
+                (slot === 'mainHand' || slot === 'twoHanded')) {
+                this.equipToSlot(slot, newItem, true);
+                if (this.state.loadout.offHand) {
+                    this.clearSlot('offHand');
+                    this.showToast(`⚔️ ${newItem.title} replaced ${existingItem.title} in ${this.formatSlotName(slot)}. Off-hand cleared.`);
+                } else {
+                    this.showToast(`⚔️ ${newItem.title} replaced ${existingItem.title} in ${this.formatSlotName(slot)}!`);
+                }
+            } else {
+                this.equipToSlot(slot, newItem, isTwoHanded);
+                this.showToast(`⚔️ ${newItem.title} replaced ${existingItem.title} in ${this.formatSlotName(slot)}!`);
+            }
+            closeModal();
+        });
+        
+        document.getElementById('replace-cancel-btn').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     },
     
     equipToSlot(slot, result, isTwoHanded = false) {
@@ -614,13 +718,56 @@ const HoradricApp = {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.style.display = 'flex';
+        
+        const ring1 = this.state.loadout.ring1;
+        const ring2 = this.state.loadout.ring2;
+        const ring1Color = ring1 ? this.getRarityColor(ring1.rarity) : '#555';
+        const ring2Color = ring2 ? this.getRarityColor(ring2.rarity) : '#555';
+        const newColor = this.getRarityColor(result.rarity);
+        
+        const ring1Label = ring1 
+            ? `<span style="color: ${ring1Color}; font-weight: bold;">${ring1.title}</span><br><span style="color: #999; font-size: 0.8rem;">${ring1.score ? 'Score: ' + ring1.score : ring1.rarity || ''}</span>`
+            : '<span style="color: #555;">Empty</span>';
+        const ring2Label = ring2 
+            ? `<span style="color: ${ring2Color}; font-weight: bold;">${ring2.title}</span><br><span style="color: #999; font-size: 0.8rem;">${ring2.score ? 'Score: ' + ring2.score : ring2.rarity || ''}</span>`
+            : '<span style="color: #555;">Empty</span>';
+        
+        const ring1Action = ring1 ? `Replace` : `Equip to`;
+        const ring2Action = ring2 ? `Replace` : `Equip to`;
+        
+        // Warn if replacing a higher-scored ring
+        const scoreOrder = ['S', 'A', 'B', 'C', 'D'];
+        const newRank = scoreOrder.indexOf(String(result.score || '').toUpperCase());
+        const ring1Rank = ring1 ? scoreOrder.indexOf(String(ring1.score || '').toUpperCase()) : -1;
+        const ring2Rank = ring2 ? scoreOrder.indexOf(String(ring2.score || '').toUpperCase()) : -1;
+        const ring1Downgrade = ring1 && ring1Rank !== -1 && newRank !== -1 && newRank > ring1Rank;
+        const ring2Downgrade = ring2 && ring2Rank !== -1 && newRank !== -1 && newRank > ring2Rank;
+        
+        const ring1Warn = ring1Downgrade ? '<div style="color: #f44336; font-size: 0.75rem; margin-top: 4px;">⚠️ Downgrade</div>' : '';
+        const ring2Warn = ring2Downgrade ? '<div style="color: #f44336; font-size: 0.75rem; margin-top: 4px;">⚠️ Downgrade</div>' : '';
+        
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-content" style="max-width: 420px;">
                 <h3 style="margin-top: 0; color: var(--accent-color);">💍 Equip Ring</h3>
-                <p style="margin-bottom: 20px;">Which ring slot would you like to equip this to?</p>
+                <p style="margin-bottom: 5px;">Equipping: <strong style="color: ${newColor};">${result.title}</strong> ${result.score ? '<span style="color: #999;">(Score: ' + result.score + ')</span>' : ''}</p>
+                <p style="margin-bottom: 15px; color: #999; font-size: 0.85rem;">Select a ring slot:</p>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button id="ring-slot-1" class="btn-primary">Ring Slot 1</button>
-                    <button id="ring-slot-2" class="btn-primary">Ring Slot 2</button>
+                    <button id="ring-slot-1" class="btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.75rem; opacity: 0.7; text-transform: uppercase;">${ring1Action} Ring Slot 1</div>
+                            <div style="margin-top: 4px;">${ring1Label}</div>
+                            ${ring1Warn}
+                        </div>
+                        <span style="font-size: 1.2rem;">${ring1 ? '🔄' : '➕'}</span>
+                    </button>
+                    <button id="ring-slot-2" class="btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.75rem; opacity: 0.7; text-transform: uppercase;">${ring2Action} Ring Slot 2</div>
+                            <div style="margin-top: 4px;">${ring2Label}</div>
+                            ${ring2Warn}
+                        </div>
+                        <span style="font-size: 1.2rem;">${ring2 ? '🔄' : '➕'}</span>
+                    </button>
                     <button id="ring-cancel" class="btn-secondary">Cancel</button>
                 </div>
             </div>
@@ -630,13 +777,19 @@ const HoradricApp = {
         
         document.getElementById('ring-slot-1').addEventListener('click', () => {
             this.equipToSlot('ring1', result);
-            this.showToast(`💍 ${result.title} equipped to Ring Slot 1!`);
+            const msg = ring1 
+                ? `💍 ${result.title} replaced ${ring1.title} in Ring Slot 1!` 
+                : `💍 ${result.title} equipped to Ring Slot 1!`;
+            this.showToast(msg);
             modal.remove();
         });
         
         document.getElementById('ring-slot-2').addEventListener('click', () => {
             this.equipToSlot('ring2', result);
-            this.showToast(`💍 ${result.title} equipped to Ring Slot 2!`);
+            const msg = ring2 
+                ? `💍 ${result.title} replaced ${ring2.title} in Ring Slot 2!` 
+                : `💍 ${result.title} equipped to Ring Slot 2!`;
+            this.showToast(msg);
             modal.remove();
         });
         
@@ -1271,6 +1424,41 @@ Return ONLY the JSON object, no additional text.`;
             ? `<span style="display: inline-block; padding: 4px 8px; background: rgba(255,215,0,0.2); color: gold; border-radius: 4px; font-size: 0.85rem; margin-left: 10px;">🦋 Sanctified</span>`
             : '';
 
+        // Determine equip button context
+        const detectedSlot = this.detectItemSlot(result);
+        let equipBtnText = '⚔️ Equip This Item';
+        let equipSlotInfo = '';
+        
+        if (detectedSlot && detectedSlot !== 'unknown' && detectedSlot !== null) {
+            const slotName = this.formatSlotName(detectedSlot);
+            const existingItem = this.state.loadout[detectedSlot];
+            if (existingItem) {
+                equipBtnText = `🔄 Replace in ${slotName}`;
+                const existingColor = this.getRarityColor(existingItem.rarity);
+                const existSanct = existingItem.sanctified ? ' 🦋' : '';
+                equipSlotInfo = `
+                    <div style="font-size: 0.82rem; color: #999; margin-bottom: 8px; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${existingColor};">
+                        Currently equipped: <strong style="color: ${existingColor};">${existingItem.title}${existSanct}</strong>
+                        ${existingItem.score ? '<span style="opacity: 0.7;"> (Score: ' + existingItem.score + ')</span>' : ''}
+                    </div>
+                `;
+            } else {
+                equipBtnText = `➕ Equip to ${slotName}`;
+                equipSlotInfo = `<div style="font-size: 0.82rem; color: #666; margin-bottom: 8px;">${slotName} slot is currently empty</div>`;
+            }
+        } else if (detectedSlot === null) {
+            // Ring — needs modal
+            const ring1 = this.state.loadout.ring1;
+            const ring2 = this.state.loadout.ring2;
+            if (!ring1 || !ring2) {
+                equipBtnText = '💍 Equip Ring';
+                equipSlotInfo = `<div style="font-size: 0.82rem; color: #666; margin-bottom: 8px;">Ring 1: ${ring1 ? ring1.title : 'Empty'} · Ring 2: ${ring2 ? ring2.title : 'Empty'}</div>`;
+            } else {
+                equipBtnText = '💍 Replace Ring';
+                equipSlotInfo = `<div style="font-size: 0.82rem; color: #999; margin-bottom: 8px;">Ring 1: ${ring1.title} · Ring 2: ${ring2.title}</div>`;
+            }
+        }
+
         this.el.resultArea.innerHTML = `
             <div class="result-header rarity-${rarity}">
                 <h2 class="item-title">${result.title || 'Unknown Item'}${sanctifiedBadge}${confidenceBadge}</h2>
@@ -1285,7 +1473,8 @@ Return ONLY the JSON object, no additional text.`;
             </div>
             <div class="analysis-text markdown-body">${analysisHtml}</div>
             <div class="result-actions">
-                <button id="equip-item-btn" class="btn-equip">⚔️ Equip This Item</button>
+                ${equipSlotInfo}
+                <button id="equip-item-btn" class="btn-equip">${equipBtnText}</button>
             </div>
         `;
         
@@ -1322,8 +1511,6 @@ Return ONLY the JSON object, no additional text.`;
         const item1Badge = item1IsWinner ? '👑 RECOMMENDED' : (isSimilar ? '⚖️ SIDEGRADE' : '');
         const item2Badge = item2IsWinner ? '👑 RECOMMENDED' : (isSimilar ? '⚖️ SIDEGRADE' : '');
         
-        const item1Rarity = String(item1.rarity || 'common').split(' ')[0].toLowerCase();
-        const item2Rarity = String(item2.rarity || 'common').split(' ')[0].toLowerCase();
         const item1RarityColor = this.getRarityColor(item1.rarity);
         const item2RarityColor = this.getRarityColor(item2.rarity);
         
@@ -1333,6 +1520,48 @@ Return ONLY the JSON object, no additional text.`;
         // Glow effect for winner
         const item1Glow = item1IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
         const item2Glow = item2IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
+
+        // Detect slot for context-aware button labels
+        // Use item1 first (type field), fall back to result-level type
+        const slotDetectItem = { title: item1.title || '', type: item1.type || result.type || '' };
+        const detectedSlot = this.detectItemSlot(slotDetectItem);
+        let slotName = '';
+        let existingItem = null;
+        let slotContextHtml = '';
+        
+        if (detectedSlot && detectedSlot !== 'unknown' && detectedSlot !== null) {
+            slotName = this.formatSlotName(detectedSlot);
+            existingItem = this.state.loadout[detectedSlot];
+            if (existingItem) {
+                const exColor = this.getRarityColor(existingItem.rarity);
+                const exSanct = existingItem.sanctified ? ' 🦋' : '';
+                slotContextHtml = `
+                    <div style="font-size: 0.82rem; color: #999; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${exColor}; margin-bottom: 12px;">
+                        <span style="color: #666;">Currently in ${slotName}:</span> <strong style="color: ${exColor};">${existingItem.title}${exSanct}</strong>
+                        ${existingItem.score ? '<span style="opacity: 0.7;"> (Score: ' + existingItem.score + ')</span>' : ''}
+                    </div>
+                `;
+            } else {
+                slotContextHtml = `
+                    <div style="font-size: 0.82rem; color: #666; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 12px;">
+                        📭 ${slotName} slot is currently empty
+                    </div>
+                `;
+            }
+        }
+        
+        // Build equip button labels
+        const equipAction = existingItem ? 'Replace' : 'Equip';
+        const item1BtnLabel = existingItem 
+            ? `🔄 ${equipAction} with Item 1` 
+            : `➕ Equip Item 1${slotName ? ' to ' + slotName : ''}`;
+        const item2BtnLabel = existingItem 
+            ? `🔄 ${equipAction} with Item 2` 
+            : `➕ Equip Item 2${slotName ? ' to ' + slotName : ''}`;
+
+        // Non-recommended warning labels
+        const item1NotRecLabel = item2IsWinner ? '<div style="color: #f44336; font-size: 0.7rem; margin-top: 4px;">⚠️ Not recommended — may lower synergy</div>' : '';
+        const item2NotRecLabel = item1IsWinner ? '<div style="color: #f44336; font-size: 0.7rem; margin-top: 4px;">⚠️ Not recommended — may lower synergy</div>' : '';
 
         this.el.resultArea.innerHTML = `
             <div style="margin-bottom: 15px;">
@@ -1344,6 +1573,8 @@ Return ONLY the JSON object, no additional text.`;
                     <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
                 </div>
             </div>
+
+            ${slotContextHtml}
 
             <!-- Dual Item Cards -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
@@ -1376,7 +1607,8 @@ Return ONLY the JSON object, no additional text.`;
                         border: 1px solid ${item1Border};
                         background: rgba(${item1IsWinner ? '76,175,80' : item2IsWinner ? '244,67,54' : '255,165,0'},0.15);
                         font-size: 0.85rem;
-                    ">⚔️ Equip Item 1</button>
+                    ">${item1BtnLabel}</button>
+                    ${item1NotRecLabel}
                 </div>
 
                 <!-- ITEM 2 -->
@@ -1408,7 +1640,8 @@ Return ONLY the JSON object, no additional text.`;
                         border: 1px solid ${item2Border};
                         background: rgba(${item2IsWinner ? '76,175,80' : item1IsWinner ? '244,67,54' : '255,165,0'},0.15);
                         font-size: 0.85rem;
-                    ">⚔️ Equip Item 2</button>
+                    ">${item2BtnLabel}</button>
+                    ${item2NotRecLabel}
                 </div>
             </div>
 
