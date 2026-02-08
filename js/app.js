@@ -1,6 +1,6 @@
 // ====================================
 // HORADRIC AI - APP ENGINE  
-// Version: 11.0.1 (Dynamic Class-Based Loadout System + Analytics)
+// Version: 12.0.0 (Season 11 / Accurate Class-Weapon System + Any Class Support)
 // ====================================
 
 const HoradricApp = {
@@ -15,6 +15,18 @@ const HoradricApp = {
     
     // NEW: CLASS-SPECIFIC SLOT CONFIGURATIONS
     CLASS_SLOTS: {
+        any: [
+            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
+            { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
+            { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
+            { id: 'boots', icon: '👢', name: 'Boots', category: 'armor' },
+            { id: 'amulet', icon: '📿', name: 'Amulet', category: 'jewelry' },
+            { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
+            { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
+            { id: 'mainHand', icon: '🗡️', name: 'Main Hand', category: 'weapon' },
+            { id: 'offHand', icon: '🛡️', name: 'Off-Hand', category: 'weapon' }
+        ],
         barbarian: [
             { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
@@ -26,8 +38,8 @@ const HoradricApp = {
             { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
             { id: '2hBludgeoning', icon: '🔨', name: '2H Bludgeoning', category: 'weapon' },
             { id: '2hSlashing', icon: '⚔️', name: '2H Slashing', category: 'weapon' },
-            { id: 'mainHand', icon: '🗡️', name: 'Main Hand', category: 'weapon' },
-            { id: 'offHand', icon: '🛡️', name: 'Off-Hand', category: 'weapon' }
+            { id: 'mainHand', icon: '🗡️', name: 'Dual Wield MH', category: 'weapon' },
+            { id: 'offHand', icon: '🗡️', name: 'Dual Wield OH', category: 'weapon' }
         ],
         druid: [
             { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
@@ -63,7 +75,7 @@ const HoradricApp = {
             { id: 'ring1', icon: '💍', name: 'Ring 1', category: 'jewelry' },
             { id: 'ring2', icon: '💍', name: 'Ring 2', category: 'jewelry' },
             { id: 'mainHand', icon: '⚔️', name: 'Main Hand', category: 'weapon' },
-            { id: 'offHand', icon: '🛡️', name: 'Off-Hand', category: 'weapon' }
+            { id: 'offHand', icon: '🛡️', name: 'Shield', category: 'weapon' }
         ],
         rogue: [
             { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
@@ -103,27 +115,34 @@ const HoradricApp = {
         ]
     },
     
-    // UPDATED: Slot type mappings (Added Flail, Focus, Totem, Polearm)
+    // UPDATED: Slot type mappings (Season 11 accuracy update)
     SLOT_KEYWORDS: {
         helm: ['helm', 'helmet', 'crown', 'cowl', 'cap', 'hood', 'circlet', 'mask', 'veil'],
-        chest: ['chest', 'armor', 'tunic', 'mail', 'plate', 'robe', 'vest', 'cuirass', 'body armor', 'cage'],
-        gloves: ['gloves', 'gauntlets', 'handguards', 'grips', 'hands', 'fists', 'claws'],
+        chest: ['chest armor', 'chest', 'tunic', 'mail', 'plate', 'robe', 'vest', 'cuirass', 'body armor', 'cage'],
+        gloves: ['gloves', 'gauntlets', 'handguards', 'grips', 'fists', 'claws'],
         pants: ['pants', 'legs', 'breeches', 'trousers', 'leggings', 'faulds', 'cuisses'], 
         boots: ['boots', 'shoes', 'treads', 'sabatons', 'footwear', 'walkers', 'striders', 'greaves'], 
         amulet: ['amulet', 'necklace', 'pendant', 'talisman', 'periapt', 'choker', 'charm'],
         ring: ['ring', 'band', 'loop', 'signet', 'coil'],
         
-        // Weapon Slots
+        // Weapon Slots - Rogue ranged
         ranged: ['bow', 'crossbow'],
-        '2hBludgeoning': ['mace', 'hammer', 'two-handed mace', '2h mace', 'maul', 'flail'], // Added Flail here if 2H exists
-        '2hSlashing': ['two-handed sword', '2h sword', 'two-handed axe', '2h axe', 'polearm', 'glaive'],
         
-        // Spiritborn Specific
-        twoHanded: ['glaive', 'quarterstaff', 'staff', 'polearm', 'two-hand', '2h '],
+        // Barbarian-specific 2H categories
+        '2hBludgeoning': ['two-handed mace', '2h mace', 'maul', 'two-handed flail', '2h flail'],
+        '2hSlashing': ['two-handed sword', '2h sword', 'two-handed axe', '2h axe'],
+        
+        // Spiritborn-specific 2H
+        twoHanded: ['glaive', 'quarterstaff', 'two-hand'],
 
-        // Generic 1H
-        mainHand: ['sword', 'axe', 'dagger', 'wand', 'mace', 'flail', 'scythe', 'one-handed', '1h '], // Added Flail
-        offHand: ['shield', 'focus', 'totem', 'quiver', 'off-hand', 'offhand']
+        // Generic 1H weapons
+        mainHand: ['sword', 'axe', 'dagger', 'wand', 'mace', 'flail', 'scythe', 'one-handed'],
+        
+        // Off-hand items
+        offHand: ['shield', 'focus', 'totem', 'off-hand', 'offhand'],
+        
+        // 2H weapons that go in mainHand for non-Arsenal classes
+        '2hGeneric': ['staff', 'polearm', 'two-handed scythe', '2h scythe']
     },
     
     el: {},
@@ -145,16 +164,14 @@ const HoradricApp = {
         this.renderLoadoutGrid();
         this.updateBuildSynergy();
         
-        // Check if loaded game is unsupported and show coming soon message
+        // Check if loaded game is unsupported and show coming soon overlay
         const game = this.el.gameVersion.value;
         const support = CONFIG.GAME_SUPPORT[game];
         if (support && !support.enabled) {
-            this.renderUnsupportedGame(game);
-            this.el.analyzeBtn.disabled = true;
-            this.el.compareBtn.disabled = true;
+            this.showUnsupportedOverlay(game);
         }
         
-        console.log('👁️ Horadric Pipeline Active (Dynamic Class-Based Loadout System v11.0)');
+        console.log('👁️ Horadric Pipeline Active (Season 11 Class-Weapon System v12.0)');
     },
     
     cacheElements() {
@@ -197,6 +214,8 @@ const HoradricApp = {
         this.el.toast = document.getElementById('toast');
         this.el.loadoutGrid = document.getElementById('loadout-grid');
         this.el.buildSynergy = document.getElementById('build-synergy');
+        this.el.unsupportedOverlay = document.getElementById('unsupported-overlay');
+        this.el.unsupportedMessage = document.getElementById('unsupported-message');
         this.setupDragDrop();
     },
 
@@ -208,7 +227,7 @@ const HoradricApp = {
             this.state.currentClass = selectedClass;
             this.saveState();
             this.updateBuildOptions();
-            this.renderLoadoutGrid();  // Re-render slots for new class
+            this.renderLoadoutGrid();
             this.updateBuildSynergy();
         });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
@@ -269,19 +288,68 @@ const HoradricApp = {
         const support = CONFIG.GAME_SUPPORT[game];
         
         if (support && !support.enabled) {
-            // Show coming soon UI immediately
-            this.renderUnsupportedGame(game);
-            this.el.analyzeBtn.disabled = true;
-            this.el.compareBtn.disabled = true;
+            // Show coming soon overlay INSIDE the scan card
+            this.showUnsupportedOverlay(game);
         } else {
-            // Re-enable buttons for supported games
-            this.el.analyzeBtn.disabled = false;
-            this.el.compareBtn.disabled = false;
-            this.clearResults();
+            // Hide overlay and re-enable everything
+            this.hideUnsupportedOverlay();
         }
         
         this.updateClassOptions();
         localStorage.setItem('selected_game', game);
+    },
+
+    showUnsupportedOverlay(game) {
+        const support = CONFIG.GAME_SUPPORT[game];
+        const gameName = support ? support.label : game.toUpperCase();
+        
+        // Set overlay message
+        if (this.el.unsupportedMessage) {
+            this.el.unsupportedMessage.textContent = `${gameName} analysis is coming soon! Currently only Diablo IV is supported.`;
+        }
+        
+        // Show overlay over the scan card content
+        if (this.el.unsupportedOverlay) {
+            this.el.unsupportedOverlay.style.display = 'block';
+        }
+        
+        // Disable all action buttons EXCEPT demo
+        this.el.analyzeBtn.disabled = true;
+        this.el.compareBtn.disabled = true;
+        this.el.analyzeBtn.style.opacity = '0.4';
+        this.el.compareBtn.style.opacity = '0.4';
+        
+        // Disable upload, class, and advanced controls
+        if (this.el.imageUpload) this.el.imageUpload.disabled = true;
+        if (this.el.playerClass) this.el.playerClass.disabled = true;
+        if (this.el.buildStyle) this.el.buildStyle.disabled = true;
+        if (this.el.keyMechanic) this.el.keyMechanic.disabled = true;
+        if (this.el.toggleAdvanced) this.el.toggleAdvanced.disabled = true;
+        
+        // Hide the results card if it was open
+        this.clearResults();
+    },
+
+    hideUnsupportedOverlay() {
+        // Hide overlay
+        if (this.el.unsupportedOverlay) {
+            this.el.unsupportedOverlay.style.display = 'none';
+        }
+        
+        // Re-enable all buttons
+        this.el.analyzeBtn.disabled = false;
+        this.el.compareBtn.disabled = false;
+        this.el.analyzeBtn.style.opacity = '1';
+        this.el.compareBtn.style.opacity = '1';
+        
+        // Re-enable controls
+        if (this.el.imageUpload) this.el.imageUpload.disabled = false;
+        if (this.el.playerClass) this.el.playerClass.disabled = false;
+        if (this.el.buildStyle) this.el.buildStyle.disabled = false;
+        if (this.el.keyMechanic) this.el.keyMechanic.disabled = false;
+        if (this.el.toggleAdvanced) this.el.toggleAdvanced.disabled = false;
+        
+        this.clearResults();
     },
 
     updateClassOptions() {
@@ -398,32 +466,31 @@ const HoradricApp = {
         // 1. Only search Title and Type (Ignore Analysis to prevent false positives)
         const searchText = `${result.title} ${result.type}`.toLowerCase();
         
-        // 2. Define Strict Weapon Bans per Class
-        const WEAPON_BANS = {
-            barbarian: ['dagger', 'wand', 'staff', 'shield', 'focus', 'totem', 'bow', 'crossbow', 'glaive', 'quarterstaff'],
-            rogue: ['axe', 'mace', 'flail', 'hammer', 'maul', 'shield', 'two-handed sword', '2h sword', 'glaive', 'quarterstaff'],
-            spiritborn: ['sword', 'axe', 'mace', 'flail', 'dagger', 'wand', 'shield', 'bow', 'crossbow', 'hammer', 'maul'],
-            sorcerer: ['mace', 'axe', 'sword', 'flail', 'bow', 'crossbow', 'two-handed sword', '2h sword', 'hammer'],
-            necromancer: ['mace', 'axe', 'hammer', 'polearm', 'staff'],
-            druid: ['sword', 'dagger', 'wand', 'bow', 'crossbow', 'glaive'],
-            // ADDED: Paladin Restrictions (Blocks Wands, Daggers, Bows, Staves)
-            paladin: ['wand', 'dagger', 'bow', 'crossbow', 'staff', 'focus', 'totem', 'quarterstaff']
-        };
+        // 2. Skip weapon bans for 'any' class
+        if (this.state.currentClass !== 'any') {
+            // Define Strict Weapon Bans per Class (Post-Season 5+ rules)
+            // IMPORTANT: These have been updated to reflect weapon restriction changes:
+            //  - Sorcerer CAN use 1H Swords and 1H Maces (Season 5+)
+            //  - Druid CAN use Polearms, 2H Swords, and Daggers (Season 5+)
+            //  - Necromancer CAN use All Maces & Axes (Season 5+)
+            const WEAPON_BANS = {
+                barbarian: ['dagger', 'wand', 'staff', 'focus', 'totem', 'bow', 'crossbow', 'glaive', 'quarterstaff', 'scythe', 'shield'],
+                druid: ['wand', 'bow', 'crossbow', 'glaive', 'quarterstaff', 'scythe', 'flail', 'focus', 'shield'],
+                necromancer: ['bow', 'crossbow', 'glaive', 'quarterstaff', 'polearm', 'staff', 'flail', 'totem'],
+                rogue: ['axe', 'mace', 'flail', 'hammer', 'maul', 'shield', 'two-handed sword', '2h sword', 'glaive', 'quarterstaff', 'staff', 'wand', 'scythe', 'focus', 'totem', 'polearm'],
+                sorcerer: ['axe', 'bow', 'crossbow', 'two-handed sword', '2h sword', 'two-handed axe', '2h axe', 'two-handed mace', '2h mace', 'hammer', 'flail', 'glaive', 'quarterstaff', 'polearm', 'scythe', 'totem', 'shield'],
+                spiritborn: ['sword', 'axe', 'mace', 'flail', 'dagger', 'wand', 'shield', 'bow', 'crossbow', 'hammer', 'maul', 'scythe', 'focus', 'totem', 'staff', 'polearm'],
+                paladin: ['dagger', 'wand', 'bow', 'crossbow', 'staff', 'focus', 'totem', 'quarterstaff', 'glaive', 'axe', 'scythe', 'polearm']
+            };
 
-        // 3. Check for Banned Items immediately
-        const bans = WEAPON_BANS[this.state.currentClass];
-        if (bans) {
-            // Check if the item type contains a banned word
-            // We use word boundaries or distinct checks to avoid false positives
-            const isBanned = bans.some(ban => searchText.includes(ban));
-            
-            // Special Exception: Necromancers can use 1H Swords, but not 2H Swords? 
-            // For simplicity, if it's explicitly banned, return unknown.
-            if (isBanned) {
-                // Double check it's not a false positive (like "Sword of the Axe")
-                // But for now, safe to block.
-                console.log(`Item blocked by class restriction: ${this.state.currentClass} cannot use this.`);
-                return 'unknown';
+            // 3. Check for Banned Items
+            const bans = WEAPON_BANS[this.state.currentClass];
+            if (bans) {
+                const isBanned = bans.some(ban => searchText.includes(ban));
+                if (isBanned) {
+                    console.log(`Item blocked by class restriction: ${this.state.currentClass} cannot use this.`);
+                    return 'unknown';
+                }
             }
         }
 
@@ -463,6 +530,12 @@ const HoradricApp = {
         // 7. Weapon Fallbacks (Main Hand / Off Hand)
         const hasMainHand = currentSlots.find(s => s.id === 'mainHand');
         const hasOffHand = currentSlots.find(s => s.id === 'offHand');
+        
+        // Check for 2H generic weapons (Staff, Polearm, 2H Scythe) that route to mainHand for non-Barbarian classes
+        if (hasMainHand && this.SLOT_KEYWORDS['2hGeneric'] && 
+            this.SLOT_KEYWORDS['2hGeneric'].some(keyword => searchText.includes(keyword))) {
+            return 'mainHand';
+        }
         
         // Check Offhand first (Shields, Focus, Totems)
         if (hasOffHand && this.SLOT_KEYWORDS.offHand.some(keyword => searchText.includes(keyword))) {
@@ -878,7 +951,7 @@ const HoradricApp = {
         const support = CONFIG.GAME_SUPPORT[selectedGame];
         
         if (support && !support.enabled) {
-            this.renderUnsupportedGame(selectedGame);
+            this.showUnsupportedOverlay(selectedGame);
             return;
         }
 
@@ -932,7 +1005,7 @@ const HoradricApp = {
             }
             
             if (result.status === 'unsupported_game') {
-                this.renderUnsupportedGame(result.detected_game, result.message);
+                this.showUnsupportedOverlay(result.detected_game);
                 this.showLoading(false);
                 return;
             }
@@ -1017,7 +1090,8 @@ Return ONLY the JSON object, no additional text.`;
                     }],
                     generationConfig: {
                         response_mime_type: "application/json",
-                        temperature: 0.0
+                        temperature: 0.0,
+                        max_output_tokens: 4096
                     }
                 })
             });
@@ -1126,18 +1200,29 @@ Return ONLY the JSON object, no additional text.`;
 
         this.el.resultsCard.style.display = 'block';
         
+        const renderMarkdown = (typeof marked !== 'undefined' && marked.parse) ? marked.parse : (t) => t; 
+        const analysisHtml = renderMarkdown(result.analysis || '');
+
+        // ============================================
+        // COMPARISON MODE: Dual-item equip selection
+        // ============================================
+        if (result.mode === 'comparison' && result.item1 && result.item2) {
+            this.renderComparisonResult(result, analysisHtml);
+            return;
+        }
+
+        // ============================================
+        // STANDARD SINGLE-ITEM MODE
+        // ============================================
         const rarity = String(result.rarity || 'common').split(' ')[0].toLowerCase();
         const verdict = String(result.verdict || 'UNKNOWN').toUpperCase();
         
         const confidenceBadge = (result.confidence === 'medium' || result.confidence === 'low')
             ? `<span style="font-size: 0.8rem; color: #ffa500; margin-left: 10px;">⚠️ ${result.confidence} confidence</span>`
             : '';
-        
-        const renderMarkdown = (typeof marked !== 'undefined' && marked.parse) ? marked.parse : (t) => t; 
-        const analysisHtml = renderMarkdown(result.analysis || '');
 
         let verdictColor = 'neutral';
-        if (['KEEP', 'EQUIP', 'SELL', 'UPGRADE', 'EQUIP NEW'].includes(verdict)) verdictColor = 'keep';
+        if (['KEEP', 'EQUIP', 'SELL', 'UPGRADE', 'EQUIP NEW', 'SANCTIFY'].includes(verdict)) verdictColor = 'keep';
         if (['SALVAGE', 'DISCARD', 'CHARSI', 'KEEP EQUIPPED'].includes(verdict)) verdictColor = 'salvage';
 
         const sanctifiedBadge = result.sanctified 
@@ -1167,6 +1252,176 @@ Return ONLY the JSON object, no additional text.`;
             equipBtn.addEventListener('click', () => this.equipItem(result));
         }
         
+        this.el.priceSection.style.display = 'none';
+        setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    },
+
+    // ============================================
+    // COMPARISON RESULT: Dual-Item Equip Selection
+    // ============================================
+    renderComparisonResult(result, analysisHtml) {
+        const item1 = result.item1;
+        const item2 = result.item2;
+        const winner = (result.winner || '').toUpperCase();
+        
+        // Determine which item is recommended
+        const item1IsWinner = winner === 'ITEM1';
+        const item2IsWinner = winner === 'ITEM2';
+        const isSimilar = winner === 'SIMILAR';
+        
+        // Color coding
+        const winnerBorder = '#4caf50';   // Green
+        const loserBorder = '#f44336';    // Red  
+        const similarBorder = '#ffa500';  // Orange
+        
+        const item1Border = item1IsWinner ? winnerBorder : (item2IsWinner ? loserBorder : similarBorder);
+        const item2Border = item2IsWinner ? winnerBorder : (item1IsWinner ? loserBorder : similarBorder);
+        
+        const item1Badge = item1IsWinner ? '👑 RECOMMENDED' : (isSimilar ? '⚖️ SIDEGRADE' : '');
+        const item2Badge = item2IsWinner ? '👑 RECOMMENDED' : (isSimilar ? '⚖️ SIDEGRADE' : '');
+        
+        const item1Rarity = String(item1.rarity || 'common').split(' ')[0].toLowerCase();
+        const item2Rarity = String(item2.rarity || 'common').split(' ')[0].toLowerCase();
+        const item1RarityColor = this.getRarityColor(item1.rarity);
+        const item2RarityColor = this.getRarityColor(item2.rarity);
+        
+        const item1Sanctified = item1.sanctified ? '<span style="color: gold; font-size: 0.8rem;"> 🦋 Sanctified</span>' : '';
+        const item2Sanctified = item2.sanctified ? '<span style="color: gold; font-size: 0.8rem;"> 🦋 Sanctified</span>' : '';
+
+        // Glow effect for winner
+        const item1Glow = item1IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
+        const item2Glow = item2IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
+
+        this.el.resultArea.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <div class="verdict-container ${isSimilar ? 'neutral' : (item1IsWinner || item2IsWinner ? 'keep' : 'neutral')}">
+                    <div class="verdict-label">${result.verdict || 'COMPARE'}</div>
+                    <div class="verdict-score">${result.score_diff || '-'}</div>
+                </div>
+                <div class="insight-box" style="margin-top: 10px;">
+                    <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
+                </div>
+            </div>
+
+            <!-- Dual Item Cards -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                <!-- ITEM 1 -->
+                <div id="compare-item1" class="compare-item-card" style="
+                    border: 2px solid ${item1Border}; 
+                    border-radius: 10px; 
+                    padding: 15px; 
+                    background: rgba(0,0,0,0.3);
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    position: relative;
+                    ${item1Glow}
+                ">
+                    ${item1Badge ? `<div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: ${item1IsWinner ? winnerBorder : similarBorder}; color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap;">${item1Badge}</div>` : ''}
+                    <div style="text-align: center; margin-top: ${item1Badge ? '8px' : '0'};">
+                        <div style="color: ${item1RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item1.title || 'Item 1'}</div>
+                        <div style="color: #999; font-size: 0.8rem; margin-bottom: 8px;">${item1.type || ''}${item1Sanctified}</div>
+                        <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.85rem; margin-bottom: 8px;">
+                            <span style="color: #ccc;">⚡ ${item1.item_power || '?'}</span>
+                            <span style="color: ${item1IsWinner ? '#4caf50' : '#ccc'};">📊 ${item1.score || '?'}</span>
+                        </div>
+                        ${item1.greater_affix_count ? `<div style="color: gold; font-size: 0.8rem;">✨ ${item1.greater_affix_count} Greater Affix${item1.greater_affix_count > 1 ? 'es' : ''}</div>` : ''}
+                        <div style="color: #aaa; font-size: 0.78rem; margin-top: 6px; line-height: 1.4;">${item1.insight || ''}</div>
+                    </div>
+                    <button id="equip-item1-btn" class="btn-equip" style="
+                        width: 100%; 
+                        margin-top: 12px; 
+                        padding: 10px;
+                        border: 1px solid ${item1Border};
+                        background: rgba(${item1IsWinner ? '76,175,80' : item2IsWinner ? '244,67,54' : '255,165,0'},0.15);
+                        font-size: 0.85rem;
+                    ">⚔️ Equip Item 1</button>
+                </div>
+
+                <!-- ITEM 2 -->
+                <div id="compare-item2" class="compare-item-card" style="
+                    border: 2px solid ${item2Border}; 
+                    border-radius: 10px; 
+                    padding: 15px; 
+                    background: rgba(0,0,0,0.3);
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    position: relative;
+                    ${item2Glow}
+                ">
+                    ${item2Badge ? `<div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: ${item2IsWinner ? winnerBorder : similarBorder}; color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap;">${item2Badge}</div>` : ''}
+                    <div style="text-align: center; margin-top: ${item2Badge ? '8px' : '0'};">
+                        <div style="color: ${item2RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item2.title || 'Item 2'}</div>
+                        <div style="color: #999; font-size: 0.8rem; margin-bottom: 8px;">${item2.type || ''}${item2Sanctified}</div>
+                        <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.85rem; margin-bottom: 8px;">
+                            <span style="color: #ccc;">⚡ ${item2.item_power || '?'}</span>
+                            <span style="color: ${item2IsWinner ? '#4caf50' : '#ccc'};">📊 ${item2.score || '?'}</span>
+                        </div>
+                        ${item2.greater_affix_count ? `<div style="color: gold; font-size: 0.8rem;">✨ ${item2.greater_affix_count} Greater Affix${item2.greater_affix_count > 1 ? 'es' : ''}</div>` : ''}
+                        <div style="color: #aaa; font-size: 0.78rem; margin-top: 6px; line-height: 1.4;">${item2.insight || ''}</div>
+                    </div>
+                    <button id="equip-item2-btn" class="btn-equip" style="
+                        width: 100%; 
+                        margin-top: 12px; 
+                        padding: 10px;
+                        border: 1px solid ${item2Border};
+                        background: rgba(${item2IsWinner ? '76,175,80' : item1IsWinner ? '244,67,54' : '255,165,0'},0.15);
+                        font-size: 0.85rem;
+                    ">⚔️ Equip Item 2</button>
+                </div>
+            </div>
+
+            <!-- Full Analysis -->
+            <details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+            </details>
+        `;
+
+        // Hover effects
+        const addHoverEffect = (el) => {
+            if (!el) return;
+            el.addEventListener('mouseenter', () => { el.style.transform = 'translateY(-2px)'; el.style.filter = 'brightness(1.1)'; });
+            el.addEventListener('mouseleave', () => { el.style.transform = 'translateY(0)'; el.style.filter = 'brightness(1)'; });
+        };
+        addHoverEffect(document.getElementById('compare-item1'));
+        addHoverEffect(document.getElementById('compare-item2'));
+
+        // Equip button listeners — build full result-like objects for equipItem()
+        const equip1Btn = document.getElementById('equip-item1-btn');
+        const equip2Btn = document.getElementById('equip-item2-btn');
+        
+        if (equip1Btn) {
+            equip1Btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.equipItem({
+                    title: item1.title,
+                    type: item1.type,
+                    rarity: item1.rarity,
+                    sanctified: item1.sanctified,
+                    item_power: item1.item_power,
+                    score: item1.score,
+                    insight: item1.insight,
+                    analysis: result.analysis
+                });
+            });
+        }
+        
+        if (equip2Btn) {
+            equip2Btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.equipItem({
+                    title: item2.title,
+                    type: item2.type,
+                    rarity: item2.rarity,
+                    sanctified: item2.sanctified,
+                    item_power: item2.item_power,
+                    score: item2.score,
+                    insight: item2.insight,
+                    analysis: result.analysis
+                });
+            });
+        }
+
         this.el.priceSection.style.display = 'none';
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },

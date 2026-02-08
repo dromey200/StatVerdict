@@ -1,6 +1,6 @@
 // ====================================
 // HORADRIC AI - CONFIGURATION
-// Version: 10.0.0 (Slot-Based Loadout System)
+// Version: 11.0.0 (Season 11 / Class-Weapon Accuracy Update)
 // ====================================
 
 const CONFIG = {
@@ -79,6 +79,12 @@ const CONFIG = {
     GAME_CLASSES: {
         'd4': [
             {
+                id: 'any',
+                name: 'Any Class',
+                builds: [],
+                mechanics: []
+            },
+            {
                 id: 'barbarian',
                 name: 'Barbarian',
                 builds: [
@@ -88,14 +94,16 @@ const CONFIG = {
                     'Thorns',
                     'Double Swing',
                     'Bash',
-                    'Dust Devils'
+                    'Dust Devils',
+                    'Earthquake'
                 ],
                 mechanics: [
                     'Thorns Build',
                     'Overpower Stack',
                     'Berserking Uptime',
                     'Bleed Damage',
-                    'Fortify Generation'
+                    'Fortify Generation',
+                    'Fury Generation'
                 ]
             },
             {
@@ -107,14 +115,16 @@ const CONFIG = {
                     'Stormclaw',
                     'Landslide',
                     'Lightning Storm',
-                    'Werebear'
+                    'Werebear',
+                    'Hurricane'
                 ],
                 mechanics: [
                     'Overpower Stack',
                     'Spirit Generation',
                     'Fortify Generation',
                     'Nature Magic Damage',
-                    'Shapeshifting'
+                    'Shapeshifting',
+                    'Companion Damage'
                 ]
             },
             {
@@ -126,21 +136,23 @@ const CONFIG = {
                     'Blood Surge',
                     'Infinimist',
                     'Bone Spirit',
-                    'Sever'
+                    'Sever',
+                    'Blight'
                 ],
                 mechanics: [
                     'Minion Only',
                     'Blood Orb Generation',
                     'Overpower Stack',
                     'Essence Generation',
-                    'Corpse Consumption'
+                    'Corpse Consumption',
+                    'Shadow Damage'
                 ]
             },
             {
                 id: 'paladin',
                 name: 'Paladin',
                 builds: [
-                    'Juggernaut (Shield)',
+                    'Juggernaut (Shield Tank)',
                     'Zealot (Melee DPS)',
                     'Judicator (Holy Conjuration)',
                     'Disciple (Angelic Form)'
@@ -151,7 +163,8 @@ const CONFIG = {
                     'Fortify Generation',
                     'Auras',
                     'Divine Wrath',
-                    'Consecrated Ground'
+                    'Consecrated Ground',
+                    'Faith Generation'
                 ]
             },
             {
@@ -163,14 +176,16 @@ const CONFIG = {
                     'Rapid Fire',
                     'Barrage',
                     'Heartseeker',
-                    'Victimize'
+                    'Victimize',
+                    'Flurry'
                 ],
                 mechanics: [
                     'Critical Strike',
                     'Vulnerable Damage',
                     'Lucky Hit',
                     'Energy Generation',
-                    'Shadow Imbuement'
+                    'Shadow Imbuement',
+                    'Combo Points'
                 ]
             },
             {
@@ -183,14 +198,16 @@ const CONFIG = {
                     'Meteor',
                     'Frozen Orb',
                     'Arc Lash',
-                    'Chain Lightning'
+                    'Chain Lightning',
+                    'Blizzard'
                 ],
                 mechanics: [
                     'Critical Strike',
                     'Lucky Hit',
                     'Mana Generation',
                     'Cooldown Reduction',
-                    'Barrier Generation'
+                    'Barrier Generation',
+                    'Crackling Energy'
                 ]
             },
             {
@@ -218,31 +235,36 @@ const CONFIG = {
         'di': []  // Coming soon
     },
 
-    // LEGACY FORMAT: Kept for backward compatibility
+    // LEGACY FORMAT: Kept for backward compatibility (updated Season 11)
     CLASS_DEFINITIONS: {
         'd4': {
             'Barbarian': {
-                builds: ['Whirlwind', 'HOTA', 'Upheaval', 'Thorns', 'Double Swing', 'Bash', 'Dust Devils'],
+                builds: ['Whirlwind', 'HOTA', 'Upheaval', 'Thorns', 'Double Swing', 'Bash', 'Dust Devils', 'Earthquake'],
                 mechanics: ['Overpower', 'Berserking', 'Bleed', 'Fortify', 'Fury Generation', 'Shouts'],
                 key_stats: ['Strength', 'Critical Strike Damage', 'Vulnerable Damage', 'Overpower Damage']
             },
             'Druid': {
-                builds: ['Werewolf Tornado', 'Pulverize', 'Stormclaw', 'Landslide', 'Lightning Storm', 'Werebear'],
-                mechanics: ['Spirit Boons', 'Fortify', 'Overpower', 'Nature Magic', 'Shapeshifting', 'Earth Skills'],
+                builds: ['Werewolf Tornado', 'Pulverize', 'Stormclaw', 'Landslide', 'Lightning Storm', 'Werebear', 'Hurricane'],
+                mechanics: ['Spirit Boons', 'Fortify', 'Overpower', 'Nature Magic', 'Shapeshifting', 'Earth Skills', 'Companions'],
                 key_stats: ['Willpower', 'Critical Strike Damage', 'Overpower Damage', 'Nature Magic Damage']
             },
             'Necromancer': {
-                builds: ['Bone Spear', 'Minion Army', 'Blood Surge', 'Infinimist', 'Bone Spirit', 'Sever'],
-                mechanics: ['Minion Health', 'Overpower', 'Essence Regen', 'Corpse Consumption', 'Lucky Hit', 'Blood Orbs'],
+                builds: ['Bone Spear', 'Minion Army', 'Blood Surge', 'Infinimist', 'Bone Spirit', 'Sever', 'Blight'],
+                mechanics: ['Minion Health', 'Overpower', 'Essence Regen', 'Corpse Consumption', 'Lucky Hit', 'Blood Orbs', 'Shadow Damage'],
                 key_stats: ['Intelligence', 'Minion Damage', 'Critical Strike Damage', 'Lucky Hit Chance']
             },
+            'Paladin': {
+                builds: ['Juggernaut', 'Zealot', 'Judicator', 'Disciple'],
+                mechanics: ['Block Chance', 'Holy Damage', 'Auras', 'Divine Wrath', 'Consecrated Ground', 'Faith Generation', 'Fortify'],
+                key_stats: ['Strength', 'Holy Damage', 'Block Chance', 'Maximum Life']
+            },
             'Rogue': {
-                builds: ['Twisting Blades', 'Penetrating Shot', 'Rapid Fire', 'Barrage', 'Heartseeker', 'Victimize'],
+                builds: ['Twisting Blades', 'Penetrating Shot', 'Rapid Fire', 'Barrage', 'Heartseeker', 'Victimize', 'Flurry'],
                 mechanics: ['Lucky Hit', 'Critical Strike', 'Energy Regen', 'Vulnerable', 'Combo Points', 'Shadow Imbuement'],
                 key_stats: ['Dexterity', 'Critical Strike Damage', 'Vulnerable Damage', 'Lucky Hit Chance']
             },
             'Sorcerer': {
-                builds: ['Ice Shards', 'Firewall', 'Ball Lightning', 'Meteor', 'Frozen Orb', 'Arc Lash', 'Chain Lightning'],
+                builds: ['Ice Shards', 'Firewall', 'Ball Lightning', 'Meteor', 'Frozen Orb', 'Arc Lash', 'Chain Lightning', 'Blizzard'],
                 mechanics: ['Mana Regen', 'Cooldown Reduction', 'Barrier Generation', 'Lucky Hit', 'Crackling Energy', 'Elemental Mastery'],
                 key_stats: ['Intelligence', 'Critical Strike Damage', 'Cooldown Reduction', 'Lucky Hit Chance']
             },
@@ -266,7 +288,7 @@ const PROMPT_TEMPLATES = {
             return PROMPT_TEMPLATES.unsupportedGame(selectedGame);
         }
 
-        let contextLayer = `Expected Game: DIABLO IV (Season 7 / Vessel of Hatred)\nClass: ${playerClass || 'Any'}\nBuild: ${buildStyle || 'General'}`;
+        let contextLayer = `Expected Game: DIABLO IV (Season 11 / Lord of Hatred Era)\nClass: ${playerClass || 'Any'}\nBuild: ${buildStyle || 'General'}`;
         
         if (advancedSettings?.mechanic) contextLayer += `\nFocus Mechanic: ${advancedSettings.mechanic}`;
         if (advancedSettings?.needs) {
@@ -287,7 +309,7 @@ const PROMPT_TEMPLATES = {
         }
 
         return `
-        ROLE: Expert Diablo IV Item Analyst (Season 7 / Vessel of Hatred)
+        ROLE: Expert Diablo IV Item Analyst (Season 11 / Lord of Hatred Era)
         TASK: Validate this is a D4 item screenshot, then analyze it.
         
         ═══════════════════════════════════════════════════════════
@@ -304,6 +326,7 @@ const PROMPT_TEMPLATES = {
         • Text: "Requires Level XX" at bottom
         • Modern, clean font rendering
         • Ornate decorative borders around tooltip
+        IMPORTANT: 'Paladin' and 'Spiritborn' are VALID classes in Diablo 4. Do not reject them.
         
         🔄 COMPARISON SCREENSHOTS (STILL VALID D4):
         • If you see TWO item tooltips side-by-side → This IS valid D4
@@ -324,21 +347,45 @@ const PROMPT_TEMPLATES = {
         
         Context: ${contextLayer}${loadoutContext}
         
-        SEASON 7 KEY FEATURES:
-        • Sanctified Items: Can be forged at the Heavenly Forge
-        • Sanctified items have butterfly icon (🦋) and enhanced properties
-        • Once Sanctified → ACCOUNT BOUND (cannot trade)
-        • Item Power range: 700-925 (higher = better)
-        • Greater Affixes: More powerful than normal affixes
-        • Masterworking: Items can be upgraded 12 times
+        CURRENT GAME STATE (Season 11 - Season of Divine Intervention):
+        • Item Power range: 700-925 (higher = better, 925 = max)
+        • Greater Affixes: Gold-colored text, more powerful than normal affixes
+        • Ancestral items: Guaranteed at least one Greater Affix
+        • Masterworking: Items can be upgraded 12 times for stat bonuses
+        • Mythic Uniques: Purple-colored, fixed 925 Item Power, extremely rare
+        • Unique Items: Gold/brown-colored, fixed affixes + unique power
+        
+        🦋 SANCTIFIED ITEMS (Season 11 - Heavenly Forge):
+        • Sanctified items are the FINAL stage of gear optimization
+        • Created at the Heavenly Forge using Heavenly Sigils (from Torment bosses)
+        • Sanctification can: add a new legendary aspect, upgrade a non-greater affix by 50%, add a unique sanctification affix, or apply 5-25% boost to base stats
+        • Sanctified items can feature 3+ Greater Affixes (massive endgame power)
+        • PERMANENT: Once sanctified, NO further tempering, enchanting, or masterworking is allowed
+        • RISK: Process can occasionally "brick" an item with poor results
+        • ACCOUNT BOUND after sanctification (cannot be traded)
+        • Look for butterfly icon (🦋) or "Sanctified" label on the item
+        • Best practice: Fully temper, enchant, and masterwork BEFORE sanctifying
+        
+        CLASS-SPECIFIC WEAPON RULES (Critical for accuracy):
+        • Barbarian: Swords, Axes, Maces, Flails (1H+2H). NO daggers/wands/staves/bows.
+        • Druid: Axes, Maces, Daggers (1H), Staves, 2H Swords, Polearms. Totem off-hand. NO 1H swords/wands/bows.
+        • Necromancer: Swords, Daggers, Wands, Scythes, Axes, Maces. Focus/Shield off-hand. NO bows/staves/polearms.
+        • Rogue: Swords, Daggers (1H only). Bows, Crossbows (ranged). NO axes/maces/2H melee/staves.
+        • Sorcerer: Swords, Wands, Daggers, Maces (1H only). Staves (2H). Focus off-hand. NO axes/bows/2H melee.
+        • Spiritborn: Glaives, Quarterstaves ONLY (all 2H). NO 1H weapons, no off-hand.
+        • Paladin: Swords, Maces, Flails (1H+2H). Shield off-hand. NO daggers/wands/bows/staves/axes.
+
+        If the item is a weapon, note which classes CAN equip it in your analysis.
         
         EVALUATION CRITERIA:
-        1. Item Power (700-925 scale)
+        1. Item Power (700-925 scale, higher is better)
         2. Rarity (Legendary < Unique < Mythic)
-        3. Sanctified status (major value add)
-        4. Greater Affix count (gold text = greater)
-        5. Stat synergy with ${playerClass} ${buildStyle} build
+        3. Sanctified status (major endgame value — 3+ Greater Affixes, permanent optimization)
+        4. Greater Affix count (gold text = greater, more is better)
+        5. Stat synergy with ${playerClass !== 'any' ? playerClass : 'general'} ${buildStyle || ''} build
         6. Roll quality (are stats near max ranges?)
+        7. Useful for endgame (Pit pushing, Helltide farming, Infernal Hordes)
+        ${playerClass === 'any' ? '8. Since no class was specified, mention which classes benefit most from this item.' : ''}
         
         OUTPUT FORMAT (JSON Only):
         
@@ -356,18 +403,19 @@ const PROMPT_TEMPLATES = {
             "game": "d4",
             "confidence": "high" | "medium",
             "title": "Item Name",
-            "type": "Item Type (Helm, Chest Armor, Boots, Two-Handed Sword, Ring, etc.)",
+            "type": "Item Type (Helm, Chest Armor, Boots, Two-Handed Sword, Ring, Shield, Glaive, etc.)",
             "rarity": "Legendary | Unique | Mythic",
             "sanctified": true | false,
             "item_power": 800,
+            "greater_affix_count": 0,
             "score": "S | A | B | C | D",
-            "verdict": "KEEP | SALVAGE | UPGRADE | EQUIP",
-            "insight": "1-2 sentence analysis. If comparing against equipped item, mention if this is better/worse.",
-            "analysis": "### Stats Breakdown\\n- Item Power: XXX/925\\n- Key Stats: List main stats\\n- Synergy: How it fits the build\\n- Trade Value: Untradable (if Sanctified) or market estimate\\n\\n### Verdict\\nWhy keep or salvage. If comparing, explain the difference.",
-            "trade_query": "Clean item name for trade searches"
+            "verdict": "KEEP | SALVAGE | UPGRADE | EQUIP | SANCTIFY",
+            "insight": "1-2 sentence analysis. If sanctified, note its permanence and value. If comparing against equipped item, mention if this is better/worse.${playerClass === 'any' ? ' Mention which classes benefit most.' : ''}",
+            "analysis": "### Stats Breakdown\\n- Item Power: XXX/925\\n- Key Stats: List main stats with values\\n- Greater Affixes: Count and list them\\n- Sanctified: Yes/No (if yes, note it cannot be further modified)\\n- Synergy: How it fits the ${playerClass !== 'any' ? playerClass + ' ' + (buildStyle || '') : 'general'} build\\n\\n### Verdict\\nWhy keep or salvage. If not sanctified and high quality, recommend sanctifying at Heavenly Forge after full masterworking.",
+            "trade_query": "Clean item name for trade searches (note: Sanctified items are untradable)"
         }
         
-        CRITICAL: Always include accurate "type" field (Helm, Chest Armor, Gloves, Pants, Boots, Amulet, Ring, Sword, Two-Handed Axe, Shield, etc.) for slot detection.
+        CRITICAL: Always include accurate "type" field (Helm, Chest Armor, Gloves, Pants, Boots, Amulet, Ring, One-Handed Sword, Two-Handed Axe, Shield, Glaive, Staff, etc.) for slot detection.
         `;
     },
 
@@ -392,23 +440,36 @@ const PROMPT_TEMPLATES = {
         }
 
         return `
-        ROLE: Expert Diablo IV Item Comparison Analyst
+        ROLE: Expert Diablo IV Item Comparison Analyst (Season 11)
         TASK: Compare two D4 items OR compare a new item against equipped gear
         
         VALIDATION:
         • May show TWO item tooltips side-by-side
         • Or ONE new item (compare against equipped items provided below)
         • All should have D4 markers (Item Power, Ancestral, etc.)
+        IMPORTANT: 'Paladin' and 'Spiritborn' are VALID classes in Diablo 4. Do not reject them.
+
+        CLASS-SPECIFIC WEAPON RULES:
+        • Barbarian: Swords, Axes, Maces, Flails (1H+2H). NO daggers/wands/staves/bows.
+        • Druid: Axes, Maces, Daggers (1H), Staves, 2H Swords, Polearms. Totem off-hand. NO 1H swords/wands/bows.
+        • Necromancer: Swords, Daggers, Wands, Scythes, Axes, Maces. Focus/Shield off-hand. NO bows/staves/polearms.
+        • Rogue: Swords, Daggers (1H only). Bows, Crossbows (ranged). NO axes/maces/2H melee.
+        • Sorcerer: Swords, Wands, Daggers, Maces (1H only). Staves (2H). Focus off-hand. NO axes/bows/2H melee.
+        • Spiritborn: Glaives and Quarterstaves ONLY (2H). NO 1H weapons.
+        • Paladin: Swords, Maces, Flails (1H+2H). Shield off-hand. NO daggers/wands/bows/axes.
+
+        If this weapon cannot be equipped by the selected class, flag it clearly.
         
         COMPARISON FOR: ${playerClass} - ${buildStyle || 'General Build'}${loadoutContext}
         
         EVALUATE:
-        1. Item Power difference
-        2. Stat quality (which has better rolls?)
-        3. Greater Affix advantage
-        4. Sanctified status (huge advantage)
-        5. Build synergy
-        6. Same slot comparison (e.g., new Helm vs equipped Helm)
+        1. Item Power difference (higher = better, max 925)
+        2. Stat quality (which has better rolls relative to max?)
+        3. Greater Affix count advantage (gold text affixes)
+        4. Sanctified status (sanctified items have 3+ Greater Affixes, permanent optimization, untradable)
+        5. Build synergy for ${playerClass} ${buildStyle || 'General'} build
+        6. Practical upgrade percentage estimate
+        7. Same slot comparison (e.g., new Helm vs equipped Helm)
         
         OUTPUT FORMAT (JSON Only):
         
@@ -423,16 +484,37 @@ const PROMPT_TEMPLATES = {
         {
             "status": "success",
             "game": "d4",
-            "title": "Item Name (NEW ITEM)",
+            "mode": "comparison",
+            "item1": {
+                "title": "Left/First Item Name",
+                "type": "Item Type for slot detection",
+                "rarity": "Legendary | Unique | Mythic",
+                "sanctified": true | false,
+                "item_power": 850,
+                "greater_affix_count": 0,
+                "score": "S | A | B | C | D",
+                "insight": "Brief 1-sentence summary of this item's strengths"
+            },
+            "item2": {
+                "title": "Right/Second Item Name",
+                "type": "Item Type for slot detection",
+                "rarity": "Legendary | Unique | Mythic",
+                "sanctified": true | false,
+                "item_power": 860,
+                "greater_affix_count": 1,
+                "score": "S | A | B | C | D",
+                "insight": "Brief 1-sentence summary of this item's strengths"
+            },
+            "title": "Item 2 Name (for backward compat / history)",
             "type": "Item Type for slot detection",
-            "rarity": "Legendary | Unique | Mythic",
-            "sanctified": true | false,
-            "item_power": 850,
-            "winner": "NEW" | "EQUIPPED" | "SIMILAR",
+            "rarity": "Best item's rarity",
+            "sanctified": false,
+            "item_power": 860,
+            "winner": "ITEM1" | "ITEM2" | "SIMILAR",
             "score_diff": "+15% better" | "-5% worse" | "Marginal difference",
-            "verdict": "EQUIP NEW" | "KEEP EQUIPPED" | "SIDEGRADE",
-            "insight": "Why one item wins. Consider Item Power, stats, and build synergy.",
-            "analysis": "### New Item\\n- Stats summary\\n\\n### Equipped Item\\n- Stats summary\\n\\n### Comparison\\n| Stat | New | Equipped | Winner |\\n|------|-----|----------|--------|\\n| Power | XXX | YYY | New |\\n\\n### Recommendation\\nFinal verdict with detailed reasoning. Explain upgrade percentage if applicable."
+            "verdict": "EQUIP ITEM1" | "EQUIP ITEM2" | "SIDEGRADE",
+            "insight": "Why one item wins. Consider Item Power, stat rolls, Greater Affixes, sanctified status, and build synergy.",
+            "analysis": "### Item 1: [Name]\\n- Stats summary with values\\n- Greater Affixes noted\\n- Sanctified: Yes/No\\n- Score: X\\n\\n### Item 2: [Name]\\n- Stats summary with values\\n- Greater Affixes noted\\n- Sanctified: Yes/No\\n- Score: X\\n\\n### Comparison\\n| Stat | Item 1 | Item 2 | Winner |\\n|------|--------|--------|--------|\\n| Power | XXX | YYY | Item 2 |\\n| Sanctified | Yes/No | Yes/No | — |\\n\\n### Recommendation\\nFinal verdict with detailed reasoning."
         }
         
         CRITICAL: Always include accurate "type" field for slot detection.
