@@ -16,7 +16,7 @@ const HoradricApp = {
     // NEW: CLASS-SPECIFIC SLOT CONFIGURATIONS
     CLASS_SLOTS: {
         any: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
@@ -28,7 +28,7 @@ const HoradricApp = {
             { id: 'offHand', icon: '🛡️', name: 'Off-Hand', category: 'weapon' }
         ],
         barbarian: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
@@ -42,7 +42,7 @@ const HoradricApp = {
             { id: 'offHand', icon: '🗡️', name: 'Dual Wield OH', category: 'weapon' }
         ],
         druid: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
@@ -54,7 +54,7 @@ const HoradricApp = {
             { id: 'offHand', icon: '🔮', name: 'Off-Hand', category: 'weapon' }
         ],
         necromancer: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
@@ -66,7 +66,7 @@ const HoradricApp = {
             { id: 'offHand', icon: '📖', name: 'Off-Hand', category: 'weapon' }
         ],
         paladin: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
@@ -78,7 +78,7 @@ const HoradricApp = {
             { id: 'offHand', icon: '🛡️', name: 'Shield', category: 'weapon' }
         ],
         rogue: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
@@ -91,7 +91,7 @@ const HoradricApp = {
             { id: 'offHand', icon: '🗡️', name: 'Off-Hand', category: 'weapon' }
         ],
         sorcerer: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },
@@ -103,7 +103,7 @@ const HoradricApp = {
             { id: 'offHand', icon: '🔮', name: 'Off-Hand', category: 'weapon' }
         ],
         spiritborn: [
-            { id: 'helm', icon: '🎩', name: 'Helm', category: 'armor' },
+            { id: 'helm', icon: '👑', name: 'Helm', category: 'armor' },
             { id: 'chest', icon: '🛡️', name: 'Chest', category: 'armor' },
             { id: 'gloves', icon: '🧤', name: 'Gloves', category: 'armor' },
             { id: 'pants', icon: '👖', name: 'Pants', category: 'armor' },

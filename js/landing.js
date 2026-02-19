@@ -250,8 +250,8 @@ const UIHandlers = {
     },
     
     setupMobileMenu() {
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const mobileNav = document.getElementById('mobile-nav');
+        const menuBtn = document.getElementById('sv-mobile-menu-btn');
+        const mobileNav = document.getElementById('sv-mobile-nav');
         
         if (!menuBtn || !mobileNav) return;
         
@@ -260,33 +260,34 @@ const UIHandlers = {
             
             if (isOpen) {
                 menuBtn.classList.remove('active');
-                mobileNav.classList.remove('open');
+                mobileNav.classList.remove('active');
             } else {
                 menuBtn.classList.add('active');
-                mobileNav.classList.add('open');
+                mobileNav.classList.add('active');
             }
         });
         
+        // Close nav when links are tapped
         const navLinks = mobileNav.querySelectorAll('a');
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
                 menuBtn.classList.remove('active');
-                mobileNav.classList.remove('open');
+                mobileNav.classList.remove('active');
             });
         });
     },
     
     setupPrivacyModal() {
-        const privacyLink = document.getElementById('privacy-link');
+        const privacyTrigger = document.getElementById('privacy-trigger');
         const privacyModal = document.getElementById('privacy-modal');
-        const closeBtn = document.getElementById('privacy-close');
+        const closeBtn = document.getElementById('privacy-close-btn');
         
-        if (!privacyLink || !privacyModal || !closeBtn) return;
+        if (!privacyTrigger || !privacyModal || !closeBtn) return;
         
         const openModal = () => privacyModal.classList.add('open');
         const closeModal = () => privacyModal.classList.remove('open');
         
-        privacyLink.addEventListener('click', (e) => {
+        privacyTrigger.addEventListener('click', (e) => {
             e.preventDefault();
             openModal();
         });
