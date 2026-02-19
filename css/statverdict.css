@@ -3,25 +3,43 @@
    ==================================== */
 
 :root {
-    --sv-bg-primary: #0a0a0f;
-    --sv-bg-secondary: #121218;
-    --sv-bg-card: #16161d;
-    --sv-bg-card-hover: #1c1c25;
-    --sv-text-primary: #f0f0f5;
-    --sv-text-secondary: #a0a0b0;
-    --sv-text-muted: #606070;
-    --sv-accent: #f59e0b;
-    --sv-accent-light: #fbbf24;
-    --sv-accent-dark: #d97706;
-    --sv-accent-glow: rgba(245, 158, 11, 0.3);
+    /* Backgrounds: Deep navy-blue tones (matching icon background) */
+    --sv-bg-primary: #060b18;
+    --sv-bg-secondary: #0a1225;
+    --sv-bg-card: #0d1730;
+    --sv-bg-card-hover: #12203d;
+    
+    /* Text */
+    --sv-text-primary: #e8ecf4;
+    --sv-text-secondary: #8b9bc0;
+    --sv-text-muted: #4a5a80;
+    
+    /* Primary accent: Golden (the gavel) */
+    --sv-accent: #d4a017;
+    --sv-accent-light: #ffd54f;
+    --sv-accent-dark: #b8860b;
+    --sv-accent-glow: rgba(212, 160, 23, 0.35);
+    
+    /* Secondary accent: Cyan/teal (the circuit traces) */
+    --sv-cyan: #00bcd4;
+    --sv-cyan-light: #4dd0e1;
+    --sv-cyan-dark: #0097a7;
+    --sv-cyan-glow: rgba(0, 188, 212, 0.25);
+    
+    /* Diablo card stays warm but harmonized */
     --sv-diablo-primary: #991b1b;
     --sv-diablo-secondary: #c2410c;
     --sv-diablo-glow: rgba(185, 28, 28, 0.4);
+    
+    /* Status */
     --sv-success: #22c55e;
     --sv-warning: #eab308;
     --sv-error: #ef4444;
-    --sv-border: rgba(255, 255, 255, 0.08);
-    --sv-border-hover: rgba(255, 255, 255, 0.15);
+    
+    /* Borders: blue-tinted */
+    --sv-border: rgba(100, 150, 255, 0.08);
+    --sv-border-hover: rgba(100, 150, 255, 0.18);
+    
     --sv-container: 1200px;
     --sv-gap: 24px;
     --sv-font-display: 'Cinzel', Georgia, serif;
@@ -72,11 +90,11 @@ button { touch-action: manipulation; }
 }
 
 .sv-bg-glow-1 { width: 600px; height: 600px; background: radial-gradient(circle, var(--sv-accent) 0%, transparent 70%); top: -200px; right: -100px; }
-.sv-bg-glow-2 { width: 500px; height: 500px; background: radial-gradient(circle, var(--sv-diablo-primary) 0%, transparent 70%); bottom: -150px; left: -100px; }
+.sv-bg-glow-2 { width: 500px; height: 500px; background: radial-gradient(circle, var(--sv-cyan-dark) 0%, transparent 70%); bottom: -150px; left: -100px; }
 
 .sv-bg-particles { 
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-    background-image: radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.3) 1px, transparent 0), radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.2) 1px, transparent 0), radial-gradient(1px 1px at 80% 40%, rgba(255, 255, 255, 0.25) 1px, transparent 0), radial-gradient(2px 2px at 60% 20%, rgba(245, 158, 11, 0.3) 1px, transparent 0); 
+    background-image: radial-gradient(1px 1px at 20% 30%, rgba(212, 160, 23, 0.3) 1px, transparent 0), radial-gradient(1px 1px at 40% 70%, rgba(0, 188, 212, 0.25) 1px, transparent 0), radial-gradient(1px 1px at 80% 40%, rgba(255, 213, 79, 0.2) 1px, transparent 0), radial-gradient(2px 2px at 60% 20%, rgba(0, 188, 212, 0.3) 1px, transparent 0); 
     background-size: 250px 250px; 
     animation: particleFloat 60s linear infinite; 
     will-change: transform;
@@ -87,8 +105,8 @@ button { touch-action: manipulation; }
 /* HEADER */
 .sv-header { 
     position: fixed; top: 0; left: 0; right: 0; z-index: 100; 
-    background: rgba(10, 10, 15, 0.9); /* Higher opacity for less paint cost */
-    -webkit-backdrop-filter: blur(10px); /* Safari Prefix */
+    background: rgba(6, 11, 24, 0.92);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px); 
     border-bottom: 1px solid var(--sv-border); 
 }
@@ -109,8 +127,9 @@ button { touch-action: manipulation; }
     .sv-footer-links a:hover { color: var(--sv-accent-light); }
 }
 
-.sv-logo-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--sv-accent) 0%, var(--sv-accent-dark) 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px var(--sv-accent-glow); }
+.sv-logo-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px var(--sv-accent-glow); overflow: hidden; flex-shrink: 0; }
 .sv-logo-icon svg { width: 24px; height: 24px; color: white; }
+.sv-logo-icon img { width: 100%; height: 100%; object-fit: cover; }
 .sv-logo-title { font-family: var(--sv-font-display); font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, var(--sv-accent-light) 0%, var(--sv-accent) 50%, var(--sv-accent-dark) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: block; line-height: 1.2; }
 .sv-logo-subtitle { font-size: 0.7rem; color: var(--sv-text-muted); text-transform: uppercase; letter-spacing: 1px; display: block; }
 
@@ -155,8 +174,8 @@ button { touch-action: manipulation; }
 
 .sv-hero { position: relative; z-index: 1; min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 140px 24px 60px; text-align: center; }
 .sv-hero-content { max-width: 800px; }
-.sv-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 100px; font-size: 0.85rem; color: var(--sv-accent); margin-bottom: 28px; animation: badgePulse 3s ease-in-out infinite; }
-@keyframes badgePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.2); } 50% { box-shadow: 0 0 20px 5px rgba(245, 158, 11, 0.1); } }
+.sv-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: rgba(212, 160, 23, 0.1); border: 1px solid rgba(212, 160, 23, 0.25); border-radius: 100px; font-size: 0.85rem; color: var(--sv-accent); margin-bottom: 28px; animation: badgePulse 3s ease-in-out infinite; }
+@keyframes badgePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212, 160, 23, 0.2); } 50% { box-shadow: 0 0 20px 5px rgba(212, 160, 23, 0.1); } }
 .sv-badge-icon { font-size: 1rem; }
 .sv-hero-title { font-family: var(--sv-font-display); font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 700; line-height: 1.1; margin-bottom: 24px; letter-spacing: -0.02em; }
 .sv-text-gradient { background: linear-gradient(135deg, #fff 0%, var(--sv-accent-light) 40%, var(--sv-accent) 60%, var(--sv-accent-dark) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -325,11 +344,16 @@ button { touch-action: manipulation; }
 .privacy-content li { margin-bottom: 10px; color: var(--sv-text-secondary); display: flex; align-items: flex-start; gap: 10px; }
 .privacy-content li::before { content: '🔒'; font-size: 0.9em; }
 
+/* Hamburger menu: show on all phones + tablets (portrait AND landscape) */
+@media (max-width: 1024px) {
+    .sv-nav { display: none; }
+    .sv-mobile-menu-btn { display: flex; }
+}
+
+/* Layout adjustments for narrower screens */
 @media (max-width: 768px) {
     html { scroll-padding-top: 76px; }
     .sv-header-inner { padding: 12px 16px; }
-    .sv-nav { display: none; }
-    .sv-mobile-menu-btn { display: flex; }
     .sv-mobile-nav { top: 68px; } /* Match actual mobile header height */
     .sv-logo-title { font-size: 1.25rem; }
     .sv-hero { padding: 120px 20px 40px; min-height: 60vh; }
@@ -346,7 +370,7 @@ button { touch-action: manipulation; }
     .sv-teaser { padding: 20px; }
     .sv-bg-glow-1 { width: 300px; height: 300px; }
     .sv-bg-glow-2 { width: 250px; height: 250px; }
-    .sv-header { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a0a0f; } /* Performance on mobile */
+    .sv-header { -webkit-backdrop-filter: none; backdrop-filter: none; background: #060b18; } /* Performance on mobile */
     .sv-bg-glow { display: none; } /* Disable heavy blurs on mobile */
 }
 
@@ -547,8 +571,8 @@ button { touch-action: manipulation; }
 }
 
 .sv-result-bar-fill.user-voted {
-    background: linear-gradient(90deg, var(--sv-accent-dark), var(--sv-accent));
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    background: linear-gradient(90deg, var(--sv-accent-dark), var(--sv-accent-light));
+    box-shadow: 0 0 20px rgba(212, 160, 23, 0.3);
 }
 
 .sv-result-percentage {
@@ -572,8 +596,8 @@ button { touch-action: manipulation; }
 .sv-results-note {
     margin-top: 24px;
     padding: 16px 20px;
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: rgba(212, 160, 23, 0.1);
+    border: 1px solid rgba(212, 160, 23, 0.3);
     border-radius: 10px;
     text-align: center;
     color: var(--sv-accent);
