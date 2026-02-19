@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="StatVerdict - AI-powered loot analysis for ARPGs. Instant item scoring, build optimization, and gear evaluation for Diablo 4, Path of Exile 2, Last Epoch, and more.">
-    <meta name="theme-color" content="#0a0a0f">
+    <meta name="theme-color" content="#060b18">
     <meta name="color-scheme" content="dark">
     
     <meta http-equiv="Content-Security-Policy" content="
@@ -48,9 +48,9 @@
             max-width: 900px;
             margin: 40px auto 0;
             padding: 40px 20px;
-            background: linear-gradient(135deg, rgba(211, 47, 47, 0.1), rgba(0, 0, 0, 0.3));
+            background: linear-gradient(135deg, rgba(212, 160, 23, 0.08), rgba(0, 188, 212, 0.05));
             border-radius: 16px;
-            border: 1px solid rgba(211, 47, 47, 0.3);
+            border: 1px solid rgba(212, 160, 23, 0.2);
         }
 
         .sv-voting-title {
@@ -94,8 +94,8 @@
         }
 
         .sv-vote-btn:hover {
-            background: rgba(211, 47, 47, 0.2);
-            border-color: rgba(211, 47, 47, 0.6);
+            background: rgba(212, 160, 23, 0.15);
+            border-color: rgba(212, 160, 23, 0.5);
             transform: translateY(-3px);
         }
 
@@ -179,7 +179,7 @@
 
         .sv-results-note {
             text-align: center;
-            color: #4caf50;
+            color: #d4a017;
             font-size: 1rem;
             font-weight: 600;
             margin-top: 15px;
@@ -187,12 +187,12 @@
 
         /* Highlight user's voted game */
         .sv-result-name.user-voted {
-            color: #4caf50;
+            color: #d4a017;
             font-weight: 700;
         }
 
         .sv-result-bar-fill.user-voted {
-            background: linear-gradient(90deg, rgba(76, 175, 80, 0.9), rgba(76, 175, 80, 0.5));
+            background: linear-gradient(90deg, rgba(212, 160, 23, 0.9), rgba(212, 160, 23, 0.5));
         }
 
         @media (max-width: 768px) {
@@ -226,10 +226,7 @@
         <div class="sv-header-inner">
             <a href="index.html" class="sv-logo" aria-label="StatVerdict Home">
                 <div class="sv-logo-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
+                    <img src="assets/images/image%2028.jpg" alt="" width="44" height="44" style="border-radius: 10px; display: block;">
                 </div>
                 <div class="sv-logo-text">
                     <span class="sv-logo-title">StatVerdict</span>
@@ -549,7 +546,7 @@
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">Can I use it on mobile?</summary>
                 <div class="sv-faq-answer">
-                    <p>Yes! StatVerdict and Horadric AI are fully responsive and work on both iOS (Safari) and Android (Chrome). You can screenshot an item on your console or PC, then scan it from your phone. The interface is optimized for touch with large tap targets and mobile-friendly layouts.</p>
+                    <p>Yes! You can screenshot an item on your console or PC, then scan it from your phone. The interface is optimized for touch with large tap targets and mobile-friendly layouts.</p>
                 </div>
             </details>
 
