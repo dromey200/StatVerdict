@@ -157,12 +157,14 @@ const HoradricApp = {
         
         this.cacheElements();
         this.loadState();
-        this.initializeLoadout();  // CHANGED: Use new function name
+        // DISABLED: Loadout is a premium feature
+        // this.initializeLoadout();
         this.attachEventListeners();
         this.updateGameSelector();
         this.updateClassOptions();
-        this.renderLoadoutGrid();
-        this.updateBuildSynergy();
+        // DISABLED: Loadout is a premium feature
+        // this.renderLoadoutGrid();
+        // this.updateBuildSynergy();
         
         // Check if loaded game is unsupported and show coming soon overlay
         const game = this.el.gameVersion.value;
@@ -221,14 +223,15 @@ const HoradricApp = {
 
     attachEventListeners() {
         this.el.gameVersion.addEventListener('change', () => this.handleGameChange());
-        // UPDATED: Class change listener with dynamic slot rendering
+        // UPDATED: Class change listener
         this.el.playerClass.addEventListener('change', () => {
             const selectedClass = this.el.playerClass.value.toLowerCase();
             this.state.currentClass = selectedClass;
             this.saveState();
             this.updateBuildOptions();
-            this.renderLoadoutGrid();
-            this.updateBuildSynergy();
+            // DISABLED: Loadout is a premium feature
+            // this.renderLoadoutGrid();
+            // this.updateBuildSynergy();
         });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
         this.el.toggleAdvanced.addEventListener('click', () => this.toggleAdvanced());
@@ -245,11 +248,12 @@ const HoradricApp = {
         if(this.el.shareBtn) this.el.shareBtn.addEventListener('click', () => this.shareResults());
         if(this.el.priceCheckBtn) this.el.priceCheckBtn.addEventListener('click', () => this.checkPrice());
         if(this.el.searchTradeBtn) this.el.searchTradeBtn.addEventListener('click', () => this.searchTrade());
-        if(this.el.keyMechanic) this.el.keyMechanic.addEventListener('change', () => this.updateBuildSynergy());
+        // DISABLED: Loadout synergy listener
+        // if(this.el.keyMechanic) this.el.keyMechanic.addEventListener('change', () => this.updateBuildSynergy());
         
-        // Loadout button
-        const clearLoadoutBtn = document.getElementById('clear-loadout-btn');
-        if(clearLoadoutBtn) clearLoadoutBtn.addEventListener('click', () => this.clearAllSlots());
+        // DISABLED: Loadout button
+        // const clearLoadoutBtn = document.getElementById('clear-loadout-btn');
+        // if(clearLoadoutBtn) clearLoadoutBtn.addEventListener('click', () => this.clearAllSlots());
         
         this.setupDragDrop();
     },
@@ -1424,41 +1428,6 @@ Return ONLY the JSON object, no additional text.`;
             ? `<span style="display: inline-block; padding: 4px 8px; background: rgba(255,215,0,0.2); color: gold; border-radius: 4px; font-size: 0.85rem; margin-left: 10px;">🦋 Sanctified</span>`
             : '';
 
-        // Determine equip button context
-        const detectedSlot = this.detectItemSlot(result);
-        let equipBtnText = '⚔️ Equip This Item';
-        let equipSlotInfo = '';
-        
-        if (detectedSlot && detectedSlot !== 'unknown' && detectedSlot !== null) {
-            const slotName = this.formatSlotName(detectedSlot);
-            const existingItem = this.state.loadout[detectedSlot];
-            if (existingItem) {
-                equipBtnText = `🔄 Replace in ${slotName}`;
-                const existingColor = this.getRarityColor(existingItem.rarity);
-                const existSanct = existingItem.sanctified ? ' 🦋' : '';
-                equipSlotInfo = `
-                    <div style="font-size: 0.82rem; color: #999; margin-bottom: 8px; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${existingColor};">
-                        Currently equipped: <strong style="color: ${existingColor};">${existingItem.title}${existSanct}</strong>
-                        ${existingItem.score ? '<span style="opacity: 0.7;"> (Score: ' + existingItem.score + ')</span>' : ''}
-                    </div>
-                `;
-            } else {
-                equipBtnText = `➕ Equip to ${slotName}`;
-                equipSlotInfo = `<div style="font-size: 0.82rem; color: #666; margin-bottom: 8px;">${slotName} slot is currently empty</div>`;
-            }
-        } else if (detectedSlot === null) {
-            // Ring — needs modal
-            const ring1 = this.state.loadout.ring1;
-            const ring2 = this.state.loadout.ring2;
-            if (!ring1 || !ring2) {
-                equipBtnText = '💍 Equip Ring';
-                equipSlotInfo = `<div style="font-size: 0.82rem; color: #666; margin-bottom: 8px;">Ring 1: ${ring1 ? ring1.title : 'Empty'} · Ring 2: ${ring2 ? ring2.title : 'Empty'}</div>`;
-            } else {
-                equipBtnText = '💍 Replace Ring';
-                equipSlotInfo = `<div style="font-size: 0.82rem; color: #999; margin-bottom: 8px;">Ring 1: ${ring1.title} · Ring 2: ${ring2.title}</div>`;
-            }
-        }
-
         this.el.resultArea.innerHTML = `
             <div class="result-header rarity-${rarity}">
                 <h2 class="item-title">${result.title || 'Unknown Item'}${sanctifiedBadge}${confidenceBadge}</h2>
@@ -1472,23 +1441,14 @@ Return ONLY the JSON object, no additional text.`;
                 <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
             </div>
             <div class="analysis-text markdown-body">${analysisHtml}</div>
-            <div class="result-actions">
-                ${equipSlotInfo}
-                <button id="equip-item-btn" class="btn-equip">${equipBtnText}</button>
-            </div>
         `;
-        
-        const equipBtn = document.getElementById('equip-item-btn');
-        if (equipBtn) {
-            equipBtn.addEventListener('click', () => this.equipItem(result));
-        }
         
         this.el.priceSection.style.display = 'none';
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },
 
     // ============================================
-    // COMPARISON RESULT: Dual-Item Equip Selection
+    // COMPARISON RESULT: Dual-Item Display
     // ============================================
     renderComparisonResult(result, analysisHtml) {
         const item1 = result.item1;
@@ -1521,48 +1481,6 @@ Return ONLY the JSON object, no additional text.`;
         const item1Glow = item1IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
         const item2Glow = item2IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
 
-        // Detect slot for context-aware button labels
-        // Use item1 first (type field), fall back to result-level type
-        const slotDetectItem = { title: item1.title || '', type: item1.type || result.type || '' };
-        const detectedSlot = this.detectItemSlot(slotDetectItem);
-        let slotName = '';
-        let existingItem = null;
-        let slotContextHtml = '';
-        
-        if (detectedSlot && detectedSlot !== 'unknown' && detectedSlot !== null) {
-            slotName = this.formatSlotName(detectedSlot);
-            existingItem = this.state.loadout[detectedSlot];
-            if (existingItem) {
-                const exColor = this.getRarityColor(existingItem.rarity);
-                const exSanct = existingItem.sanctified ? ' 🦋' : '';
-                slotContextHtml = `
-                    <div style="font-size: 0.82rem; color: #999; padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${exColor}; margin-bottom: 12px;">
-                        <span style="color: #666;">Currently in ${slotName}:</span> <strong style="color: ${exColor};">${existingItem.title}${exSanct}</strong>
-                        ${existingItem.score ? '<span style="opacity: 0.7;"> (Score: ' + existingItem.score + ')</span>' : ''}
-                    </div>
-                `;
-            } else {
-                slotContextHtml = `
-                    <div style="font-size: 0.82rem; color: #666; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 12px;">
-                        📭 ${slotName} slot is currently empty
-                    </div>
-                `;
-            }
-        }
-        
-        // Build equip button labels
-        const equipAction = existingItem ? 'Replace' : 'Equip';
-        const item1BtnLabel = existingItem 
-            ? `🔄 ${equipAction} with Item 1` 
-            : `➕ Equip Item 1${slotName ? ' to ' + slotName : ''}`;
-        const item2BtnLabel = existingItem 
-            ? `🔄 ${equipAction} with Item 2` 
-            : `➕ Equip Item 2${slotName ? ' to ' + slotName : ''}`;
-
-        // Non-recommended warning labels
-        const item1NotRecLabel = item2IsWinner ? '<div style="color: #f44336; font-size: 0.7rem; margin-top: 4px;">⚠️ Not recommended — may lower synergy</div>' : '';
-        const item2NotRecLabel = item1IsWinner ? '<div style="color: #f44336; font-size: 0.7rem; margin-top: 4px;">⚠️ Not recommended — may lower synergy</div>' : '';
-
         this.el.resultArea.innerHTML = `
             <div style="margin-bottom: 15px;">
                 <div class="verdict-container ${isSimilar ? 'neutral' : (item1IsWinner || item2IsWinner ? 'keep' : 'neutral')}">
@@ -1573,8 +1491,6 @@ Return ONLY the JSON object, no additional text.`;
                     <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
                 </div>
             </div>
-
-            ${slotContextHtml}
 
             <!-- Dual Item Cards -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
@@ -1600,15 +1516,6 @@ Return ONLY the JSON object, no additional text.`;
                         ${item1.greater_affix_count ? `<div style="color: gold; font-size: 0.8rem;">✨ ${item1.greater_affix_count} Greater Affix${item1.greater_affix_count > 1 ? 'es' : ''}</div>` : ''}
                         <div style="color: #aaa; font-size: 0.78rem; margin-top: 6px; line-height: 1.4;">${item1.insight || ''}</div>
                     </div>
-                    <button id="equip-item1-btn" class="btn-equip" style="
-                        width: 100%; 
-                        margin-top: 12px; 
-                        padding: 10px;
-                        border: 1px solid ${item1Border};
-                        background: rgba(${item1IsWinner ? '76,175,80' : item2IsWinner ? '244,67,54' : '255,165,0'},0.15);
-                        font-size: 0.85rem;
-                    ">${item1BtnLabel}</button>
-                    ${item1NotRecLabel}
                 </div>
 
                 <!-- ITEM 2 -->
@@ -1633,15 +1540,6 @@ Return ONLY the JSON object, no additional text.`;
                         ${item2.greater_affix_count ? `<div style="color: gold; font-size: 0.8rem;">✨ ${item2.greater_affix_count} Greater Affix${item2.greater_affix_count > 1 ? 'es' : ''}</div>` : ''}
                         <div style="color: #aaa; font-size: 0.78rem; margin-top: 6px; line-height: 1.4;">${item2.insight || ''}</div>
                     </div>
-                    <button id="equip-item2-btn" class="btn-equip" style="
-                        width: 100%; 
-                        margin-top: 12px; 
-                        padding: 10px;
-                        border: 1px solid ${item2Border};
-                        background: rgba(${item2IsWinner ? '76,175,80' : item1IsWinner ? '244,67,54' : '255,165,0'},0.15);
-                        font-size: 0.85rem;
-                    ">${item2BtnLabel}</button>
-                    ${item2NotRecLabel}
                 </div>
             </div>
 
@@ -1660,42 +1558,6 @@ Return ONLY the JSON object, no additional text.`;
         };
         addHoverEffect(document.getElementById('compare-item1'));
         addHoverEffect(document.getElementById('compare-item2'));
-
-        // Equip button listeners — build full result-like objects for equipItem()
-        const equip1Btn = document.getElementById('equip-item1-btn');
-        const equip2Btn = document.getElementById('equip-item2-btn');
-        
-        if (equip1Btn) {
-            equip1Btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.equipItem({
-                    title: item1.title,
-                    type: item1.type,
-                    rarity: item1.rarity,
-                    sanctified: item1.sanctified,
-                    item_power: item1.item_power,
-                    score: item1.score,
-                    insight: item1.insight,
-                    analysis: result.analysis
-                });
-            });
-        }
-        
-        if (equip2Btn) {
-            equip2Btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.equipItem({
-                    title: item2.title,
-                    type: item2.type,
-                    rarity: item2.rarity,
-                    sanctified: item2.sanctified,
-                    item_power: item2.item_power,
-                    score: item2.score,
-                    insight: item2.insight,
-                    analysis: result.analysis
-                });
-            });
-        }
 
         this.el.priceSection.style.display = 'none';
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);

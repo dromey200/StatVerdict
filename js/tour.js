@@ -49,14 +49,7 @@ const TourGuide = {
             target: "#demo-btn",
             position: "top"
         },
-        // --- NEW STEP ADDED BELOW ---
-        {
-            title: "Your Loadout 🛡️",
-            description: "When you find a good item, click 'Equip'. The AI will use your loadout to make smarter comparisons for future drops.",
-            target: ".loadout-section", // Targets the new section in the bottom right
-            position: "left"
-        },
-        // ----------------------------
+        // --- LOADOUT STEP DISABLED: Premium feature ---
         {
             title: "Ready to Hunt! 🚀",
             description: "You're all set. Good luck finding those triple-greater-affix items, Nephalem!",

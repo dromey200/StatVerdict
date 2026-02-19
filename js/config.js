@@ -282,7 +282,7 @@ const PROMPT_TEMPLATES = {
      * D4-OPTIMIZED SINGLE-CALL ANALYSIS
      * Enhanced with SLOT-BASED LOADOUT CONTEXT
      */
-    analyzeOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedContext) => {
+    analyzeOptimized: (selectedGame, playerClass, buildStyle, advancedSettings) => {
         // Only D4 is supported right now
         if (selectedGame !== 'd4') {
             return PROMPT_TEMPLATES.unsupportedGame(selectedGame);
@@ -294,18 +294,6 @@ const PROMPT_TEMPLATES = {
         if (advancedSettings?.needs) {
              const needed = Object.keys(advancedSettings.needs).filter(k => advancedSettings.needs[k]);
              if (needed.length) contextLayer += `\nUser Needs: ${needed.join(', ').toUpperCase()}`;
-        }
-
-        // SLOT-BASED LOADOUT CONTEXT (replaces old single-item memory)
-        let loadoutContext = '';
-        if (equippedContext && Array.isArray(equippedContext) && equippedContext.length > 0) {
-            loadoutContext = '\n\n⚔️ EQUIPPED LOADOUT CONTEXT:\nUser has these items equipped:\n';
-            equippedContext.forEach((item, index) => {
-                if (item) {
-                    loadoutContext += `\n${index + 1}. ${item.title} (${item.type || item.rarity})\n   - Score: ${item.score || 'N/A'}\n   - Key Stats: ${item.insight || 'N/A'}`;
-                }
-            });
-            loadoutContext += '\n\n💡 COMPARISON NOTE: Compare this NEW item against the equipped item(s) in the SAME SLOT. Mention if this is an upgrade, downgrade, or sidegrade.';
         }
 
         return `
@@ -345,7 +333,7 @@ const PROMPT_TEMPLATES = {
         STEP 2: ANALYSIS (Only if D4 confirmed)
         ═══════════════════════════════════════════════════════════
         
-        Context: ${contextLayer}${loadoutContext}
+        Context: ${contextLayer}
         
         CURRENT GAME STATE (Season 11 - Season of Divine Intervention):
         • Item Power range: 700-925 (higher = better, 925 = max)
@@ -409,8 +397,8 @@ const PROMPT_TEMPLATES = {
             "item_power": 800,
             "greater_affix_count": 0,
             "score": "S | A | B | C | D",
-            "verdict": "KEEP | SALVAGE | UPGRADE | EQUIP | SANCTIFY",
-            "insight": "1-2 sentence analysis. If sanctified, note its permanence and value. If comparing against equipped item, mention if this is better/worse.${playerClass === 'any' ? ' Mention which classes benefit most.' : ''}",
+            "verdict": "KEEP | SALVAGE | UPGRADE | SANCTIFY",
+            "insight": "1-2 sentence analysis. If sanctified, note its permanence and value.${playerClass === 'any' ? ' Mention which classes benefit most.' : ''}",
             "analysis": "### Stats Breakdown\\n- Item Power: XXX/925\\n- Key Stats: List main stats with values\\n- Greater Affixes: Count and list them\\n- Sanctified: Yes/No (if yes, note it cannot be further modified)\\n- Synergy: How it fits the ${playerClass !== 'any' ? playerClass + ' ' + (buildStyle || '') : 'general'} build\\n\\n### Verdict\\nWhy keep or salvage. If not sanctified and high quality, recommend sanctifying at Heavenly Forge after full masterworking.",
             "trade_query": "Clean item name for trade searches (note: Sanctified items are untradable)"
         }
@@ -422,30 +410,17 @@ const PROMPT_TEMPLATES = {
     /**
      * D4 COMPARISON MODE (Side-by-side items) + SLOT-BASED CONTEXT
      */
-    compareOptimized: (selectedGame, playerClass, buildStyle, advancedSettings, equippedContext) => {
+    compareOptimized: (selectedGame, playerClass, buildStyle, advancedSettings) => {
         if (selectedGame !== 'd4') {
             return PROMPT_TEMPLATES.unsupportedGame(selectedGame);
         }
 
-        // SLOT-BASED LOADOUT CONTEXT
-        let loadoutContext = '';
-        if (equippedContext && Array.isArray(equippedContext) && equippedContext.length > 0) {
-            loadoutContext = '\n\n⚔️ EQUIPPED ITEMS FOR COMPARISON:\n';
-            equippedContext.forEach((item, index) => {
-                if (item) {
-                    loadoutContext += `\n${index + 1}. ${item.title} (${item.type || item.rarity})\n   - Item Power: ${item.item_power || 'Unknown'}\n   - Score: ${item.score || 'N/A'}\n   - Analysis: ${item.insight || 'N/A'}`;
-                }
-            });
-            loadoutContext += '\n\n💡 Compare the NEW item in this screenshot against these equipped items. Focus on the same slot type.';
-        }
-
         return `
         ROLE: Expert Diablo IV Item Comparison Analyst (Season 11)
-        TASK: Compare two D4 items OR compare a new item against equipped gear
+        TASK: Compare two D4 items shown in the screenshot
         
         VALIDATION:
-        • May show TWO item tooltips side-by-side
-        • Or ONE new item (compare against equipped items provided below)
+        • Should show TWO item tooltips side-by-side
         • All should have D4 markers (Item Power, Ancestral, etc.)
         IMPORTANT: 'Paladin' and 'Spiritborn' are VALID classes in Diablo 4. Do not reject them.
 
@@ -458,9 +433,9 @@ const PROMPT_TEMPLATES = {
         • Spiritborn: Glaives and Quarterstaves ONLY (2H). NO 1H weapons.
         • Paladin: Swords, Maces, Flails (1H+2H). Shield off-hand. NO daggers/wands/bows/axes.
 
-        If this weapon cannot be equipped by the selected class, flag it clearly.
+        If this weapon cannot be used by the selected class, flag it clearly.
         
-        COMPARISON FOR: ${playerClass} - ${buildStyle || 'General Build'}${loadoutContext}
+        COMPARISON FOR: ${playerClass} - ${buildStyle || 'General Build'}
         
         EVALUATE:
         1. Item Power difference (higher = better, max 925)
@@ -512,7 +487,7 @@ const PROMPT_TEMPLATES = {
             "item_power": 860,
             "winner": "ITEM1" | "ITEM2" | "SIMILAR",
             "score_diff": "+15% better" | "-5% worse" | "Marginal difference",
-            "verdict": "EQUIP ITEM1" | "EQUIP ITEM2" | "SIDEGRADE",
+            "verdict": "ITEM1 WINS" | "ITEM2 WINS" | "SIDEGRADE",
             "insight": "Why one item wins. Consider Item Power, stat rolls, Greater Affixes, sanctified status, and build synergy.",
             "analysis": "### Item 1: [Name] (Score: X)\\nIP: XXX | GA: X | Sanctified: Y/N\\nKey stats: list top 3-4 stats briefly\\n\\n### Item 2: [Name] (Score: X)\\nIP: XXX | GA: X | Sanctified: Y/N\\nKey stats: list top 3-4 stats briefly\\n\\n### Winner: [Item 1/2/Tie]\\n2-3 sentence verdict."
         }
