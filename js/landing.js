@@ -84,9 +84,9 @@ const StatsLoader = {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
             
-            // FIXED: Proper CounterAPI URL format
+            // CounterAPI: no trailing slash on read endpoints
             const res = await fetch(
-                `https://api.counterapi.dev/v1/${this.NAMESPACE}/scans/`,
+                `https://api.counterapi.dev/v1/${this.NAMESPACE}/scans`,
                 { 
                     signal: controller.signal,
                     cache: 'no-store',
@@ -107,11 +107,7 @@ const StatsLoader = {
                 throw new Error('Invalid data');
             }
         } catch (error) {
-            if (retryCount < this.MAX_RETRIES) {
-                await this.delay(300);
-                return this.loadScanCount(retryCount + 1);
-            }
-            
+            // Don't retry on CORS/network failures — just show fallback
             el.innerHTML = `<strong>10K+</strong> Items Analyzed`;
             el.classList.add('sv-stat-loaded');
         }
@@ -124,10 +120,10 @@ const StatsLoader = {
         try {
             const counted = localStorage.getItem('sv_user_counted');
             
-            // FIXED: Proper CounterAPI URL format with trailing slash
+            // CounterAPI: /up to increment, no slash to read
             const url = counted 
-                ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/` 
-                : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up/`;
+                ? `https://api.counterapi.dev/v1/${this.NAMESPACE}/users` 
+                : `https://api.counterapi.dev/v1/${this.NAMESPACE}/users/up`;
             
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), this.TIMEOUT);
@@ -155,11 +151,7 @@ const StatsLoader = {
                 throw new Error('Invalid data');
             }
         } catch (error) {
-            if (retryCount < this.MAX_RETRIES) {
-                await this.delay(300);
-                return this.loadUserCount(retryCount + 1);
-            }
-            
+            // Don't retry on CORS/network failures — just show fallback
             el.innerHTML = `<strong>500+</strong> Community Members`;
             el.classList.add('sv-stat-loaded');
         }
@@ -354,7 +346,7 @@ const VotingSystem = {
         // 3. SEND VOTE IN BACKGROUND (Silent)
         // If this fails due to AdBlock, the user won't know (and won't care).
         try {
-            await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up/`, {
+            await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${game}/up`, {
                 method: 'GET',
                 mode: 'cors',
                 cache: 'no-store'
@@ -421,7 +413,7 @@ const VotingSystem = {
         // We use a "Promise.all" here for speed, but catch individual errors so one failure doesn't break all
         await Promise.all(gameKeys.map(async (key) => {
             try {
-                const res = await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${key}/`, { mode: 'cors' });
+                const res = await fetch(`https://api.counterapi.dev/v1/${this.NAMESPACE}/vote_${key}`, { mode: 'cors' });
                 if (res.ok) {
                     const data = await res.json();
                     votes[key] = data.count || 0;
