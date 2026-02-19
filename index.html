@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-E1JZ16DMSF', { 
-            'send_page_view': true,
-            'cookie_flags': 'SameSite=None;Secure'
-        });
-        </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="StatVerdict - AI-powered loot analysis for ARPGs. Instant item scoring, build optimization, and gear evaluation for Diablo 4, Path of Exile 2, Last Epoch, and more.">
@@ -252,7 +240,8 @@
             <nav class="sv-nav" role="navigation" aria-label="Main navigation">
                 <a href="#games" class="sv-nav-link">Games</a>
                 <a href="#features" class="sv-nav-link">Features</a>
-                <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" rel="noopener noreferrer" class="sv-nav-link" aria-label="Support (opens in new tab)">Support</a>
+                <a href="#faq" class="sv-nav-link">FAQ</a>
+                <a href="https://forms.gle/Mrh1My2NiGv2c6KN9" target="_blank" rel="noopener noreferrer" class="sv-nav-link" aria-label="Support (opens in new tab)">Support</a>
             </nav>
 
             <button id="sv-mobile-menu-btn" class="sv-mobile-menu-btn" aria-label="Open menu">
@@ -265,7 +254,8 @@
         <div id="sv-mobile-nav" class="sv-mobile-nav">
             <a href="#games" class="sv-mobile-link">Games</a>
             <a href="#features" class="sv-mobile-link">Features</a>
-            <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" rel="noopener noreferrer" class="sv-mobile-link">Support</a>
+            <a href="#faq" class="sv-mobile-link">FAQ</a>
+            <a href="https://forms.gle/Mrh1My2NiGv2c6KN9" target="_blank" rel="noopener noreferrer" class="sv-mobile-link">Support</a>
         </div>
     </header>
 
@@ -354,7 +344,7 @@
                 <div class="sv-game-content">
                     <div class="sv-game-icon" aria-hidden="true">🔥</div>
                     <h3 class="sv-game-title">Diablo IV</h3>
-                    <p class="sv-game-subtitle sv-text-live">Horadric AI - Season 7</p>
+                    <p class="sv-game-subtitle sv-text-live">Horadric AI - Season 11</p>
                     <p class="sv-game-description">
                         Full analysis for Diablo IV with Sanctified item detection
                         <span style="display: block; margin-top: 8px; font-size: 0.85em; color: #ffa500;">
@@ -496,19 +486,100 @@
         </div>
     </section>
 
+    <section class="sv-faq" id="faq" role="region" aria-labelledby="faq-heading">
+        <h2 class="sv-section-title" id="faq-heading">Frequently Asked Questions</h2>
+        
+        <div class="sv-faq-list">
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">What is StatVerdict?</summary>
+                <div class="sv-faq-answer">
+                    <p>StatVerdict is an AI-powered loot analysis platform built for Action RPG players. Upload a screenshot of any in-game item and get an instant, detailed evaluation — including a score, build-specific recommendations, and whether you should keep, salvage, or equip the item. Our first supported game is Diablo IV through our Horadric AI scanner, with more ARPGs coming soon.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">How does it work?</summary>
+                <div class="sv-faq-answer">
+                    <p>You upload a screenshot of an item tooltip from your game. Our AI reads the image using optical character recognition (OCR), identifies every stat, affix, and property on the item, then evaluates it against your selected class and build. The result is a letter grade (S through D), a verdict (Keep, Salvage, Equip, Sanctify), and a detailed breakdown of why.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Is it free to use?</summary>
+                <div class="sv-faq-answer">
+                    <p>Yes! StatVerdict is free to use. You provide your own Gemini API key (Google's AI service), which has a generous free tier. This means your scans are processed directly through your own API key — we never see your data, and there's no subscription or paywall on our end.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Why was StatVerdict created?</summary>
+                <div class="sv-faq-answer">
+                    <p>As ARPG players ourselves, we got tired of alt-tabbing to wikis, asking Discord, or guessing whether a drop was actually good. We wanted a tool that could look at an item and instantly tell you if it's worth keeping — tailored to your specific class and build. StatVerdict was built to solve that problem, starting with Diablo IV and expanding to every major ARPG.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Which games are supported?</summary>
+                <div class="sv-faq-answer">
+                    <p>Currently, Diablo IV is fully supported through our Horadric AI scanner, including all 7 classes, Sanctified item detection, Greater Affix analysis, and the Season 11 Heavenly Forge system. Path of Exile 2, Last Epoch, and additional Diablo titles (D3, D2R, Immortal) are on our roadmap — you can vote for the next game on the landing page.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Is my data private?</summary>
+                <div class="sv-faq-answer">
+                    <p>Absolutely. Your API key is stored locally in your browser only. Item screenshots are sent directly from your browser to Google's Gemini API for analysis — they never pass through our servers. Scan history, loadout data, and preferences are all stored locally in your browser. We don't collect personal information or track individual users.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">What is Horadric AI?</summary>
+                <div class="sv-faq-answer">
+                    <p>Horadric AI is the Diablo IV scanner within StatVerdict. Named after Diablo's iconic Horadric Cube, it's the engine that analyzes your D4 items. It supports Analyze mode (single-item evaluation), Compare mode (side-by-side item comparison), a persistent loadout system, scan journal, and integration with Diablo.Trade for market lookups.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">How do I get a Gemini API key?</summary>
+                <div class="sv-faq-answer">
+                    <p>Visit <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Google AI Studio</a> and sign in with your Google account. Click "Create API Key" — it's free and takes about 30 seconds. Copy the key and paste it into the Settings panel in Horadric AI. The free tier gives you plenty of scans per day for normal use.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Can I use it on mobile?</summary>
+                <div class="sv-faq-answer">
+                    <p>Yes! StatVerdict and Horadric AI are fully responsive and work on both iOS (Safari) and Android (Chrome). You can screenshot an item on your console or PC, then scan it from your phone. The interface is optimized for touch with large tap targets and mobile-friendly layouts.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">How can I contribute or report issues?</summary>
+                <div class="sv-faq-answer">
+                    <p>We'd love your feedback! Use the "Report Issue" or "Suggest a Game" links in the footer to submit feedback via Google Forms. You can also follow us on <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Instagram @StatVerdict</a> for updates, previews, and community polls. Vote for the next supported game in the voting section above!</p>
+                </div>
+            </details>
+        </div>
+    </section>
+
     <footer class="sv-footer" role="contentinfo">
         <div class="sv-footer-content">
             <p>© 2025 StatVerdict. Built for the ARPG community.</p>
             <div class="sv-footer-links">
-                <a href="https://forms.gle/4r3pkCsFuD4Ckaqa8" target="_blank" rel="noopener noreferrer" aria-label="Report issue (opens in new tab)">🐛 Report Issue</a>
+                <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer" aria-label="Follow StatVerdict on Instagram">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    @StatVerdict
+                </a>
                 <span class="sv-divider" aria-hidden="true">•</span>
-                <a href="https://forms.gle/MappsrQeiSyskmYb6" target="_blank" rel="noopener noreferrer" aria-label="Suggest a game (opens in new tab)">💡 Suggest a Game</a>
+                <a href="https://forms.gle/Mrh1My2NiGv2c6KN9" target="_blank" rel="noopener noreferrer" aria-label="Report issue (opens in new tab)">🐛 Report Issue</a>
+                <span class="sv-divider" aria-hidden="true">•</span>
+                <a href="https://forms.gle/LgD37ptZAYjkAYqF9" target="_blank" rel="noopener noreferrer" aria-label="Suggest a game (opens in new tab)">💡 Suggest a Game</a>
             </div>
             <div style="margin-top: 15px;">
                 <button id="privacy-trigger" class="sv-footer-link-btn">Privacy Policy</button>
             </div>
             <div style="margin-top: 20px; font-size: 0.75rem; color: #666; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5;">
-                StatVerdict and Horadric AI are not affiliated with or endorsed by Blizzard Entertainment, Inc. Diablo is a trademark or registered trademark of Blizzard Entertainment, Inc.
+                Game titles, trademarks, and logos referenced on this site are the property of their respective owners. StatVerdict is an independent product and is not affiliated with or endorsed by any game publisher.
             </div>
         </div>
     </footer>
