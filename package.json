@@ -12,7 +12,8 @@
     "format": "prettier --write \"**/*.{js,css,html,md}\""
   },
   "dependencies": {
-    "@google-analytics/data": "^4.0.0"
+    "@google-analytics/data": "^4.0.0",
+    "@vercel/analytics": "^1.4.0"
   },
   "devDependencies": {
     "vite": "^5.0.0",

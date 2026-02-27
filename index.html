@@ -9,11 +9,11 @@
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com https://va.vercel-scripts.com; 
         base-uri 'self'; 
         form-action 'self' https://formspree.io https://forms.gle https://app.convertkit.com https://app.kit.com;
     ">
@@ -35,6 +35,12 @@
     <!-- Load Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
     <script src="js/gtag.js"></script>
+    
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
     
     <!-- Optimized font loading - direct stylesheet link with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
