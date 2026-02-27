@@ -1232,7 +1232,7 @@ Return ONLY the JSON object, no additional text.`;
 
     async callGemini(prompt, imageBase64, mimeType) {
         try {
-            const response = await fetch('/api/analyze', {
+            const response = await fetch('/api_analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
