@@ -373,32 +373,30 @@ const Analytics = {
     },
     
     // ====================================
-    // API KEY TRACKING
+    // SCAN USAGE TRACKING
     // ====================================
     
-    trackApiKeyEntered(provider, isValid) {
-        this.track('api_key_entered', {
-            provider: provider,
-            is_valid: isValid,
-            event_category: 'authentication',
-            event_label: isValid ? 'valid' : 'invalid'
+    trackScanCompleted(scanType, remaining) {
+        this.track('scan_completed', {
+            scan_type: scanType,
+            scans_remaining: remaining,
+            event_category: 'usage',
+            event_label: scanType
         });
     },
     
-    trackApiKeyValidationError(provider, errorType) {
-        this.track('api_key_validation_error', {
-            provider: provider,
+    trackScanLimitReached() {
+        this.track('scan_limit_reached', {
+            event_category: 'usage',
+            event_label: 'daily_limit'
+        });
+    },
+    
+    trackScanError(errorType) {
+        this.track('scan_error', {
             error_type: errorType,
             event_category: 'error',
             event_label: errorType
-        });
-    },
-    
-    trackGetApiKeyClicked(provider) {
-        this.track('get_api_key_clicked', {
-            provider: provider,
-            event_category: 'conversion',
-            event_label: 'api_key_acquisition'
         });
     },
     
