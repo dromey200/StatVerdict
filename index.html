@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="StatVerdict - AI-powered loot analysis for ARPGs. Instant item scoring, build optimization, and gear evaluation for Diablo 4, Path of Exile 2, Last Epoch, and more.">
+    <meta name="description" content="Stop guessing if your drops are good. StatVerdict is a free, AI-powered loot filter and item analyzer for Diablo 4, Path of Exile, and ARPGs. Upload a screenshot for instant keep/salvage verdicts.">
     <meta name="theme-color" content="#060b18">
     <meta name="color-scheme" content="dark">
     
@@ -18,31 +18,24 @@
         form-action 'self' https://formspree.io https://forms.gle https://app.convertkit.com https://app.kit.com;
     ">
     
-    <!-- Optimized preconnect - only for critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- DNS prefetch for non-critical resources -->
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://api.counterapi.dev">
     <link rel="dns-prefetch" href="https://app.kit.com">
     
-    <!-- Preload critical CSS -->
     <link rel="preload" href="css/statverdict.css" as="style">
     
-    <title>StatVerdict - AI-Powered Loot Analysis for ARPGs</title>
+    <title>StatVerdict | AI-Powered Loot Analyzer for ARPGs (Diablo 4, PoE)</title>
     
-    <!-- Load Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
     <script src="js/gtag.js"></script>
     
-    <!-- Optimized font loading - direct stylesheet link with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Critical CSS -->
     <link rel="stylesheet" href="css/statverdict.css">
     
-    <!-- Voting Section Styles -->
     <style>
         .sv-voting-section {
             max-width: 900px;
@@ -212,7 +205,6 @@
         }
     </style>
     
-    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🔍</text></svg>" type="image/svg+xml">
 </head>
 <body>
@@ -264,7 +256,7 @@
             </div>
             
             <h1 class="sv-hero-title" id="hero-title">
-                Master Your <span class="sv-text-gradient">ARPG Loot</span>
+                The AI-Powered Loot Analyzer for <span class="sv-text-gradient">ARPGs</span>
             </h1>
             
             <p class="sv-hero-subtitle">
@@ -331,7 +323,7 @@
         
         <div class="sv-games-grid">
             <a 
-                href="horadric.html" 
+                href="diablo-4-scanner.html" 
                 class="sv-game-card sv-game-available" 
                 data-game="diablo"
                 aria-label="Launch Diablo IV scanner (Live)"
@@ -488,72 +480,44 @@
         
         <div class="sv-faq-list">
             <details class="sv-faq-item">
-                <summary class="sv-faq-question">What is StatVerdict?</summary>
+                <summary class="sv-faq-question">How does the Diablo 4 AI loot analyzer work?</summary>
                 <div class="sv-faq-answer">
-                    <p>StatVerdict is an AI-powered loot analysis platform built for Action RPG players. Upload a screenshot of any in-game item and get an instant, detailed evaluation — including a score, build-specific recommendations, and whether you should keep, salvage, or equip the item. Our first supported game is Diablo IV through our Horadric AI scanner, with more ARPGs coming soon.</p>
+                    <p>StatVerdict acts as an AI gear checker for Diablo 4 and other ARPGs. Simply upload a screenshot of an item tooltip from your game. Our engine reads the image, identifies every stat and property, and evaluates it against current Diablo 4 item stat weights for your selected class. The result is an instant keep or salvage recommendation tailored to your specific build.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
-                <summary class="sv-faq-question">How does it work?</summary>
+                <summary class="sv-faq-question">Is this D4 item scanner safe to use?</summary>
                 <div class="sv-faq-answer">
-                    <p>You upload a screenshot of an item tooltip from your game. Our AI reads the image using optical character recognition (OCR), identifies every stat, affix, and property on the item, then evaluates it against your selected class and build. The result is a letter grade (S through D), a verdict (Keep, Salvage, Equip, Sanctify), and a detailed breakdown of why.</p>
+                    <p>Yes, absolutely. Because our tool operates entirely in your browser through image uploads, it does not inject into game memory or violate any Terms of Service. Your data is private: images are processed in real-time and never saved on our servers, making it the safest way to quickly sort inventory in D4.</p>
                 </div>
             </details>
 
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">How do I know if I found a God Roll or if I should salvage it?</summary>
+                <div class="sv-faq-answer">
+                    <p>Stop guessing "is this item an upgrade in Diablo 4?" Our D4 god roll checker analyzes base stats, Aspect rolls, and what to do with Greater Affixes. It grades the item (S through D) and gives you a definitive "Keep", "Salvage", or "Equip" verdict based on whether the stats align with top meta builds.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">How do I compare items in D4 to my equipped gear?</summary>
+                <div class="sv-faq-answer">
+                    <p>Our Diablo 4 loot analyzer includes a dedicated "Compare" mode. You can upload a screenshot of your current gear alongside a new drop to see a side-by-side breakdown. The AI will explicitly tell you which item yields better performance, taking the guesswork out of min-maxing your loadout.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Will this work for Path of Exile 2 or Last Epoch?</summary>
+                <div class="sv-faq-answer">
+                    <p>Currently, our primary scanner (Horadric AI) is optimized as a Diablo 4 item scanner. However, full support for Path of Exile 2, Last Epoch, and other ARPGs is actively in development. You can vote for the next game to be added in the voting section above!</p>
+                </div>
+            </details>
+            
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">Is it free to use?</summary>
                 <div class="sv-faq-answer">
-                    <p>Yes! StatVerdict is completely free to use — no API key, no account, and no subscription required. Just upload a screenshot and get your analysis instantly. We provide a daily scan limit per user to keep things running smoothly for everyone.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">Why was StatVerdict created?</summary>
-                <div class="sv-faq-answer">
-                    <p>As ARPG players ourselves, we got tired of alt-tabbing to wikis, asking Discord, or guessing whether a drop was actually good. We wanted a tool that could look at an item and instantly tell you if it's worth keeping — tailored to your specific class and build. StatVerdict was built to solve that problem, starting with Diablo IV and expanding to every major ARPG.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">Which games are supported?</summary>
-                <div class="sv-faq-answer">
-                    <p>Currently, Diablo IV is fully supported through our Horadric AI scanner, including all 7 classes, Sanctified item detection, Greater Affix analysis, and the Season 11 Heavenly Forge system. Path of Exile 2, Last Epoch, and additional Diablo titles (D3, D2R, Immortal) are on our roadmap — you can vote for the next game on the landing page.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">Is my data private?</summary>
-                <div class="sv-faq-answer">
-                    <p>Absolutely. Item screenshots are sent to Google's Gemini AI for analysis through our secure server — they are processed in real-time and never stored. Scan history, loadout data, and preferences are all stored locally in your browser. We don't collect personal information or track individual users.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">What is Horadric AI?</summary>
-                <div class="sv-faq-answer">
-                    <p>Horadric AI is the Diablo IV scanner within StatVerdict. Named after Diablo's iconic Horadric Cube, it's the engine that analyzes your D4 items. It supports Analyze mode (single-item evaluation), Compare mode (side-by-side item comparison), a persistent loadout system, scan journal, and integration with Diablo.Trade for market lookups.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">Are there any usage limits?</summary>
-                <div class="sv-faq-answer">
-                    <p>To keep the service free and reliable for everyone, each user gets a daily scan limit. This resets every 24 hours. If you need more scans, check back tomorrow — the limit is generous enough for regular play sessions.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">Can I use it on mobile?</summary>
-                <div class="sv-faq-answer">
-                    <p>Yes! You can screenshot an item on your console or PC, then scan it from your phone. The interface is optimized for touch with large tap targets and mobile-friendly layouts.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">How can I contribute or report issues?</summary>
-                <div class="sv-faq-answer">
-                    <p>We'd love your feedback! Use the "Report Issue" or "Suggest a Game" links in the footer to submit feedback via Google Forms. You can also follow us on <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Instagram @StatVerdict</a> for updates, previews, and community polls. Vote for the next supported game in the voting section above!</p>
+                    <p>Yes! StatVerdict is 100% free to use. There are no subscription fees, no paywalls, and no API keys required. You get full access to our instant visual intelligence and loot filtering tools right out of the box.</p>
                 </div>
             </details>
         </div>
@@ -587,8 +551,8 @@
             <h3>Privacy & Data</h3>
             <div class="privacy-content">
                 <ul>
-                    <li>No account or API key required</li>
-                    <li>Images processed in real-time via secure server, never saved</li>
+                    <li>API keys stored locally in encrypted form</li>
+                    <li>Images processed in real-time, never saved on servers</li>
                     <li>Scan history stored locally in your browser</li>
                     <li>No personal data collected or transmitted</li>
                 </ul>
