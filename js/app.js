@@ -1505,19 +1505,83 @@ Return ONLY the JSON object, no additional text.`;
             ? `<span style="display: inline-block; padding: 4px 8px; background: rgba(255,215,0,0.2); color: gold; border-radius: 4px; font-size: 0.85rem; margin-left: 10px;">🦋 Sanctified</span>`
             : '';
 
+        const rarityColor = this.getRarityColor ? this.getRarityColor(result.rarity) : '#ccc';
+
+        // Build the Greater Affix display
+        const gaDisplay = result.greater_affix_count 
+            ? `<div style="color: gold; font-size: 0.85rem; margin-top: 6px;">✨ ${result.greater_affix_count} Greater Affix${result.greater_affix_count > 1 ? 'es' : ''}</div>` 
+            : '';
+
+        // Determine verdict border color
+        const verdictBorderColor = verdictColor === 'keep' ? '#4caf50' : (verdictColor === 'salvage' ? '#f44336' : '#ffa500');
+        const verdictGlow = verdictColor === 'keep' ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);' : 
+                            (verdictColor === 'salvage' ? 'box-shadow: 0 0 15px rgba(244, 67, 54, 0.3);' : '');
+
+        // Build verdict reinforcement text — a short reason under the verdict
+        let verdictReason = '';
+        if (verdict === 'KEEP' || verdict === 'EQUIP' || verdict === 'EQUIP NEW') {
+            verdictReason = result.score === 'S' ? 'Top-tier item. Best-in-slot potential.' :
+                            result.score === 'A' ? 'Excellent rolls. Strong endgame piece.' :
+                            result.score === 'B' ? 'Solid item. Good for progression.' :
+                            'Usable for your build.';
+        } else if (verdict === 'SANCTIFY') {
+            verdictReason = 'High-quality base worth making permanent at the Heavenly Forge.';
+        } else if (verdict === 'UPGRADE') {
+            verdictReason = 'Good foundation. Worth investing materials to improve.';
+        } else if (verdict === 'SALVAGE' || verdict === 'DISCARD' || verdict === 'CHARSI') {
+            verdictReason = result.score === 'D' ? 'Poor stats and low synergy. Salvage for materials.' :
+                            result.score === 'C' ? 'Below average. Better options are available.' :
+                            'Not worth keeping for your build.';
+        }
+
+        // Build stat pills — only show what we have
+        const statPills = [];
+        if (result.item_power) statPills.push(`<span style="color: #ccc;">⚡ IP: <strong style="color: #fff;">${result.item_power}</strong>/925</span>`);
+        if (result.score) statPills.push(`<span style="color: ${verdictBorderColor};">📊 Grade: <strong>${result.score}</strong></span>`);
+        const statPillsHtml = statPills.length ? `<div style="display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; margin-bottom: 8px;">${statPills.join('')}</div>` : '';
+
+        // Full analysis section — only show toggle if we have analysis content
+        const analysisSection = analysisHtml && analysisHtml.trim() 
+            ? `<details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+               </details>`
+            : '';
+
         this.el.resultArea.innerHTML = `
-            <div class="result-header rarity-${rarity}">
-                <h2 class="item-title">${result.title || 'Unknown Item'}${sanctifiedBadge}${confidenceBadge}</h2>
-                <span class="item-type">${result.type || result.rarity || ''}</span>
+            <!-- Verdict + Score: The 3-second answer -->
+            <div style="margin-bottom: 15px;">
+                <div class="verdict-container ${verdictColor}">
+                    <div class="verdict-label">${verdict}</div>
+                    <div class="verdict-score">${result.score || '-'}</div>
+                </div>
+                <div class="insight-box" style="margin-top: 10px;">
+                    <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
+                </div>
             </div>
-            <div class="verdict-container ${verdictColor}">
-                <div class="verdict-label">${verdict}</div>
-                <div class="verdict-score">${result.score || result.score_diff || '-'}</div>
+
+            <!-- Item Card: Quick stats at a glance -->
+            <div style="
+                border: 2px solid ${verdictBorderColor}; 
+                border-radius: 10px; 
+                padding: 18px; 
+                background: rgba(0,0,0,0.3);
+                margin-bottom: 15px;
+                ${verdictGlow}
+            ">
+                <div style="text-align: center;">
+                    <div style="color: ${rarityColor}; font-weight: bold; font-size: 1.15rem; margin-bottom: 4px;">
+                        ${result.title || 'Unknown Item'}${sanctifiedBadge}${confidenceBadge}
+                    </div>
+                    <div style="color: #999; font-size: 0.85rem; margin-bottom: 12px;">${result.type || ''} ${result.type && result.rarity ? '·' : ''} ${result.rarity || ''}</div>
+                    ${statPillsHtml}
+                    ${gaDisplay}
+                    ${verdictReason ? `<div style="color: #aaa; font-size: 0.78rem; margin-top: 8px; line-height: 1.4;">${verdictReason}</div>` : ''}
+                </div>
             </div>
-            <div class="insight-box">
-                <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
-            </div>
-            <div class="analysis-text markdown-body">${analysisHtml}</div>
+
+            <!-- Full Analysis: Expandable for those who want depth -->
+            ${analysisSection}
         `;
         
         this.el.priceSection.style.display = 'none';
@@ -1691,9 +1755,21 @@ Return ONLY the JSON object, no additional text.`;
             rarity: result.rarity, 
             verdict: result.verdict, 
             insight: result.insight, 
+            score: result.score || null,
+            item_power: result.item_power || null,
+            greater_affix_count: result.greater_affix_count || 0,
+            type: result.type || null,
+            confidence: result.confidence || null,
+            analysis: result.analysis || null,
+            sanctified: result.sanctified || false,
             game: this.el.gameVersion.value, 
             date: new Date().toLocaleDateString(),
-            sanctified: result.sanctified || false
+            // Preserve comparison data
+            mode: result.mode || null,
+            item1: result.item1 || null,
+            item2: result.item2 || null,
+            winner: result.winner || null,
+            score_diff: result.score_diff || null
         };
         this.state.history.unshift(item); 
         if(this.state.history.length > 20) this.state.history.pop();
@@ -1714,12 +1790,13 @@ Return ONLY the JSON object, no additional text.`;
             const g = String(item.game || 'd4').toUpperCase();
             const r = String(item.rarity || 'common').split(' ')[0].toLowerCase();
             const sanctBadge = item.sanctified ? ' 🦋' : '';
+            const scoreBadge = item.score ? ` · ${item.score}` : '';
             
             div.className = `recent-item rarity-${r}`;
             div.innerHTML = `
                 <div class="recent-header">
                     <span>${g}${sanctBadge}</span>
-                    <span>${item.verdict || '?'}</span>
+                    <span>${item.verdict || '?'}${scoreBadge}</span>
                 </div>
                 <div class="recent-name">${item.title || 'Unknown'}</div>
             `;
@@ -1770,7 +1847,7 @@ Return ONLY the JSON object, no additional text.`;
         this.el.imagePreview.style.display = 'block';
         const label = this.el.uploadZone.querySelector('.upload-label');
         if(label) label.style.display = 'none';
-        const res = { title: "Harlequin Crest", rarity: "mythic", verdict: "KEEP", score: "S-Tier", insight: "Best-in-slot Mythic helm", game: "d4", status: "success", sanctified: false };
+        const res = { title: "Harlequin Crest", rarity: "Mythic", type: "Helm", verdict: "KEEP", score: "S", item_power: 925, greater_affix_count: 4, insight: "Best-in-slot Mythic helm. Massive +4 to all Skills with unmatched defensive stats. Every class wants this.", analysis: "### Stats Breakdown\n- Item Power: 925/925\n- Key Stats: +4 All Skills, +20% Damage Reduction, +Maximum Life\n- Greater Affixes: 4 (all gold)\n- Sanctified: No\n\n### Verdict\nThis is the most sought-after helm in the game. Keep it permanently.", game: "d4", status: "success", confidence: "high", sanctified: false };
         this.renderSuccess(res); this.saveToHistory(res);
     }
 };
