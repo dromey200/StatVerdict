@@ -1505,19 +1505,58 @@ Return ONLY the JSON object, no additional text.`;
             ? `<span style="display: inline-block; padding: 4px 8px; background: rgba(255,215,0,0.2); color: gold; border-radius: 4px; font-size: 0.85rem; margin-left: 10px;">🦋 Sanctified</span>`
             : '';
 
+        const rarityColor = this.getRarityColor ? this.getRarityColor(result.rarity) : '#ccc';
+
+        // Build the Greater Affix display
+        const gaDisplay = result.greater_affix_count 
+            ? `<div style="color: gold; font-size: 0.85rem; margin-top: 6px;">✨ ${result.greater_affix_count} Greater Affix${result.greater_affix_count > 1 ? 'es' : ''}</div>` 
+            : '';
+
+        // Determine verdict border color
+        const verdictBorderColor = verdictColor === 'keep' ? '#4caf50' : (verdictColor === 'salvage' ? '#f44336' : '#ffa500');
+        const verdictGlow = verdictColor === 'keep' ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);' : 
+                            (verdictColor === 'salvage' ? 'box-shadow: 0 0 15px rgba(244, 67, 54, 0.3);' : '');
+
         this.el.resultArea.innerHTML = `
-            <div class="result-header rarity-${rarity}">
-                <h2 class="item-title">${result.title || 'Unknown Item'}${sanctifiedBadge}${confidenceBadge}</h2>
-                <span class="item-type">${result.type || result.rarity || ''}</span>
+            <!-- Verdict + Score: The 3-second answer -->
+            <div style="margin-bottom: 15px;">
+                <div class="verdict-container ${verdictColor}">
+                    <div class="verdict-label">${verdict}</div>
+                    <div class="verdict-score">${result.score || '-'}</div>
+                </div>
+                <div class="insight-box" style="margin-top: 10px;">
+                    <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
+                </div>
             </div>
-            <div class="verdict-container ${verdictColor}">
-                <div class="verdict-label">${verdict}</div>
-                <div class="verdict-score">${result.score || result.score_diff || '-'}</div>
+
+            <!-- Item Card: Quick stats at a glance -->
+            <div style="
+                border: 2px solid ${verdictBorderColor}; 
+                border-radius: 10px; 
+                padding: 18px; 
+                background: rgba(0,0,0,0.3);
+                margin-bottom: 15px;
+                ${verdictGlow}
+            ">
+                <div style="text-align: center;">
+                    <div style="color: ${rarityColor}; font-weight: bold; font-size: 1.15rem; margin-bottom: 4px;">
+                        ${result.title || 'Unknown Item'}${sanctifiedBadge}${confidenceBadge}
+                    </div>
+                    <div style="color: #999; font-size: 0.85rem; margin-bottom: 12px;">${result.type || ''} · ${result.rarity || ''}</div>
+                    
+                    <div style="display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; margin-bottom: 8px;">
+                        ${result.item_power ? `<span style="color: #ccc;">⚡ IP: <strong style="color: #fff;">${result.item_power}</strong>/925</span>` : ''}
+                        <span style="color: ${verdictBorderColor};">📊 Grade: <strong>${result.score || '-'}</strong></span>
+                    </div>
+                    ${gaDisplay}
+                </div>
             </div>
-            <div class="insight-box">
-                <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
-            </div>
-            <div class="analysis-text markdown-body">${analysisHtml}</div>
+
+            <!-- Full Analysis: Expandable for those who want depth -->
+            <details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+            </details>
         `;
         
         this.el.priceSection.style.display = 'none';
