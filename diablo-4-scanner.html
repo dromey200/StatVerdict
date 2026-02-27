@@ -3,36 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Instantly analyze your Diablo 4 loot with AI. Upload a screenshot to check Greater Affixes, compare equipped gear, and get build-specific keep or salvage recommendations.">
+    <meta name="description" content="Horadric AI - AI-powered Diablo loot analyzer. Instant analysis for Diablo 4, D2R, D3, and Diablo Immortal.">
     <meta name="theme-color" content="#d32f2f">
     <meta name="color-scheme" content="dark">
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' 'sha256-GBMFtBuyvFiVvTVgYiN3e+XTGLlN5kMNLnCTzHxqXjU='; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com https://d4.maxroll.gg https://statverdict.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://va.vercel-scripts.com https://vitals.vercel-insights.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev; 
         base-uri 'self';
     ">
     
+    <!-- Optimized preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
+    <!-- DNS prefetch for non-critical -->
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
     
-    <title>Diablo 4 AI Loot Analyzer & Scanner | StatVerdict (Horadric AI)</title>
+    <title>Horadric AI - Diablo Loot Analyzer</title>
     
     <!-- Load Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
-    <script src="js/gtag.js"></script>
-    
-    <!-- Vercel Web Analytics -->
-    <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
+    <script defer src="js/gtag.js"></script>
     
     <!-- Optimized font loading with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Outfit:wght@500&display=swap" rel="stylesheet">
@@ -102,7 +99,7 @@
                 </a>
                 <h1 class="dashboard-title">
                     <span class="title-icon">🔥</span>
-                    <span class="title-text">Horadric AI: D4 Scanner</span>
+                    <span class="title-text">Horadric AI</span>
                 </h1>
             </div>
             <div class="header-controls">
@@ -288,9 +285,17 @@
             </div>
             <div class="settings-body">
                 <div class="settings-section">
-                    <h3 class="section-title">AI Engine</h3>
-                    <p class="section-desc">Powered by Google Gemini 2.5 Flash — no API key needed</p>
-                    <div id="scan-quota" class="scan-quota" style="display: none;"></div>
+                    <h3 class="section-title">Gemini API Key</h3>
+                    <p class="section-desc">Required for AI-powered analysis</p>
+                    <form id="api-key-form">
+                        <div class="input-group">
+                            <input type="password" id="api-key" name="api-key" class="settings-input" placeholder="Paste your API key here..." autocomplete="off">
+                            <span class="input-hint">🔒 Encrypted & stored locally</span>
+                        </div>
+                    </form>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn-link" rel="noopener noreferrer">Get API Key →</a>
+                    <div id="api-key-error" class="message-box error" style="display: none;"></div>
+                    <div id="api-key-success" class="message-box success" style="display: none;"></div>
                 </div>
                 <div class="settings-section">
                     <h3 class="section-title">Preferences</h3>
@@ -341,12 +346,6 @@
     
     <!-- Main app script must load last -->
     <script defer src="js/app.js"></script>
-    
-    <!-- Vercel Speed Insights -->
-    <script>
-        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
     
 </body>
 </html>

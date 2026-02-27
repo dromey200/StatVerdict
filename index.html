@@ -3,214 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Stop guessing if your drops are good. StatVerdict is a free, AI-powered loot filter and item analyzer for Diablo 4, Path of Exile, and ARPGs. Upload a screenshot for instant keep/salvage verdicts.">
+    <meta name="description" content="StatVerdict - AI-powered loot analysis for ARPGs. Instant item scoring, build optimization, and gear evaluation for Diablo 4, Path of Exile 2, Last Epoch, and more.">
     <meta name="theme-color" content="#060b18">
     <meta name="color-scheme" content="dark">
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' 'sha256-GBMFtBuyvFiVvTVgYiN3e+XTGLlN5kMNLnCTzHxqXjU='; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com https://va.vercel-scripts.com https://vitals.vercel-insights.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com; 
         base-uri 'self'; 
         form-action 'self' https://formspree.io https://forms.gle https://app.convertkit.com https://app.kit.com;
     ">
     
+    <!-- Optimized preconnect - only for critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
+    <!-- DNS prefetch for non-critical resources -->
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://api.counterapi.dev">
     <link rel="dns-prefetch" href="https://app.kit.com">
     
+    <!-- Preload critical CSS -->
     <link rel="preload" href="css/statverdict.css" as="style">
+    <link rel="preload" href="assets/images/image%2028.jpg" as="image" fetchpriority="high">
     
-    <title>StatVerdict | AI-Powered Loot Analyzer for ARPGs (Diablo 4, PoE)</title>
+    <title>StatVerdict - AI-Powered Loot Analysis for ARPGs</title>
     
+    <!-- Load Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E1JZ16DMSF"></script>
-    <script src="js/gtag.js"></script>
+    <script defer src="js/gtag.js"></script>
     
-    <!-- Vercel Web Analytics -->
-    <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
+    <!-- Optimized font loading - only weights actually used -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <!-- Critical CSS -->
     <link rel="stylesheet" href="css/statverdict.css">
     
-    <style>
-        .sv-voting-section {
-            max-width: 900px;
-            margin: 40px auto 0;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, rgba(212, 160, 23, 0.08), rgba(0, 188, 212, 0.05));
-            border-radius: 16px;
-            border: 1px solid rgba(212, 160, 23, 0.2);
-        }
-
-        .sv-voting-title {
-            text-align: center;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 8px;
-            font-family: 'Cinzel', serif;
-        }
-
-        .sv-voting-subtitle {
-            text-align: center;
-            color: #aaa;
-            font-size: 1rem;
-            margin-bottom: 30px;
-        }
-
-        .sv-voting-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .sv-vote-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Outfit', sans-serif;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .sv-vote-btn:hover {
-            background: rgba(212, 160, 23, 0.15);
-            border-color: rgba(212, 160, 23, 0.5);
-            transform: translateY(-3px);
-        }
-
-        .sv-vote-btn:active {
-            transform: translateY(-1px);
-        }
-
-        .vote-icon {
-            font-size: 2rem;
-        }
-
-        .vote-name {
-            text-align: center;
-            line-height: 1.3;
-        }
-
-        .sv-voting-results {
-            margin-top: 30px;
-        }
-
-        .sv-results-title {
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 20px;
-        }
-
-        .sv-results-chart {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .sv-result-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sv-result-name {
-            min-width: 150px;
-            font-size: 0.95rem;
-            color: #ccc;
-            font-weight: 500;
-        }
-
-        .sv-result-bar-container {
-            flex: 1;
-            height: 32px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .sv-result-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, rgba(211, 47, 47, 0.8), rgba(211, 47, 47, 0.4));
-            border-radius: 6px;
-            transition: width 0.6s ease;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 10px;
-        }
-
-        .sv-result-percentage {
-            font-size: 0.85rem;
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .sv-result-votes {
-            min-width: 80px;
-            text-align: right;
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        .sv-results-note {
-            text-align: center;
-            color: #d4a017;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 15px;
-        }
-
-        /* Highlight user's voted game */
-        .sv-result-name.user-voted {
-            color: #d4a017;
-            font-weight: 700;
-        }
-
-        .sv-result-bar-fill.user-voted {
-            background: linear-gradient(90deg, rgba(212, 160, 23, 0.9), rgba(212, 160, 23, 0.5));
-        }
-
-        @media (max-width: 768px) {
-            .sv-voting-options {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .sv-result-name {
-                min-width: 100px;
-                font-size: 0.85rem;
-            }
-
-            .sv-result-votes {
-                min-width: 60px;
-                font-size: 0.8rem;
-            }
-        }
-    </style>
-    
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🔍</text></svg>" type="image/svg+xml">
 </head>
 <body>
@@ -224,7 +57,7 @@
         <div class="sv-header-inner">
             <a href="index.html" class="sv-logo" aria-label="StatVerdict Home">
                 <div class="sv-logo-icon" aria-hidden="true">
-                    <img src="assets/images/image%2028.jpg" alt="" width="44" height="44" style="border-radius: 10px; display: block;">
+                    <img src="assets/images/image%2028.jpg" alt="" width="44" height="44" style="border-radius: 10px; display: block;" fetchpriority="high">
                 </div>
                 <div class="sv-logo-text">
                     <span class="sv-logo-title">StatVerdict</span>
@@ -262,7 +95,7 @@
             </div>
             
             <h1 class="sv-hero-title" id="hero-title">
-                The AI-Powered Loot Analyzer for <span class="sv-text-gradient">ARPGs</span>
+                Master Your <span class="sv-text-gradient">ARPG Loot</span>
             </h1>
             
             <p class="sv-hero-subtitle">
@@ -486,44 +319,72 @@
         
         <div class="sv-faq-list">
             <details class="sv-faq-item">
-                <summary class="sv-faq-question">How does the Diablo 4 AI loot analyzer work?</summary>
+                <summary class="sv-faq-question">What is StatVerdict?</summary>
                 <div class="sv-faq-answer">
-                    <p>StatVerdict acts as an AI gear checker for Diablo 4 and other ARPGs. Simply upload a screenshot of an item tooltip from your game. Our engine reads the image, identifies every stat and property, and evaluates it against current Diablo 4 item stat weights for your selected class. The result is an instant keep or salvage recommendation tailored to your specific build.</p>
+                    <p>StatVerdict is an AI-powered loot analysis platform built for Action RPG players. Upload a screenshot of any in-game item and get an instant, detailed evaluation — including a score, build-specific recommendations, and whether you should keep, salvage, or equip the item. Our first supported game is Diablo IV through our Horadric AI scanner, with more ARPGs coming soon.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
-                <summary class="sv-faq-question">Is this D4 item scanner safe to use?</summary>
+                <summary class="sv-faq-question">How does it work?</summary>
                 <div class="sv-faq-answer">
-                    <p>Yes, absolutely. Because our tool operates entirely in your browser through image uploads, it does not inject into game memory or violate any Terms of Service. Your data is private: images are processed in real-time and never saved on our servers, making it the safest way to quickly sort inventory in D4.</p>
+                    <p>You upload a screenshot of an item tooltip from your game. Our AI reads the image using optical character recognition (OCR), identifies every stat, affix, and property on the item, then evaluates it against your selected class and build. The result is a letter grade (S through D), a verdict (Keep, Salvage, Equip, Sanctify), and a detailed breakdown of why.</p>
                 </div>
             </details>
 
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">How do I know if I found a God Roll or if I should salvage it?</summary>
-                <div class="sv-faq-answer">
-                    <p>Stop guessing "is this item an upgrade in Diablo 4?" Our D4 god roll checker analyzes base stats, Aspect rolls, and what to do with Greater Affixes. It grades the item (S through D) and gives you a definitive "Keep", "Salvage", or "Equip" verdict based on whether the stats align with top meta builds.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">How do I compare items in D4 to my equipped gear?</summary>
-                <div class="sv-faq-answer">
-                    <p>Our Diablo 4 loot analyzer includes a dedicated "Compare" mode. You can upload a screenshot of your current gear alongside a new drop to see a side-by-side breakdown. The AI will explicitly tell you which item yields better performance, taking the guesswork out of min-maxing your loadout.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
-                <summary class="sv-faq-question">Will this work for Path of Exile 2 or Last Epoch?</summary>
-                <div class="sv-faq-answer">
-                    <p>Currently, our primary scanner (Horadric AI) is optimized as a Diablo 4 item scanner. However, full support for Path of Exile 2, Last Epoch, and other ARPGs is actively in development. You can vote for the next game to be added in the voting section above!</p>
-                </div>
-            </details>
-            
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">Is it free to use?</summary>
                 <div class="sv-faq-answer">
-                    <p>Yes! StatVerdict is 100% free to use. There are no subscription fees, no paywalls, and no API keys required. You get full access to our instant visual intelligence and loot filtering tools right out of the box.</p>
+                    <p>Yes! StatVerdict is free to use. You provide your own Gemini API key (Google's AI service), which has a generous free tier. This means your scans are processed directly through your own API key — we never see your data, and there's no subscription or paywall on our end.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Why was StatVerdict created?</summary>
+                <div class="sv-faq-answer">
+                    <p>As ARPG players ourselves, we got tired of alt-tabbing to wikis, asking Discord, or guessing whether a drop was actually good. We wanted a tool that could look at an item and instantly tell you if it's worth keeping — tailored to your specific class and build. StatVerdict was built to solve that problem, starting with Diablo IV and expanding to every major ARPG.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Which games are supported?</summary>
+                <div class="sv-faq-answer">
+                    <p>Currently, Diablo IV is fully supported through our Horadric AI scanner, including all 7 classes, Sanctified item detection, Greater Affix analysis, and the Season 11 Heavenly Forge system. Path of Exile 2, Last Epoch, and additional Diablo titles (D3, D2R, Immortal) are on our roadmap — you can vote for the next game on the landing page.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Is my data private?</summary>
+                <div class="sv-faq-answer">
+                    <p>Absolutely. Your API key is stored locally in your browser only. Item screenshots are sent directly from your browser to Google's Gemini API for analysis — they never pass through our servers. Scan history, loadout data, and preferences are all stored locally in your browser. We don't collect personal information or track individual users.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">What is Horadric AI?</summary>
+                <div class="sv-faq-answer">
+                    <p>Horadric AI is the Diablo IV scanner within StatVerdict. Named after Diablo's iconic Horadric Cube, it's the engine that analyzes your D4 items. It supports Analyze mode (single-item evaluation), Compare mode (side-by-side item comparison), a persistent loadout system, scan journal, and integration with Diablo.Trade for market lookups.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">How do I get a Gemini API key?</summary>
+                <div class="sv-faq-answer">
+                    <p>Visit <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Google AI Studio</a> and sign in with your Google account. Click "Create API Key" — it's free and takes about 30 seconds. Copy the key and paste it into the Settings panel in Horadric AI. The free tier gives you plenty of scans per day for normal use.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Can I use it on mobile?</summary>
+                <div class="sv-faq-answer">
+                    <p>Yes! You can screenshot an item on your console or PC, then scan it from your phone. The interface is optimized for touch with large tap targets and mobile-friendly layouts.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">How can I contribute or report issues?</summary>
+                <div class="sv-faq-answer">
+                    <p>We'd love your feedback! Use the "Report Issue" or "Suggest a Game" links in the footer to submit feedback via Google Forms. You can also follow us on <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Instagram @StatVerdict</a> for updates, previews, and community polls. Vote for the next supported game in the voting section above!</p>
                 </div>
             </details>
         </div>
@@ -568,12 +429,6 @@
 
     <!-- Defer all non-critical JavaScript -->
     <script defer src="js/landing.js" type="module"></script>
-    
-    <!-- Vercel Speed Insights -->
-    <script>
-        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
     
 </body>
 </html>
