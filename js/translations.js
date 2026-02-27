@@ -17,7 +17,7 @@ const translations = {
         language: 'Language:',
         
         // Form labels
-        api_key_label: 'Gemini API Key',
+        ai_engine_label: 'AI Engine',
         your_class: 'Your Class',
         build_focus: 'Your Build Focus (Optional)',
         upload_screenshot: 'Upload Loot Screenshot',
@@ -53,7 +53,7 @@ const translations = {
         // Messages
         loading: 'Consulting the archives...',
         error_no_image: 'Please upload an image first',
-        error_no_api_key: 'Please enter your API key',
+        error_no_api_key: 'Unable to connect to AI service. Please try again.',
         
         // Footer
         made_with_love: 'Made with ❤️ for the Sanctuary',
@@ -68,7 +68,7 @@ const translations = {
         app_description: 'Analizador de botín de Diablo 4 con IA - Identifica y evalúa tus objetos instantáneamente',
         skip_to_content: 'Saltar al contenido',
         language: 'Idioma:',
-        api_key_label: 'Clave API de Gemini',
+        ai_engine_label: 'Motor de IA',
         your_class: 'Tu Clase',
         build_focus: 'Enfoque de Build (Opcional)',
         upload_screenshot: 'Subir Captura de Pantalla',
