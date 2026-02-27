@@ -1517,6 +1517,37 @@ Return ONLY the JSON object, no additional text.`;
         const verdictGlow = verdictColor === 'keep' ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);' : 
                             (verdictColor === 'salvage' ? 'box-shadow: 0 0 15px rgba(244, 67, 54, 0.3);' : '');
 
+        // Build verdict reinforcement text — a short reason under the verdict
+        let verdictReason = '';
+        if (verdict === 'KEEP' || verdict === 'EQUIP' || verdict === 'EQUIP NEW') {
+            verdictReason = result.score === 'S' ? 'Top-tier item. Best-in-slot potential.' :
+                            result.score === 'A' ? 'Excellent rolls. Strong endgame piece.' :
+                            result.score === 'B' ? 'Solid item. Good for progression.' :
+                            'Usable for your build.';
+        } else if (verdict === 'SANCTIFY') {
+            verdictReason = 'High-quality base worth making permanent at the Heavenly Forge.';
+        } else if (verdict === 'UPGRADE') {
+            verdictReason = 'Good foundation. Worth investing materials to improve.';
+        } else if (verdict === 'SALVAGE' || verdict === 'DISCARD' || verdict === 'CHARSI') {
+            verdictReason = result.score === 'D' ? 'Poor stats and low synergy. Salvage for materials.' :
+                            result.score === 'C' ? 'Below average. Better options are available.' :
+                            'Not worth keeping for your build.';
+        }
+
+        // Build stat pills — only show what we have
+        const statPills = [];
+        if (result.item_power) statPills.push(`<span style="color: #ccc;">⚡ IP: <strong style="color: #fff;">${result.item_power}</strong>/925</span>`);
+        if (result.score) statPills.push(`<span style="color: ${verdictBorderColor};">📊 Grade: <strong>${result.score}</strong></span>`);
+        const statPillsHtml = statPills.length ? `<div style="display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; margin-bottom: 8px;">${statPills.join('')}</div>` : '';
+
+        // Full analysis section — only show toggle if we have analysis content
+        const analysisSection = analysisHtml && analysisHtml.trim() 
+            ? `<details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+               </details>`
+            : '';
+
         this.el.resultArea.innerHTML = `
             <!-- Verdict + Score: The 3-second answer -->
             <div style="margin-bottom: 15px;">
@@ -1524,6 +1555,7 @@ Return ONLY the JSON object, no additional text.`;
                     <div class="verdict-label">${verdict}</div>
                     <div class="verdict-score">${result.score || '-'}</div>
                 </div>
+                ${verdictReason ? `<div style="text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 6px;">${verdictReason}</div>` : ''}
                 <div class="insight-box" style="margin-top: 10px;">
                     <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
                 </div>
@@ -1542,21 +1574,14 @@ Return ONLY the JSON object, no additional text.`;
                     <div style="color: ${rarityColor}; font-weight: bold; font-size: 1.15rem; margin-bottom: 4px;">
                         ${result.title || 'Unknown Item'}${sanctifiedBadge}${confidenceBadge}
                     </div>
-                    <div style="color: #999; font-size: 0.85rem; margin-bottom: 12px;">${result.type || ''} · ${result.rarity || ''}</div>
-                    
-                    <div style="display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; margin-bottom: 8px;">
-                        ${result.item_power ? `<span style="color: #ccc;">⚡ IP: <strong style="color: #fff;">${result.item_power}</strong>/925</span>` : ''}
-                        <span style="color: ${verdictBorderColor};">📊 Grade: <strong>${result.score || '-'}</strong></span>
-                    </div>
+                    <div style="color: #999; font-size: 0.85rem; margin-bottom: 12px;">${result.type || ''} ${result.type && result.rarity ? '·' : ''} ${result.rarity || ''}</div>
+                    ${statPillsHtml}
                     ${gaDisplay}
                 </div>
             </div>
 
             <!-- Full Analysis: Expandable for those who want depth -->
-            <details style="margin-top: 10px;">
-                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
-                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
-            </details>
+            ${analysisSection}
         `;
         
         this.el.priceSection.style.display = 'none';
@@ -1730,9 +1755,21 @@ Return ONLY the JSON object, no additional text.`;
             rarity: result.rarity, 
             verdict: result.verdict, 
             insight: result.insight, 
+            score: result.score || null,
+            item_power: result.item_power || null,
+            greater_affix_count: result.greater_affix_count || 0,
+            type: result.type || null,
+            confidence: result.confidence || null,
+            analysis: result.analysis || null,
+            sanctified: result.sanctified || false,
             game: this.el.gameVersion.value, 
             date: new Date().toLocaleDateString(),
-            sanctified: result.sanctified || false
+            // Preserve comparison data
+            mode: result.mode || null,
+            item1: result.item1 || null,
+            item2: result.item2 || null,
+            winner: result.winner || null,
+            score_diff: result.score_diff || null
         };
         this.state.history.unshift(item); 
         if(this.state.history.length > 20) this.state.history.pop();
@@ -1753,12 +1790,13 @@ Return ONLY the JSON object, no additional text.`;
             const g = String(item.game || 'd4').toUpperCase();
             const r = String(item.rarity || 'common').split(' ')[0].toLowerCase();
             const sanctBadge = item.sanctified ? ' 🦋' : '';
+            const scoreBadge = item.score ? ` · ${item.score}` : '';
             
             div.className = `recent-item rarity-${r}`;
             div.innerHTML = `
                 <div class="recent-header">
                     <span>${g}${sanctBadge}</span>
-                    <span>${item.verdict || '?'}</span>
+                    <span>${item.verdict || '?'}${scoreBadge}</span>
                 </div>
                 <div class="recent-name">${item.title || 'Unknown'}</div>
             `;
@@ -1809,7 +1847,7 @@ Return ONLY the JSON object, no additional text.`;
         this.el.imagePreview.style.display = 'block';
         const label = this.el.uploadZone.querySelector('.upload-label');
         if(label) label.style.display = 'none';
-        const res = { title: "Harlequin Crest", rarity: "mythic", verdict: "KEEP", score: "S-Tier", insight: "Best-in-slot Mythic helm", game: "d4", status: "success", sanctified: false };
+        const res = { title: "Harlequin Crest", rarity: "Mythic", type: "Helm", verdict: "KEEP", score: "S", item_power: 925, greater_affix_count: 4, insight: "Best-in-slot Mythic helm. Massive +4 to all Skills with unmatched defensive stats. Every class wants this.", analysis: "### Stats Breakdown\n- Item Power: 925/925\n- Key Stats: +4 All Skills, +20% Damage Reduction, +Maximum Life\n- Greater Affixes: 4 (all gold)\n- Sanctified: No\n\n### Verdict\nThis is the most sought-after helm in the game. Keep it permanently.", game: "d4", status: "success", confidence: "high", sanctified: false };
         this.renderSuccess(res); this.saveToHistory(res);
     }
 };
