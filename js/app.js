@@ -1555,7 +1555,6 @@ Return ONLY the JSON object, no additional text.`;
                     <div class="verdict-label">${verdict}</div>
                     <div class="verdict-score">${result.score || '-'}</div>
                 </div>
-                ${verdictReason ? `<div style="text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 6px;">${verdictReason}</div>` : ''}
                 <div class="insight-box" style="margin-top: 10px;">
                     <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
                 </div>
@@ -1577,6 +1576,7 @@ Return ONLY the JSON object, no additional text.`;
                     <div style="color: #999; font-size: 0.85rem; margin-bottom: 12px;">${result.type || ''} ${result.type && result.rarity ? '·' : ''} ${result.rarity || ''}</div>
                     ${statPillsHtml}
                     ${gaDisplay}
+                    ${verdictReason ? `<div style="color: #aaa; font-size: 0.78rem; margin-top: 8px; line-height: 1.4;">${verdictReason}</div>` : ''}
                 </div>
             </div>
 
