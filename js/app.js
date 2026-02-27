@@ -5,12 +5,12 @@
 
 const HoradricApp = {
     state: {
+        apiKey: '',
         history: [],
         currentItem: null,
         mode: 'identify',
         currentClass: 'barbarian',  // NEW: Track current class
-        loadout: {},  // CHANGED: Dynamic loadout object
-        scanQuota: { remaining: null, limit: null }  // Track server-side rate limits
+        loadout: {}  // CHANGED: Dynamic loadout object
     },
     
     // NEW: CLASS-SPECIFIC SLOT CONFIGURATIONS
@@ -183,6 +183,7 @@ const HoradricApp = {
         this.el.imageUpload = document.getElementById('image-upload');
         this.el.imagePreview = document.getElementById('image-preview');
         this.el.uploadZone = document.getElementById('upload-zone');
+        this.el.apiKey = document.getElementById('api-key');
         this.el.toggleAdvanced = document.getElementById('toggle-advanced');
         this.el.advancedPanel = document.getElementById('advanced-panel');
         this.el.keyMechanic = document.getElementById('key-mechanic');
@@ -241,6 +242,7 @@ const HoradricApp = {
         this.el.settingsClose.addEventListener('click', () => this.closeSettings());
         this.el.settingsOverlay.addEventListener('click', () => this.closeSettings());
         this.el.helpTrigger.addEventListener('click', () => this.restartTour());
+        this.el.apiKey.addEventListener('blur', () => this.saveApiKey());
         this.el.closeResults.addEventListener('click', () => this.closeResults());
         this.el.clearHistory.addEventListener('click', () => this.clearHistory());
         if(this.el.shareBtn) this.el.shareBtn.addEventListener('click', () => this.shareResults());
@@ -1099,6 +1101,7 @@ const HoradricApp = {
     // ============================================
 
     async handleAnalyze() {
+        if (!this.state.apiKey) return this.showError('API Key Missing', true);
         if (!this.el.imagePreview.src) return this.showError('No image loaded');
 
         const selectedGame = this.el.gameVersion.value;
@@ -1232,43 +1235,31 @@ Return ONLY the JSON object, no additional text.`;
 
     async callGemini(prompt, imageBase64, mimeType) {
         try {
-            const response = await fetch('/api/analyze', {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.state.apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    prompt,
-                    imageBase64,
-                    mimeType
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: mimeType, data: imageBase64 } }
+                        ]
+                    }],
+                    generationConfig: {
+                        response_mime_type: "application/json",
+                        temperature: 0.0,
+                        max_output_tokens: 8192
+                    }
                 })
             });
 
-            // Handle rate limiting
-            if (response.status === 429) {
-                const errData = await response.json();
-                this.state.scanQuota.remaining = 0;
-                this.updateQuotaDisplay();
-                throw new Error(errData.error || 'Daily scan limit reached. Please try again tomorrow.');
-            }
-
-            // Handle server busy (Gemini 429 proxied as 503)
-            if (response.status === 503) {
-                throw new Error('AI service is temporarily busy. Please try again in a moment.');
-            }
-
             if (!response.ok) {
                 const err = await response.json();
-                console.error('API proxy error:', err);
-                throw new Error(err.error || `API Error: ${response.status}`);
+                console.error('Gemini API error:', err);
+                throw new Error(err.error?.message || `API Error: ${response.status}`);
             }
             
             const data = await response.json();
-
-            // Update quota tracking from response
-            if (data._rateLimit) {
-                this.state.scanQuota.remaining = data._rateLimit.remaining;
-                this.state.scanQuota.limit = data._rateLimit.limit;
-                this.updateQuotaDisplay();
-            }
             
             if (!data.candidates || !data.candidates[0]) {
                 throw new Error('No response from AI');
@@ -1280,19 +1271,6 @@ Return ONLY the JSON object, no additional text.`;
         } catch (error) {
             console.error('Gemini call error:', error);
             throw error;
-        }
-    },
-
-    updateQuotaDisplay() {
-        const el = document.getElementById('scan-quota');
-        if (el && this.state.scanQuota.remaining !== null) {
-            el.textContent = `${this.state.scanQuota.remaining}/${this.state.scanQuota.limit} scans remaining today`;
-            el.style.display = 'block';
-            if (this.state.scanQuota.remaining <= 5) {
-                el.classList.add('quota-low');
-            } else {
-                el.classList.remove('quota-low');
-            }
         }
     },
 
@@ -1624,8 +1602,13 @@ Return ONLY the JSON object, no additional text.`;
     },
     closeResults() { this.el.resultsCard.style.display = 'none'; },
     loadState() {
+        try { const k = localStorage.getItem('gemini_api_key'); if(k) { this.state.apiKey = atob(k); this.el.apiKey.value = this.state.apiKey; } } catch(e){}
         const g = localStorage.getItem('selected_game'); if(g) this.el.gameVersion.value = g;
         try { const h = localStorage.getItem('horadric_history'); if(h) { this.state.history = JSON.parse(h); this.renderHistory(); } } catch(e){}
+    },
+    saveApiKey() {
+        const k = this.el.apiKey.value.trim(); if(!k) return;
+        this.state.apiKey = k; localStorage.setItem('gemini_api_key', btoa(k));
     },
     openSettings() { this.el.settingsPanel.classList.add('open'); },
     closeSettings() { this.el.settingsPanel.classList.remove('open'); },
