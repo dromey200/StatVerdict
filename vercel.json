@@ -10,5 +10,12 @@
         { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/horadric.html",
+      "destination": "/diablo-4-scanner.html",
+      "permanent": true
+    }
   ]
 }
