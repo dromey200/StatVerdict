@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import compression from 'vite-plugin-compression';
 import { createHtmlPlugin } from 'vite-plugin-html';
+import autoprefixer from 'autoprefixer';
+import cssnano from 'cssnano';
 
 export default defineConfig({
   plugins: [
@@ -62,8 +64,8 @@ export default defineConfig({
     devSourcemap: true,
     postcss: {
       plugins: [
-        require('autoprefixer'),
-        require('cssnano')({
+        autoprefixer(),
+        cssnano({
           preset: 'default',
         }),
       ],
