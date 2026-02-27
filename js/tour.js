@@ -20,8 +20,8 @@ const TourGuide = {
             position: "bottom"
         },
         {
-            title: "2. Get Your AI Key 🔑",
-            description: "You'll need a free Google Gemini API key. Click the '?' button to see the guide, or the Gear icon to paste your key.",
+            title: "2. Powered by AI 🤖",
+            description: "Scans are powered by Google Gemini AI — no setup needed. Just upload and analyze!",
             target: "#help-trigger",
             position: "bottom"
         },
@@ -45,7 +45,7 @@ const TourGuide = {
         },
         {
             title: "Try Demo Mode! 🎭",
-            description: "No API key yet? No problem. Click here to run a simulation and see how the analysis looks.",
+            description: "Want to see how it works first? Click here to run a simulation and see how the analysis looks.",
             target: "#demo-btn",
             position: "top"
         },
