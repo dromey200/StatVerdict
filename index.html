@@ -9,11 +9,11 @@
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' 'sha256-GBMFtBuyvFiVvTVgYiN3e+XTGLlN5kMNLnCTzHxqXjU='; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com https://va.vercel-scripts.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com https://va.vercel-scripts.com https://vitals.vercel-insights.com; 
         base-uri 'self'; 
         form-action 'self' https://formspree.io https://forms.gle https://app.convertkit.com https://app.kit.com;
     ">
@@ -568,6 +568,12 @@
 
     <!-- Defer all non-critical JavaScript -->
     <script defer src="js/landing.js" type="module"></script>
+    
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
     
 </body>
 </html>
