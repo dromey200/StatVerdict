@@ -9,11 +9,11 @@
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' 'sha256-OTO7vANYvchBOIv3GFid+vA/LbjYb3zv2j4jKXsYi8M=' 'unsafe-inline'; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
-        img-src 'self' data: blob: https://www.google-analytics.com https://d4.maxroll.gg https://statverdict.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com; 
+        img-src 'self' data: blob: https://www.google-analytics.com https://d4.maxroll.gg https://statverdict.com https://va.vercel-scripts.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://vitals.vercel-insights.com; 
         base-uri 'self';
     ">
     
@@ -83,6 +83,12 @@
             }
         }
     </style>
+    
+    <!-- Vercel Web Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body class="dashboard-layout">
     

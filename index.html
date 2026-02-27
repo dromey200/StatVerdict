@@ -9,11 +9,11 @@
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE=' 'sha256-OTO7vANYvchBOIv3GFid+vA/LbjYb3zv2j4jKXsYi8M=' 'unsafe-inline'; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
-        img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com; 
+        img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev https://app.kit.com https://app.convertkit.com https://region1.google-analytics.com https://region1.analytics.google.com https://vitals.vercel-insights.com; 
         base-uri 'self'; 
         form-action 'self' https://formspree.io https://forms.gle https://app.convertkit.com https://app.kit.com;
     ">
@@ -206,6 +206,12 @@
     </style>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🔍</text></svg>" type="image/svg+xml">
+    
+    <!-- Vercel Web Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
     <div class="sv-bg-effects" aria-hidden="true">
