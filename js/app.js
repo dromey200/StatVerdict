@@ -1230,24 +1230,74 @@ Return ONLY the JSON object, no additional text.`;
         }
     },
 
+    // Compress image to fit within Vercel's 4.5MB body limit
+    // Base64 adds ~33% overhead, so we target ~3MB raw image max
+    async compressImage(base64Data, mimeType, maxSizeKB = 2500) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let { width, height } = img;
+
+                // Scale down large images
+                const MAX_DIM = 2048;
+                if (width > MAX_DIM || height > MAX_DIM) {
+                    const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Try progressively lower quality until under size limit
+                let quality = 0.85;
+                let result;
+                do {
+                    result = canvas.toDataURL('image/jpeg', quality);
+                    quality -= 0.1;
+                } while (result.length * 0.75 > maxSizeKB * 1024 && quality > 0.3);
+
+                const compressed = result.split(',')[1];
+                console.log(`Image compressed: ${Math.round(base64Data.length * 0.75 / 1024)}KB → ${Math.round(compressed.length * 0.75 / 1024)}KB`);
+                resolve({ base64: compressed, mimeType: 'image/jpeg' });
+            };
+            img.src = `data:${mimeType};base64,${base64Data}`;
+        });
+    },
+
     async callGemini(prompt, imageBase64, mimeType) {
         try {
+            // Compress if image is too large for Vercel's body limit (~4.5MB)
+            let sendBase64 = imageBase64;
+            let sendMime = mimeType;
+            const estimatedPayloadKB = (imageBase64.length * 1.4) / 1024; // base64 + JSON overhead
+            if (estimatedPayloadKB > 3500) {
+                console.log(`Image payload ~${Math.round(estimatedPayloadKB)}KB, compressing...`);
+                const compressed = await this.compressImage(imageBase64, mimeType);
+                sendBase64 = compressed.base64;
+                sendMime = compressed.mimeType;
+            }
+
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     prompt,
-                    imageBase64,
-                    mimeType
+                    imageBase64: sendBase64,
+                    mimeType: sendMime
                 })
             });
 
             // Handle rate limiting
             if (response.status === 429) {
-                const errData = await response.json();
+                let errMsg = 'Daily scan limit reached. Please try again tomorrow.';
+                try { const errData = await response.json(); errMsg = errData.error || errMsg; } catch(e) {}
                 this.state.scanQuota.remaining = 0;
                 this.updateQuotaDisplay();
-                throw new Error(errData.error || 'Daily scan limit reached. Please try again tomorrow.');
+                throw new Error(errMsg);
             }
 
             // Handle server busy (Gemini 429 proxied as 503)
@@ -1255,10 +1305,15 @@ Return ONLY the JSON object, no additional text.`;
                 throw new Error('AI service is temporarily busy. Please try again in a moment.');
             }
 
+            // Handle payload too large
+            if (response.status === 413) {
+                throw new Error('Image is too large. Please use a smaller screenshot.');
+            }
+
             if (!response.ok) {
-                const err = await response.json();
-                console.error('API proxy error:', err);
-                throw new Error(err.error || `API Error: ${response.status}`);
+                let errMsg = `API Error: ${response.status}`;
+                try { const err = await response.json(); errMsg = err.error || errMsg; console.error('API proxy error:', err); } catch(e) {}
+                throw new Error(errMsg);
             }
             
             const data = await response.json();
