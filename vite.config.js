@@ -34,12 +34,7 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['./translations.js'],
-          analytics: ['./analytics.js'],
-        },
-      },
+      output: {},
     },
     sourcemap: true,
     cssCodeSplit: true,
