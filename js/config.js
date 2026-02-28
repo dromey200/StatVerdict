@@ -366,14 +366,20 @@ const PROMPT_TEMPLATES = {
         If the item is a weapon, note which classes CAN equip it in your analysis.
         
         EVALUATION CRITERIA:
-        1. Item Power (700-925 scale, higher is better)
-        2. Rarity (Legendary < Unique < Mythic)
+        1. Item Power (scales with level; endgame 700-925, leveling items can be much lower)
+        2. Rarity (Common < Magic < Rare < Legendary < Unique < Mythic)
         3. Sanctified status (major endgame value — 3+ Greater Affixes, permanent optimization)
-        4. Greater Affix count (gold text = greater, more is better)
+        4. Greater Affix count (gold text = greater, more is better; only on Legendary+ items)
         5. Stat synergy with ${playerClass !== 'any' ? playerClass : 'general'} ${buildStyle || ''} build
         6. Roll quality (are stats near max ranges?)
-        7. Useful for endgame (Pit pushing, Helltide farming, Infernal Hordes)
+        7. Useful for current progression (leveling items are judged by level-appropriate standards, endgame items by Pit pushing, Helltide farming, Infernal Hordes potential)
         ${playerClass === 'any' ? '8. Since no class was specified, mention which classes benefit most from this item.' : ''}
+        
+        RARITY-SPECIFIC GRADING:
+        • Common/Magic items: Grade relative to leveling usefulness. These are typically D-C tier unless the player is early game.
+        • Rare items: Can be useful while leveling. Grade B max unless exceptional rolls.
+        • Legendary items: Full endgame analysis — affixes, synergy, Greater Affixes.
+        • Unique/Mythic items: Full endgame analysis with build-defining potential.
         
         OUTPUT FORMAT (JSON Only):
         
@@ -392,7 +398,7 @@ const PROMPT_TEMPLATES = {
             "confidence": "high" | "medium",
             "title": "Item Name",
             "type": "Item Type (Helm, Chest Armor, Boots, Two-Handed Sword, Ring, Shield, Glaive, etc.)",
-            "rarity": "Legendary | Unique | Mythic",
+            "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
             "sanctified": true | false,
             "item_power": 800,
             "greater_affix_count": 0,
@@ -463,7 +469,7 @@ const PROMPT_TEMPLATES = {
             "item1": {
                 "title": "Left/First Item Name",
                 "type": "Item Type for slot detection",
-                "rarity": "Legendary | Unique | Mythic",
+                "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
                 "sanctified": true | false,
                 "item_power": 850,
                 "greater_affix_count": 0,
@@ -473,7 +479,7 @@ const PROMPT_TEMPLATES = {
             "item2": {
                 "title": "Right/Second Item Name",
                 "type": "Item Type for slot detection",
-                "rarity": "Legendary | Unique | Mythic",
+                "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
                 "sanctified": true | false,
                 "item_power": 860,
                 "greater_affix_count": 1,
