@@ -8,7 +8,7 @@ const TourGuide = {
     
     steps: [
         {
-            title: "Welcome to Horadric AI! 🎮",
+            title: "Welcome to Horadric AI!",
             description: "Let's get you started. This tool uses AI to analyze your Diablo IV loot and tell you if it's worth keeping.",
             target: null,
             position: "center"
