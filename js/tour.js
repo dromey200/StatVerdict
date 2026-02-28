@@ -8,37 +8,31 @@ const TourGuide = {
     
     steps: [
         {
-            title: "Welcome to Horadric AI! 🎮",
-            description: "Let's get you started. This tool uses AI to analyze your loot and tell you if it's worth keeping.",
+            title: "Welcome to Horadric AI!",
+            description: "Let's get you started. This tool uses AI to analyze your Diablo IV loot and tell you if it's worth keeping.",
             target: null,
             position: "center"
         },
         {
-            title: "1. Select Your Game 🎲",
-            description: "First, choose which Diablo game you are playing. This adjusts the valid classes and item logic.",
+            title: "1. Your Game 🎲",
+            description: "You're scanning Diablo IV items. More games are coming soon — vote for the next one on our landing page!",
             target: "#game-version",
             position: "bottom"
         },
         {
-            title: "2. Powered by AI 🤖",
-            description: "Scans are powered by Google Gemini AI — no setup needed. Just upload and analyze!",
-            target: "#help-trigger",
-            position: "bottom"
-        },
-        {
-            title: "3. Select Your Class ⚔️",
-            description: "Choose your character class. The AI uses this to determine if an item's stats are actually good for YOU.",
+            title: "2. Select Your Class ⚔️",
+            description: "Choose your character class. The AI uses this to determine if an item's stats are actually good for YOUR build.",
             target: "#player-class",
             position: "bottom"
         },
         {
-            title: "4. Advanced Options ⚙️",
+            title: "3. Advanced Options ⚙️",
             description: "Click here to specify your Build Style (e.g., Thorns, Minions). This enables the 'Build Synergy' calculator!",
             target: "#toggle-advanced", 
             position: "bottom"
         },
         {
-            title: "5. Upload Your Item 📸",
+            title: "4. Upload Your Item 📸",
             description: "Drag & drop a screenshot here, or click to browse. We support PNG, JPEG, and WebP.",
             target: "#upload-zone",
             position: "right"
@@ -52,7 +46,7 @@ const TourGuide = {
         // --- LOADOUT STEP DISABLED: Premium feature ---
         {
             title: "Ready to Hunt! 🚀",
-            description: "You're all set. Good luck finding those triple-greater-affix items, Nephalem!",
+            description: "You're all set. No API key needed — just upload and scan. Good luck finding those triple-greater-affix items, Nephalem!",
             target: null,
             position: "center"
         }
