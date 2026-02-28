@@ -594,16 +594,24 @@
     border: 1px solid #333;
     border-left: 4px solid #444;
     border-radius: 6px;
-    padding: 12px;
+    padding: 12px 14px;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px; /* Touch-friendly minimum */
 }
 
 .recent-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     border-color: var(--accent-color);
-    transform: translateX(4px);
+    transform: translateX(3px);
+}
+
+.recent-item:active {
+    transform: translateX(1px);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .recent-item.rarity-mythic { border-left-color: var(--color-mythic); }
@@ -1149,6 +1157,18 @@ option:hover {
     gap: 8px;
     max-height: 300px;
     overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #444 transparent;
+}
+
+.recent-section .recent-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.recent-section .recent-list::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
 }
 
 /* Loadout grid in split view */
@@ -1177,5 +1197,213 @@ option:hover {
 @media (max-width: 480px) {
     .loadout-section .loadout-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   NEW SCAN HEADER BUTTON
+   ============================================ */
+.btn-new-scan {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    color: #ccc;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 12px;
+}
+
+.btn-new-scan:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: var(--accent-color, #d4a44a);
+}
+
+/* ============================================
+   UI STATE MACHINE PHASE CLASSES
+   ============================================ */
+
+/* Phase: Processing — dim the upload zone, pulse the card border */
+.scan-card.phase-processing .upload-zone {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.scan-card.phase-processing {
+    border-color: var(--accent-color, #d4a44a);
+    animation: phase-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes phase-pulse {
+    0%, 100% { border-color: rgba(212, 164, 74, 0.3); }
+    50% { border-color: rgba(212, 164, 74, 0.7); }
+}
+
+/* Phase: Result — show the uploaded image thumbnail in results */
+.scan-card.phase-result .upload-zone {
+    max-height: 120px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.scan-card.phase-result .upload-preview {
+    max-height: 100px;
+    object-fit: contain;
+}
+
+/* ============================================
+   RATING GUIDE
+   ============================================ */
+.rating-guide-section {
+    max-width: 800px;
+    margin: 30px auto 0;
+    padding: 0 20px;
+}
+
+.rating-guide-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #ccc;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rating-guide-trigger:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--accent-color, #d4a44a);
+    color: #fff;
+}
+
+.rating-guide-content {
+    margin-top: 12px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.rating-guide-intro {
+    color: #aaa;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0 0 18px;
+}
+
+.rating-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.rating-table th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #444;
+    color: #888;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rating-table td {
+    padding: 12px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #ccc;
+    vertical-align: top;
+}
+
+.rating-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.grade-badge {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1rem;
+    border-radius: 6px;
+}
+
+.grade-s-badge { background: rgba(255, 215, 0, 0.2); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.4); }
+.grade-a-badge { background: rgba(76, 175, 80, 0.2); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.4); }
+.grade-b-badge { background: rgba(33, 150, 243, 0.2); color: #2196f3; border: 1px solid rgba(33, 150, 243, 0.4); }
+.grade-c-badge { background: rgba(255, 165, 0, 0.2); color: #ffa500; border: 1px solid rgba(255, 165, 0, 0.4); }
+.grade-d-badge { background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); }
+
+.rating-guide-notes {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+}
+
+.rating-guide-notes h4 {
+    color: #ddd;
+    font-size: 0.9rem;
+    margin: 0 0 12px;
+}
+
+.modifier-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modifier-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.modifier-badge {
+    white-space: nowrap;
+    font-weight: 600;
+    color: #ddd;
+    min-width: 140px;
+}
+
+.rating-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(255, 165, 0, 0.08);
+    border-radius: 6px;
+    border-left: 3px solid #ffa500;
+    color: #bbb;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+/* Mobile rating table */
+@media (max-width: 600px) {
+    .rating-table th:nth-child(3),
+    .rating-table td:nth-child(3) {
+        display: none;
+    }
+    
+    .modifier-item {
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .modifier-badge {
+        min-width: auto;
     }
 }
