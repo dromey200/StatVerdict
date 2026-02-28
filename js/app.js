@@ -10,7 +10,8 @@ const HoradricApp = {
         mode: 'identify',
         currentClass: 'barbarian',  // NEW: Track current class
         loadout: {},  // CHANGED: Dynamic loadout object
-        scanQuota: { remaining: null, limit: null }  // Track server-side rate limits
+        scanQuota: { remaining: null, limit: null },  // Track server-side rate limits
+        phase: 'idle'  // UI State Machine: idle | processing | result
     },
     
     // NEW: CLASS-SPECIFIC SLOT CONFIGURATIONS
@@ -173,6 +174,18 @@ const HoradricApp = {
             this.showUnsupportedOverlay(game);
         }
         
+        // Set initial UI phase
+        this.setPhase('idle');
+        
+        // Rating guide toggle
+        const ratingToggle = document.getElementById('rating-guide-toggle');
+        if (ratingToggle) {
+            ratingToggle.addEventListener('click', () => {
+                const guide = document.getElementById('rating-guide');
+                if (guide) guide.style.display = guide.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        
         console.log('👁️ Horadric Pipeline Active (Season 11 Class-Weapon System v12.0)');
     },
     
@@ -290,10 +303,13 @@ const HoradricApp = {
             const game = opt.value;
             const support = CONFIG.GAME_SUPPORT[game];
             if (support && !support.enabled) {
-                opt.textContent = `${support.label} (Coming Soon)`;
-                opt.style.color = '#888';
+                opt.textContent = `${support.label} — Coming Soon`;
+                opt.disabled = true;
+                opt.style.color = '#666';
             }
         });
+        // Ensure D4 is always selected
+        this.el.gameVersion.value = 'd4';
     },
 
     handleGameChange() {
@@ -1106,6 +1122,43 @@ const HoradricApp = {
     },
 
     // ============================================
+    // UI STATE MACHINE: idle | processing | result
+    // ============================================
+    
+    setPhase(phase) {
+        this.state.phase = phase;
+        const scanCard = document.querySelector('.scan-card');
+        const resultsCard = this.el.resultsCard;
+        
+        // Remove all phase classes
+        if (scanCard) scanCard.classList.remove('phase-idle', 'phase-processing', 'phase-result');
+        
+        switch(phase) {
+            case 'idle':
+                if (scanCard) scanCard.classList.add('phase-idle');
+                this.el.analyzeBtn.disabled = false;
+                this.el.compareBtn.disabled = false;
+                this.el.analyzeBtn.style.opacity = '';
+                this.el.compareBtn.style.opacity = '';
+                break;
+            case 'processing':
+                if (scanCard) scanCard.classList.add('phase-processing');
+                this.el.analyzeBtn.disabled = true;
+                this.el.compareBtn.disabled = true;
+                this.el.analyzeBtn.style.opacity = '0.5';
+                this.el.compareBtn.style.opacity = '0.5';
+                break;
+            case 'result':
+                if (scanCard) scanCard.classList.add('phase-result');
+                this.el.analyzeBtn.disabled = false;
+                this.el.compareBtn.disabled = false;
+                this.el.analyzeBtn.style.opacity = '';
+                this.el.compareBtn.style.opacity = '';
+                break;
+        }
+    },
+
+    // ============================================
     // DEMO STATE & SCAN RESET
     // ============================================
     
@@ -1135,13 +1188,22 @@ const HoradricApp = {
         // Clear errors
         this.el.imageError.style.display = 'none';
         
-        // Re-enable buttons
-        this.el.analyzeBtn.disabled = false;
-        this.el.compareBtn.disabled = false;
-        this.el.analyzeBtn.style.opacity = '';
-        this.el.compareBtn.style.opacity = '';
+        // Reset dropdowns to defaults
+        this.el.playerClass.value = 'Any';
+        this.el.playerClass.dispatchEvent(new Event('change'));
+        if (this.el.buildStyle) this.el.buildStyle.value = '';
+        if (this.el.keyMechanic) this.el.keyMechanic.value = '';
+        
+        // Collapse advanced panel
+        if (this.el.advancedPanel) this.el.advancedPanel.classList.add('hidden');
+        
+        // Reset checkboxes
+        ['needsStr', 'needsInt', 'needsWill', 'needsDex', 'needsRes'].forEach(k => {
+            if (this.el[k]) this.el[k].checked = false;
+        });
         
         this.showLoading(false);
+        this.setPhase('idle');
     },
 
     // ============================================
@@ -1161,6 +1223,7 @@ const HoradricApp = {
 
         this.showLoading(true, "Analyzing...");
         this.clearResults();
+        this.setPhase('processing');
         
         // Timeout: re-enable buttons after 15 seconds
         const analysisTimeout = setTimeout(() => {
@@ -1241,6 +1304,7 @@ const HoradricApp = {
             }
             
             this.showError(`Error: ${error.message}`);
+            this.setPhase('idle');
         } finally {
             clearTimeout(analysisTimeout);
             this.showLoading(false);
@@ -1528,6 +1592,7 @@ Return ONLY the JSON object, no additional text.`;
 
     renderSuccess(result) {
         this.state.currentItem = result;
+        this.setPhase('result');
         
         // ANALYTICS HOOK: Track successful scan
         if (typeof Analytics !== 'undefined' && Analytics.trackScan) {
@@ -1891,7 +1956,13 @@ Return ONLY the JSON object, no additional text.`;
     },
     closeResults() { this.el.resultsCard.style.display = 'none'; },
     loadState() {
-        const g = localStorage.getItem('selected_game'); if(g) this.el.gameVersion.value = g;
+        const g = localStorage.getItem('selected_game');
+        // Only restore if it's an enabled game
+        if (g && CONFIG.GAME_SUPPORT[g] && CONFIG.GAME_SUPPORT[g].enabled) {
+            this.el.gameVersion.value = g;
+        } else {
+            this.el.gameVersion.value = 'd4';
+        }
         try { const h = localStorage.getItem('horadric_history'); if(h) { this.state.history = JSON.parse(h); this.renderHistory(); } } catch(e){}
     },
     openSettings() { this.el.settingsPanel.classList.add('open'); },
