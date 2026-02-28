@@ -3,9 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Horadric AI - AI-powered Diablo loot analyzer. Instant analysis for Diablo 4, D2R, D3, and Diablo Immortal.">
-    <meta name="theme-color" content="#d32f2f">
+    <meta name="description" content="Horadric AI - Free AI-powered Diablo IV loot analyzer. Upload a screenshot, get an instant grade, build synergy analysis, and keep-or-salvage verdict.">
+    <meta name="theme-color" content="#1a1a2e">
     <meta name="color-scheme" content="dark">
+    
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:title" content="Horadric AI — Diablo IV Item Scanner">
+    <meta property="og:description" content="Free AI loot analysis for Diablo IV. Upload a screenshot, get an instant grade and verdict. No signup required.">
+    <meta property="og:image" content="https://statverdict.com/assets/images/og-image.jpg">
+    <meta property="og:url" content="https://statverdict.com/diablo-4-scanner">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Horadric AI — Diablo IV Item Scanner">
+    <meta name="twitter:description" content="Free AI loot analysis for Diablo IV. Upload a screenshot, get an instant grade.">
+    <meta name="twitter:image" content="https://statverdict.com/assets/images/og-image.jpg">
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
@@ -42,7 +53,9 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23d32f2f'>⚔</text></svg>" type="image/svg+xml">
+    <link rel="icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/assets/images/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 
     <!-- Inline critical styles for immediate render -->
     <style>
@@ -98,16 +111,27 @@
                     </svg>
                 </a>
                 <h1 class="dashboard-title">
-                    <span class="title-icon">🔥</span>
+                    <span class="title-icon" id="app-logo" aria-label="Horadric AI logo">
+                        <img src="/assets/images/logo-cube-48.png" alt="Horadric AI" width="28" height="28" style="border-radius: 4px;">
+                    </span>
                     <span class="title-text">Horadric AI</span>
                 </h1>
+                <button onclick="HoradricApp.resetScan()" class="btn-new-scan" aria-label="Start new scan" title="Clear workspace">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align: -2px;">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    New Scan
+                </button>
             </div>
             <div class="header-controls">
                 <select id="game-version" class="game-selector" aria-label="Select game">
                     <option value="d4" selected>Diablo IV</option>
-                    <option value="d3">Diablo III</option>
-                    <option value="d2r">Diablo II: Resurrected</option>
-                    <option value="di">Diablo Immortal</option>
+                    <option value="d3" disabled style="color: #666;">Diablo III — Coming Soon</option>
+                    <option value="d2r" disabled style="color: #666;">D2: Resurrected — Coming Soon</option>
+                    <option value="di" disabled style="color: #666;">Diablo Immortal — Coming Soon</option>
+                    <option disabled style="color: #555;">───────────────</option>
+                    <option disabled style="color: #888;">More ARPGs planned! Vote at statverdict.com</option>
                 </select>
                 <button id="settings-trigger" class="icon-btn" aria-label="Open settings">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -316,6 +340,73 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
+
+    <!-- Rating Guide -->
+    <section class="rating-guide-section" id="rating-guide-section">
+        <button id="rating-guide-toggle" class="rating-guide-trigger" aria-expanded="false">
+            <span>📊 Rating Guide — How Items Are Graded</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+        <div id="rating-guide" class="rating-guide-content" style="display: none;">
+            <p class="rating-guide-intro">Every item is evaluated against your class, build, and current meta. Grades reflect real endgame value — not just item power.</p>
+            <table class="rating-table">
+                <thead>
+                    <tr>
+                        <th>Grade</th>
+                        <th>Verdict</th>
+                        <th>What It Means</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="grade-s">
+                        <td><span class="grade-badge grade-s-badge">S</span></td>
+                        <td>Best-in-Slot</td>
+                        <td>Perfect or near-perfect rolls for meta builds. Keep permanently — this is endgame gear.</td>
+                    </tr>
+                    <tr class="grade-a">
+                        <td><span class="grade-badge grade-a-badge">A</span></td>
+                        <td>Excellent</td>
+                        <td>Strong rolls with high build synergy. Ready for Pit pushing and endgame content.</td>
+                    </tr>
+                    <tr class="grade-b">
+                        <td><span class="grade-badge grade-b-badge">B</span></td>
+                        <td>Solid</td>
+                        <td>Good foundation with room to grow. Usable for progression; worth upgrading at the Enchantress.</td>
+                    </tr>
+                    <tr class="grade-c">
+                        <td><span class="grade-badge grade-c-badge">C</span></td>
+                        <td>Below Average</td>
+                        <td>Some useful stats but too many wasted affixes. Replace when something better drops.</td>
+                    </tr>
+                    <tr class="grade-d">
+                        <td><span class="grade-badge grade-d-badge">D</span></td>
+                        <td>Salvage</td>
+                        <td>Poor synergy, low rolls, or wrong stats for your build. Salvage for materials.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="rating-guide-notes">
+                <h4>Special Modifiers</h4>
+                <div class="modifier-grid">
+                    <div class="modifier-item">
+                        <span class="modifier-badge">🦋 Sanctified</span>
+                        <span>Heavenly Forge candidate. Evaluated for permanent upgrade potential.</span>
+                    </div>
+                    <div class="modifier-item">
+                        <span class="modifier-badge">✨ Greater Affixes</span>
+                        <span>Gold-bordered stats with 1.5× value. Each one significantly boosts the grade.</span>
+                    </div>
+                    <div class="modifier-item">
+                        <span class="modifier-badge">💜 Mythic</span>
+                        <span>Ultra-rare unique. Almost always S-tier — the AI evaluates build fit, not just rarity.</span>
+                    </div>
+                </div>
+                <p class="rating-note">Leveling items (Common, Magic, Rare) are graded on a separate curve based on level-appropriate usefulness, not endgame standards.</p>
+            </div>
+        </div>
+    </section>
 
     <footer style="text-align: center; padding: 30px 20px; margin-top: 40px; border-top: 1px solid #333; font-size: 0.75rem; color: #666; line-height: 1.5;">
         <p style="margin: 0;">StatVerdict and Horadric AI are not affiliated with or endorsed by Blizzard Entertainment, Inc. Diablo is a trademark or registered trademark of Blizzard Entertainment, Inc.</p>
