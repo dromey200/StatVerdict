@@ -13,7 +13,7 @@
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com https://d4.maxroll.gg https://statverdict.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.counterapi.dev; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com; 
         base-uri 'self';
     ">
     
@@ -285,17 +285,9 @@
             </div>
             <div class="settings-body">
                 <div class="settings-section">
-                    <h3 class="section-title">Gemini API Key</h3>
-                    <p class="section-desc">Required for AI-powered analysis</p>
-                    <form id="api-key-form">
-                        <div class="input-group">
-                            <input type="password" id="api-key" name="api-key" class="settings-input" placeholder="Paste your API key here..." autocomplete="off">
-                            <span class="input-hint">🔒 Encrypted & stored locally</span>
-                        </div>
-                    </form>
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn-link" rel="noopener noreferrer">Get API Key →</a>
-                    <div id="api-key-error" class="message-box error" style="display: none;"></div>
-                    <div id="api-key-success" class="message-box success" style="display: none;"></div>
+                    <h3 class="section-title">AI Engine</h3>
+                    <p class="section-desc">Powered by Google Gemini 2.5 Flash — no setup required.</p>
+                    <div id="scan-quota-settings" style="margin-top: 8px; font-size: 0.85rem; color: #aaa;"></div>
                 </div>
                 <div class="settings-section">
                     <h3 class="section-title">Preferences</h3>
