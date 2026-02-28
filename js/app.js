@@ -222,20 +222,25 @@ const HoradricApp = {
 
     attachEventListeners() {
         this.el.gameVersion.addEventListener('change', () => this.handleGameChange());
-        // UPDATED: Class change listener
+        // UPDATED: Class change listener — also shows advanced options
         this.el.playerClass.addEventListener('change', () => {
             const selectedClass = this.el.playerClass.value.toLowerCase();
             this.state.currentClass = selectedClass;
             this.saveState();
             this.updateBuildOptions();
-            // DISABLED: Loadout is a premium feature
-            // this.renderLoadoutGrid();
-            // this.updateBuildSynergy();
+            
+            // Show/hide advanced options based on class selection
+            if (selectedClass && selectedClass !== 'any') {
+                this.el.toggleAdvanced.style.display = '';
+            } else {
+                this.el.toggleAdvanced.style.display = 'none';
+                if (this.el.advancedPanel) this.el.advancedPanel.classList.add('hidden');
+            }
         });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
         this.el.toggleAdvanced.addEventListener('click', () => this.toggleAdvanced());
-        this.el.analyzeBtn.addEventListener('click', () => { this.state.mode = 'identify'; this.handleAnalyze(); });
-        this.el.compareBtn.addEventListener('click', () => { this.state.mode = 'compare'; this.handleAnalyze(); });
+        this.el.analyzeBtn.addEventListener('click', () => { this.clearDemoState(); this.state.mode = 'identify'; this.handleAnalyze(); });
+        this.el.compareBtn.addEventListener('click', () => { this.clearDemoState(); this.state.mode = 'compare'; this.handleAnalyze(); });
         this.el.demoBtn.addEventListener('click', () => this.runDemo());
         this.el.settingsTrigger.addEventListener('click', () => this.openSettings());
         this.el.settingsClose.addEventListener('click', () => this.closeSettings());
@@ -252,6 +257,12 @@ const HoradricApp = {
         // DISABLED: Loadout button
         // const clearLoadoutBtn = document.getElementById('clear-loadout-btn');
         // if(clearLoadoutBtn) clearLoadoutBtn.addEventListener('click', () => this.clearAllSlots());
+        
+        // Hide advanced options until class is selected
+        const currentClass = this.el.playerClass.value.toLowerCase();
+        if (!currentClass || currentClass === 'any') {
+            this.el.toggleAdvanced.style.display = 'none';
+        }
         
         this.setupDragDrop();
     },
@@ -1095,11 +1106,50 @@ const HoradricApp = {
     },
 
     // ============================================
+    // DEMO STATE & SCAN RESET
+    // ============================================
+    
+    clearDemoState() {
+        this.state.isDemo = false;
+        this.el.imageError.style.display = 'none';
+        // If current result is a demo, clear it
+        if (this.state.currentItem && this.state.currentItem.isDemo) {
+            this.clearResults();
+            this.state.currentItem = null;
+        }
+    },
+    
+    resetScan() {
+        // Clear uploaded image
+        this.el.imagePreview.src = '';
+        this.el.imagePreview.style.display = 'none';
+        const label = this.el.uploadZone.querySelector('.upload-label');
+        if (label) label.style.display = '';
+        if (this.el.imageUpload) this.el.imageUpload.value = '';
+        
+        // Clear results
+        this.clearResults();
+        this.state.currentItem = null;
+        this.state.isDemo = false;
+        
+        // Clear errors
+        this.el.imageError.style.display = 'none';
+        
+        // Re-enable buttons
+        this.el.analyzeBtn.disabled = false;
+        this.el.compareBtn.disabled = false;
+        this.el.analyzeBtn.style.opacity = '';
+        this.el.compareBtn.style.opacity = '';
+        
+        this.showLoading(false);
+    },
+
+    // ============================================
     // ENHANCED ANALYSIS PIPELINE
     // ============================================
 
     async handleAnalyze() {
-        if (!this.el.imagePreview.src) return this.showError('No image loaded');
+        if (!this.el.imagePreview.src || this.el.imagePreview.src === window.location.href) return this.showError('No image loaded');
 
         const selectedGame = this.el.gameVersion.value;
         const support = CONFIG.GAME_SUPPORT[selectedGame];
@@ -1111,6 +1161,12 @@ const HoradricApp = {
 
         this.showLoading(true, "Analyzing...");
         this.clearResults();
+        
+        // Timeout: re-enable buttons after 15 seconds
+        const analysisTimeout = setTimeout(() => {
+            this.showLoading(false);
+            this.showError('Request timed out — please try again.');
+        }, 15000);
 
         try {
             const imageBase64 = this.el.imagePreview.src.split(',')[1];
@@ -1186,6 +1242,7 @@ const HoradricApp = {
             
             this.showError(`Error: ${error.message}`);
         } finally {
+            clearTimeout(analysisTimeout);
             this.showLoading(false);
         }
     },
@@ -1551,7 +1608,67 @@ Return ONLY the JSON object, no additional text.`;
                </details>`
             : '';
 
+        // Demo banner
+        const demoBanner = result.isDemo 
+            ? `<div style="background: rgba(255, 165, 0, 0.15); border: 1px solid rgba(255, 165, 0, 0.4); border-radius: 8px; padding: 10px 15px; margin-bottom: 15px; text-align: center; color: #ffa500; font-size: 0.9rem;">
+                🎭 <strong>Demo Mode</strong> — This is a simulated result. Upload a real screenshot to get your analysis!
+               </div>`
+            : '';
+
+        // Parse analysis markdown into structured sections
+        const analysisRaw = result.analysis || '';
+        let statsSection = '', synergySection = '', verdictSection = '';
+        
+        // Try to extract structured sections from the analysis markdown
+        const statsMatch = analysisRaw.match(/### Stats Breakdown\n([\s\S]*?)(?=###|$)/i);
+        const synergyMatch = analysisRaw.match(/### (?:Synergy|Build Synergy|Class Synergy)\n?([\s\S]*?)(?=###|$)/i) 
+                          || analysisRaw.match(/- Synergy: ([\s\S]*?)(?=\n-|\n###|$)/i);
+        const verdictMatch = analysisRaw.match(/### Verdict\n?([\s\S]*?)$/i);
+        
+        if (statsMatch) statsSection = renderMarkdown(statsMatch[1].trim());
+        if (synergyMatch) synergySection = renderMarkdown(synergyMatch[1].trim());
+        if (verdictMatch) verdictSection = renderMarkdown(verdictMatch[1].trim());
+        
+        // If structured extraction failed, fall back to full analysis
+        const hasStructured = statsSection || synergySection || verdictSection;
+
+        // Structured analysis cards
+        const structuredHtml = hasStructured ? `
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                ${statsSection ? `<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px;">
+                    <div style="color: var(--accent-color); font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">📊 Stats</div>
+                    <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${statsSection}</div>
+                </div>` : ''}
+                ${synergySection ? `<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px;">
+                    <div style="color: #00bcd4; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">🔗 Synergy</div>
+                    <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${synergySection}</div>
+                </div>` : ''}
+                ${verdictSection ? `<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px;">
+                    <div style="color: ${verdictBorderColor}; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">⚖️ Verdict</div>
+                    <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${verdictSection}</div>
+                </div>` : ''}
+            </div>` : '';
+        
+        // Fallback: full analysis collapsed (if no structured sections or as additional detail)
+        const fallbackSection = (!hasStructured && analysisHtml && analysisHtml.trim())
+            ? `<details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+               </details>`
+            : (hasStructured && analysisHtml && analysisHtml.trim()) 
+            ? `<details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Raw Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+               </details>`
+            : '';
+
+        // New Scan button
+        const newScanBtn = `<div style="text-align: center; margin-top: 15px;">
+            <button onclick="HoradricApp.resetScan()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">🔄 New Scan</button>
+        </div>`;
+
         this.el.resultArea.innerHTML = `
+            ${demoBanner}
             <!-- Verdict + Score: The 3-second answer -->
             <div style="margin-bottom: 15px;">
                 <div class="verdict-container ${verdictColor}">
@@ -1583,8 +1700,13 @@ Return ONLY the JSON object, no additional text.`;
                 </div>
             </div>
 
-            <!-- Full Analysis: Expandable for those who want depth -->
-            ${analysisSection}
+            <!-- Structured Analysis: Stats / Synergy / Verdict -->
+            ${structuredHtml}
+            
+            <!-- Full Analysis fallback -->
+            ${fallbackSection}
+            
+            ${newScanBtn}
         `;
         
         this.el.priceSection.style.display = 'none';
@@ -1625,16 +1747,37 @@ Return ONLY the JSON object, no additional text.`;
         const item1Glow = item1IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
         const item2Glow = item2IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
 
+        // Named verdict label: "Harlequin Crest Wins" instead of "ITEM1 WINS"
+        const item1Name = item1.title || 'Item 1';
+        const item2Name = item2.title || 'Item 2';
+        let verdictLabel = result.verdict || 'COMPARE';
+        if (item1IsWinner) verdictLabel = `${item1Name} Wins`;
+        if (item2IsWinner) verdictLabel = `${item2Name} Wins`;
+        if (isSimilar) verdictLabel = 'Sidegrade';
+
+        // Comparison summary section
+        const summaryHtml = result.insight ? `
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; margin-bottom: 15px;">
+                <div style="color: var(--accent-color); font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">📊 Comparison Summary: ${item1Name} vs ${item2Name}</div>
+                <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${result.insight}</div>
+                ${result.score_diff ? `<div style="color: #fff; font-size: 0.9rem; font-weight: 600; margin-top: 8px;">${result.score_diff}</div>` : ''}
+            </div>` : '';
+
+        // New Scan button
+        const newScanBtn = `<div style="text-align: center; margin-top: 15px;">
+            <button onclick="HoradricApp.resetScan()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">🔄 New Scan</button>
+        </div>`;
+
         this.el.resultArea.innerHTML = `
             <div style="margin-bottom: 15px;">
                 <div class="verdict-container ${isSimilar ? 'neutral' : (item1IsWinner || item2IsWinner ? 'keep' : 'neutral')}">
-                    <div class="verdict-label">${result.verdict || 'COMPARE'}</div>
+                    <div class="verdict-label" style="font-size: ${verdictLabel.length > 20 ? '0.9rem' : '1.1rem'};">${verdictLabel}</div>
                     <div class="verdict-score">${result.score_diff || '-'}</div>
                 </div>
-                <div class="insight-box" style="margin-top: 10px;">
-                    <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
-                </div>
             </div>
+
+            <!-- Comparison Summary -->
+            ${summaryHtml}
 
             <!-- Dual Item Cards -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
@@ -1651,7 +1794,7 @@ Return ONLY the JSON object, no additional text.`;
                 ">
                     ${item1Badge ? `<div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: ${item1IsWinner ? winnerBorder : similarBorder}; color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap;">${item1Badge}</div>` : ''}
                     <div style="text-align: center; margin-top: ${item1Badge ? '8px' : '0'};">
-                        <div style="color: ${item1RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item1.title || 'Item 1'}</div>
+                        <div style="color: ${item1RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item1Name}</div>
                         <div style="color: #999; font-size: 0.8rem; margin-bottom: 8px;">${item1.type || ''}${item1Sanctified}</div>
                         <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.85rem; margin-bottom: 8px;">
                             <span style="color: #ccc;">⚡ ${item1.item_power || '?'}</span>
@@ -1675,7 +1818,7 @@ Return ONLY the JSON object, no additional text.`;
                 ">
                     ${item2Badge ? `<div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: ${item2IsWinner ? winnerBorder : similarBorder}; color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap;">${item2Badge}</div>` : ''}
                     <div style="text-align: center; margin-top: ${item2Badge ? '8px' : '0'};">
-                        <div style="color: ${item2RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item2.title || 'Item 2'}</div>
+                        <div style="color: ${item2RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item2Name}</div>
                         <div style="color: #999; font-size: 0.8rem; margin-bottom: 8px;">${item2.type || ''}${item2Sanctified}</div>
                         <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.85rem; margin-bottom: 8px;">
                             <span style="color: #ccc;">⚡ ${item2.item_power || '?'}</span>
@@ -1692,6 +1835,8 @@ Return ONLY the JSON object, no additional text.`;
                 <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
                 <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
             </details>
+            
+            ${newScanBtn}
         `;
 
         // Hover effects
@@ -1822,10 +1967,18 @@ Return ONLY the JSON object, no additional text.`;
         setTimeout(() => {
             const isMythic = String(this.state.currentItem.rarity).toLowerCase().includes('mythic');
             const isSanctified = this.state.currentItem.sanctified;
-            let priceText = 'Check Trade Site';
-            if (isMythic) priceText = 'Priceless (Mythic)';
-            if (isSanctified) priceText = 'Untradable (Sanctified)';
-            this.el.priceContent.innerHTML = `<div>Value: ${priceText}</div>`;
+            const tradeQuery = this.state.currentItem.trade_query || this.state.currentItem.title || '';
+            
+            let priceHtml = '';
+            if (isSanctified) {
+                priceHtml = '<span style="color: #ffa500;">Untradable (Sanctified)</span>';
+            } else if (isMythic) {
+                priceHtml = '<span style="color: #e770ff;">Priceless (Mythic)</span>';
+            } else {
+                const tradeUrl = `https://diablo.trade/listings/items?exactItem=${encodeURIComponent(tradeQuery)}`;
+                priceHtml = `<a href="${tradeUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-color); text-decoration: underline;">Check on Diablo.Trade →</a>`;
+            }
+            this.el.priceContent.innerHTML = `<div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">💰 Market: ${priceHtml}</div>`;
         }, 500);
     },
     searchTrade() { window.open('https://diablo.trade', '_blank'); },
@@ -1850,8 +2003,8 @@ Return ONLY the JSON object, no additional text.`;
         this.el.imagePreview.style.display = 'block';
         const label = this.el.uploadZone.querySelector('.upload-label');
         if(label) label.style.display = 'none';
-        const res = { title: "Harlequin Crest", rarity: "Mythic", type: "Helm", verdict: "KEEP", score: "S", item_power: 925, greater_affix_count: 4, insight: "Best-in-slot Mythic helm. Massive +4 to all Skills with unmatched defensive stats. Every class wants this.", analysis: "### Stats Breakdown\n- Item Power: 925/925\n- Key Stats: +4 All Skills, +20% Damage Reduction, +Maximum Life\n- Greater Affixes: 4 (all gold)\n- Sanctified: No\n\n### Verdict\nThis is the most sought-after helm in the game. Keep it permanently.", game: "d4", status: "success", confidence: "high", sanctified: false };
-        this.renderSuccess(res); this.saveToHistory(res);
+        const res = { title: "Harlequin Crest", rarity: "Mythic", type: "Helm", verdict: "KEEP", score: "S", item_power: 925, greater_affix_count: 4, insight: "Best-in-slot Mythic helm. Massive +4 to all Skills with unmatched defensive stats. Every class wants this.", analysis: "### Stats Breakdown\n- Item Power: 925/925\n- Key Stats: +4 All Skills, +20% Damage Reduction, +Maximum Life\n- Greater Affixes: 4 (all gold)\n- Sanctified: No\n\n### Verdict\nThis is the most sought-after helm in the game. Keep it permanently.", game: "d4", status: "success", confidence: "high", sanctified: false, isDemo: true };
+        this.renderSuccess(res);
     }
 };
 
