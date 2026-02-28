@@ -1174,7 +1174,7 @@ const HoradricApp = {
             this.saveToHistory(result);
             
             // Increment global scan counter (fire-and-forget)
-            try { fetch('https://api.counterapi.dev/v1/statverdict/scans/up', { mode: 'cors', cache: 'no-store' }); } catch(e) {}
+            try { fetch('/api/counter?name=scans&action=up', { cache: 'no-store' }); } catch(e) {}
 
         } catch (error) {
             console.error('Analysis error:', error);
@@ -1551,7 +1551,15 @@ Return ONLY the JSON object, no additional text.`;
                </details>`
             : '';
 
+        // Demo banner
+        const demoBanner = result.isDemo 
+            ? `<div style="background: rgba(255, 165, 0, 0.15); border: 1px solid rgba(255, 165, 0, 0.4); border-radius: 8px; padding: 10px 15px; margin-bottom: 15px; text-align: center; color: #ffa500; font-size: 0.9rem;">
+                🎭 <strong>Demo Mode</strong> — This is a simulated result. Upload a real screenshot to get your analysis!
+               </div>`
+            : '';
+
         this.el.resultArea.innerHTML = `
+            ${demoBanner}
             <!-- Verdict + Score: The 3-second answer -->
             <div style="margin-bottom: 15px;">
                 <div class="verdict-container ${verdictColor}">
@@ -1850,8 +1858,8 @@ Return ONLY the JSON object, no additional text.`;
         this.el.imagePreview.style.display = 'block';
         const label = this.el.uploadZone.querySelector('.upload-label');
         if(label) label.style.display = 'none';
-        const res = { title: "Harlequin Crest", rarity: "Mythic", type: "Helm", verdict: "KEEP", score: "S", item_power: 925, greater_affix_count: 4, insight: "Best-in-slot Mythic helm. Massive +4 to all Skills with unmatched defensive stats. Every class wants this.", analysis: "### Stats Breakdown\n- Item Power: 925/925\n- Key Stats: +4 All Skills, +20% Damage Reduction, +Maximum Life\n- Greater Affixes: 4 (all gold)\n- Sanctified: No\n\n### Verdict\nThis is the most sought-after helm in the game. Keep it permanently.", game: "d4", status: "success", confidence: "high", sanctified: false };
-        this.renderSuccess(res); this.saveToHistory(res);
+        const res = { title: "Harlequin Crest", rarity: "Mythic", type: "Helm", verdict: "KEEP", score: "S", item_power: 925, greater_affix_count: 4, insight: "Best-in-slot Mythic helm. Massive +4 to all Skills with unmatched defensive stats. Every class wants this.", analysis: "### Stats Breakdown\n- Item Power: 925/925\n- Key Stats: +4 All Skills, +20% Damage Reduction, +Maximum Life\n- Greater Affixes: 4 (all gold)\n- Sanctified: No\n\n### Verdict\nThis is the most sought-after helm in the game. Keep it permanently.", game: "d4", status: "success", confidence: "high", sanctified: false, isDemo: true };
+        this.renderSuccess(res);
     }
 };
 
