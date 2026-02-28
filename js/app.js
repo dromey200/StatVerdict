@@ -1174,7 +1174,7 @@ const HoradricApp = {
             this.saveToHistory(result);
             
             // Increment global scan counter (fire-and-forget)
-            try { fetch('https://api.counterapi.dev/v1/statverdict/scans/up', { mode: 'cors', cache: 'no-store' }); } catch(e) {}
+            try { fetch('/api/counter?name=scans&action=up', { cache: 'no-store' }); } catch(e) {}
 
         } catch (error) {
             console.error('Analysis error:', error);
