@@ -163,16 +163,6 @@ const HoradricApp = {
         this.attachEventListeners();
         this.updateGameSelector();
         this.updateClassOptions();
-        // DISABLED: Loadout is a premium feature
-        // this.renderLoadoutGrid();
-        // this.updateBuildSynergy();
-        
-        // Check if loaded game is unsupported and show coming soon overlay
-        const game = this.el.gameVersion.value;
-        const support = CONFIG.GAME_SUPPORT[game];
-        if (support && !support.enabled) {
-            this.showUnsupportedOverlay(game);
-        }
         
         // Set initial UI phase
         this.setPhase('idle');
@@ -234,7 +224,7 @@ const HoradricApp = {
     },
 
     attachEventListeners() {
-        this.el.gameVersion.addEventListener('change', () => this.handleGameChange());
+        // Game is fixed to D4 — no change listener needed
         // UPDATED: Class change listener — also shows advanced options
         this.el.playerClass.addEventListener('change', () => {
             const selectedClass = this.el.playerClass.value.toLowerCase();
@@ -297,93 +287,15 @@ const HoradricApp = {
         });
     },
 
-    updateGameSelector() {
-        const options = this.el.gameVersion.querySelectorAll('option');
-        options.forEach(opt => {
-            const game = opt.value;
-            const support = CONFIG.GAME_SUPPORT[game];
-            if (support && !support.enabled) {
-                opt.textContent = `${support.label} — Coming Soon`;
-                opt.disabled = true;
-                opt.style.color = '#666';
-            }
-        });
-        // Ensure D4 is always selected
-        this.el.gameVersion.value = 'd4';
-    },
+    // Game is hardcoded to D4 — these are kept as safe no-ops
+    updateGameSelector() {},
+    handleGameChange() {},
 
-    handleGameChange() {
-        const game = this.el.gameVersion.value;
-        const support = CONFIG.GAME_SUPPORT[game];
-        
-        if (support && !support.enabled) {
-            // Show coming soon overlay INSIDE the scan card
-            this.showUnsupportedOverlay(game);
-        } else {
-            // Hide overlay and re-enable everything
-            this.hideUnsupportedOverlay();
-        }
-        
-        this.updateClassOptions();
-        localStorage.setItem('selected_game', game);
-    },
-
-    showUnsupportedOverlay(game) {
-        const support = CONFIG.GAME_SUPPORT[game];
-        const gameName = support ? support.label : game.toUpperCase();
-        
-        // Set overlay message
-        if (this.el.unsupportedMessage) {
-            this.el.unsupportedMessage.textContent = `${gameName} analysis is coming soon! Currently only Diablo IV is supported.`;
-        }
-        
-        // Show overlay over the scan card content
-        if (this.el.unsupportedOverlay) {
-            this.el.unsupportedOverlay.style.display = 'block';
-        }
-        
-        // Disable all action buttons EXCEPT demo
-        this.el.analyzeBtn.disabled = true;
-        this.el.compareBtn.disabled = true;
-        this.el.analyzeBtn.style.opacity = '0.4';
-        this.el.compareBtn.style.opacity = '0.4';
-        
-        // Disable upload, class, and advanced controls
-        if (this.el.imageUpload) this.el.imageUpload.disabled = true;
-        if (this.el.playerClass) this.el.playerClass.disabled = true;
-        if (this.el.buildStyle) this.el.buildStyle.disabled = true;
-        if (this.el.keyMechanic) this.el.keyMechanic.disabled = true;
-        if (this.el.toggleAdvanced) this.el.toggleAdvanced.disabled = true;
-        
-        // Hide the results card if it was open
-        this.clearResults();
-    },
-
-    hideUnsupportedOverlay() {
-        // Hide overlay
-        if (this.el.unsupportedOverlay) {
-            this.el.unsupportedOverlay.style.display = 'none';
-        }
-        
-        // Re-enable all buttons
-        this.el.analyzeBtn.disabled = false;
-        this.el.compareBtn.disabled = false;
-        this.el.analyzeBtn.style.opacity = '1';
-        this.el.compareBtn.style.opacity = '1';
-        
-        // Re-enable controls
-        if (this.el.imageUpload) this.el.imageUpload.disabled = false;
-        if (this.el.playerClass) this.el.playerClass.disabled = false;
-        if (this.el.buildStyle) this.el.buildStyle.disabled = false;
-        if (this.el.keyMechanic) this.el.keyMechanic.disabled = false;
-        if (this.el.toggleAdvanced) this.el.toggleAdvanced.disabled = false;
-        
-        this.clearResults();
-    },
+    showUnsupportedOverlay() {},
+    hideUnsupportedOverlay() {},
 
     updateClassOptions() {
-        const game = this.el.gameVersion.value;
-        const classes = CONFIG.GAME_CLASSES[game] || CONFIG.GAME_CLASSES.d4;
+        const classes = CONFIG.GAME_CLASSES.d4;
         
         this.el.playerClass.innerHTML = '';
         classes.forEach(cls => {
@@ -396,9 +308,8 @@ const HoradricApp = {
     },
 
     updateBuildOptions() {
-        const game = this.el.gameVersion.value;
         const classId = this.el.playerClass.value;
-        const classes = CONFIG.GAME_CLASSES[game] || CONFIG.GAME_CLASSES.d4;
+        const classes = CONFIG.GAME_CLASSES.d4;
         const classDef = classes.find(c => c.id === classId);
         
         if (!classDef) return;
@@ -1173,7 +1084,8 @@ const HoradricApp = {
     },
     
     resetScan() {
-        // Clear uploaded image
+        // Clear uploaded image — removeAttribute ensures external demo URLs are fully cleared
+        this.el.imagePreview.removeAttribute('src');
         this.el.imagePreview.src = '';
         this.el.imagePreview.style.display = 'none';
         const label = this.el.uploadZone.querySelector('.upload-label');
@@ -1571,7 +1483,7 @@ Return ONLY the JSON object, no additional text.`;
     },
 
     renderWrongGame(detected, customMessage) {
-        const target = this.el.gameVersion.options[this.el.gameVersion.selectedIndex].text;
+        const target = 'Diablo IV';
         const map = { 'd4': 'Diablo IV', 'd2r': 'Diablo II: Resurrected', 'd3': 'Diablo III', 'di': 'Diablo Immortal' };
         const detectedName = map[detected] || detected.toUpperCase();
         const message = customMessage || `This looks like a ${detectedName} item, but you selected ${target}.`;
@@ -1956,13 +1868,7 @@ Return ONLY the JSON object, no additional text.`;
     },
     closeResults() { this.el.resultsCard.style.display = 'none'; },
     loadState() {
-        const g = localStorage.getItem('selected_game');
-        // Only restore if it's an enabled game
-        if (g && CONFIG.GAME_SUPPORT[g] && CONFIG.GAME_SUPPORT[g].enabled) {
-            this.el.gameVersion.value = g;
-        } else {
-            this.el.gameVersion.value = 'd4';
-        }
+        // Game is always D4 — no need to restore from localStorage
         try { const h = localStorage.getItem('horadric_history'); if(h) { this.state.history = JSON.parse(h); this.renderHistory(); } } catch(e){}
     },
     openSettings() { this.el.settingsPanel.classList.add('open'); },
