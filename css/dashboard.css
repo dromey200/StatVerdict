@@ -74,25 +74,7 @@
     margin-left: auto;
 }
 
-.game-selector {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid #444;
-    color: var(--text-color);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    min-width: 140px;
-}
-
-.game-selector:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--accent-color);
-}
-
 /* Style all select dropdown options */
-.game-selector option,
 .option-select option,
 .advanced-select option {
     background: #1e1e1e;
@@ -100,7 +82,6 @@
     padding: 8px;
 }
 
-.game-selector option:hover,
 .option-select option:hover,
 .advanced-select option:hover {
     background: #2c2c2c;
@@ -991,12 +972,6 @@
     
     .title-text {
         display: none;
-    }
-    
-    .game-selector {
-        font-size: 0.8rem;
-        padding: 6px 10px;
-        min-width: 100px;
     }
     
     .icon-btn {
