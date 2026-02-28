@@ -66,26 +66,41 @@
             flex-direction: row; 
             align-items: center; 
             justify-content: space-between; 
-            gap: 20px; 
+            gap: 15px; 
             width: 100%; 
         }
-        .header-left { width: auto; margin-right: 0; display: flex; align-items: center; justify-content: flex-start; gap: 10px; }
-        .title-text { display: inline-block !important; color: #fff; }
-        .header-controls { display: flex; gap: 10px; align-items: center; }
+        .header-left { width: auto; margin-right: 0; display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex-shrink: 0; }
+        .title-text { display: inline-block !important; color: #fff; white-space: nowrap; }
+        .dashboard-title { font-size: 1.1rem !important; }
+        .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        .game-badge { 
+            font-size: 0.78rem; 
+            color: #999; 
+            padding: 4px 10px; 
+            background: rgba(255,255,255,0.04); 
+            border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 6px; 
+            white-space: nowrap; 
+        }
         
         /* Loading skeleton to prevent layout shift */
         .dashboard-card { min-height: 300px; }
         
         @media (max-width: 768px) {
             .header-content-custom { 
-                flex-direction: column; 
-                align-items: center; 
-                justify-content: center; 
+                flex-wrap: wrap;
                 gap: 8px; 
             }
-            .header-left { justify-content: center; }
-            .dashboard-title { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+            .header-left { gap: 6px; }
+            .dashboard-title { font-size: 0.95rem !important; }
+            .title-text { display: inline-block !important; }
+            .btn-new-scan { font-size: 0.7rem; padding: 4px 8px; }
             body.dashboard-layout { padding-top: 10px; }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-title { font-size: 0.85rem !important; }
+            .btn-new-scan span.btn-label { display: none; }
         }
 
         /* Comparison dual-card styles */
@@ -112,27 +127,13 @@
                 </a>
                 <h1 class="dashboard-title">
                     <span class="title-icon" id="app-logo" aria-label="Horadric AI logo">
-                        <img src="/assets/images/logo-cube-48.png" alt="Horadric AI" width="28" height="28" style="border-radius: 4px;">
+                        <img src="/assets/images/logo-cube-96.png" alt="Horadric AI" width="40" height="40" style="border-radius: 6px;">
                     </span>
                     <span class="title-text">Horadric AI</span>
                 </h1>
-                <button onclick="HoradricApp.resetScan()" class="btn-new-scan" aria-label="Start new scan" title="Clear workspace">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align: -2px;">
-                        <polyline points="1 4 1 10 7 10"></polyline>
-                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-                    </svg>
-                    New Scan
-                </button>
             </div>
             <div class="header-controls">
-                <select id="game-version" class="game-selector" aria-label="Select game">
-                    <option value="d4" selected>Diablo IV</option>
-                    <option value="d3" disabled style="color: #666;">Diablo III — Coming Soon</option>
-                    <option value="d2r" disabled style="color: #666;">D2: Resurrected — Coming Soon</option>
-                    <option value="di" disabled style="color: #666;">Diablo Immortal — Coming Soon</option>
-                    <option disabled style="color: #555;">───────────────</option>
-                    <option disabled style="color: #888;">More ARPGs planned! Vote at statverdict.com</option>
-                </select>
+                <input type="hidden" id="game-version" value="d4">
                 <button id="settings-trigger" class="icon-btn" aria-label="Open settings">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
@@ -157,19 +158,6 @@
                     <h2 class="card-title"><span class="card-icon">📸</span> New Scan</h2>
                 </div>
                 <div class="card-body" style="position: relative;">
-                    <!-- Unsupported game overlay (shown when non-D4 game selected) -->
-                    <div id="unsupported-overlay" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--bg-card, #1a1a2e); border-radius: 8px; padding: 20px; display: none;">
-                        <div style="text-align: center; padding: 30px; color: #ffa500;">
-                            <div style="font-size: 3rem; margin-bottom: 15px;">🚧</div>
-                            <h3 style="margin-bottom: 15px; color: #ffa500;">Coming Soon</h3>
-                            <p id="unsupported-message" style="font-size: 1.1rem; color: #fff; line-height: 1.6;"></p>
-                            <div style="margin-top: 20px; padding: 15px; background: rgba(255,165,0,0.1); border-radius: 8px;">
-                                <strong>Currently Supported:</strong><br>
-                                ✅ Diablo IV (Full Analysis)
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="upload-zone" id="upload-zone">
                         <input type="file" id="image-upload" accept="image/png,image/jpeg,image/jpg,image/webp" class="upload-input" aria-label="Upload item screenshot">
                         <label for="image-upload" class="upload-label">
