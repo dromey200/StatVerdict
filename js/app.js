@@ -1912,18 +1912,17 @@ Return ONLY the JSON object, no additional text.`;
         
         this.state.history.forEach(item => {
             const div = document.createElement('div');
-            const g = String(item.game || 'd4').toUpperCase();
             const r = String(item.rarity || 'common').split(' ')[0].toLowerCase();
             const sanctBadge = item.sanctified ? ' 🦋' : '';
             const scoreBadge = item.score ? ` · ${item.score}` : '';
             
             div.className = `recent-item rarity-${r}`;
             div.innerHTML = `
+                <div class="recent-name">${item.title || 'Unknown'}${sanctBadge}</div>
                 <div class="recent-header">
-                    <span>${g}${sanctBadge}</span>
+                    <span>${item.type || r}${item.item_power ? ` · IP ${item.item_power}` : ''}</span>
                     <span>${item.verdict || '?'}${scoreBadge}</span>
                 </div>
-                <div class="recent-name">${item.title || 'Unknown'}</div>
             `;
             
             // FIX: Add click listener to re-open the result
