@@ -575,13 +575,14 @@
     border: 1px solid #333;
     border-left: 4px solid #444;
     border-radius: 6px;
-    padding: 12px 14px;
+    padding: 10px 14px;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
     width: 100%;
     box-sizing: border-box;
-    min-height: 44px; /* Touch-friendly minimum */
+    min-height: 44px;
+    overflow: hidden;
 }
 
 .recent-item:hover {
@@ -604,16 +605,19 @@
 .recent-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 0.75rem;
     color: #888;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .recent-name {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-color);
-    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .recent-verdict {
@@ -1104,15 +1108,13 @@ option:hover {
     flex-direction: column;
 }
 
-/* Recent scans section (top) */
+/* Recent scans section — full card since loadout is disabled */
 .recent-section {
     flex: 1;
-    border-bottom: 2px solid #333;
     min-height: 0;
-    max-height: 50%;
 }
 
-/* Loadout section (bottom) */
+/* Loadout section (bottom) — hidden/disabled */
 .loadout-section {
     flex: 1;
     min-height: 0;
@@ -1123,14 +1125,15 @@ option:hover {
     padding: 16px;
     overflow-y: auto;
     min-height: 0;
+    flex: 1;
 }
 
-/* Recent list in split view */
+/* Recent list */
 .recent-section .recent-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 300px;
+    max-height: none;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -1156,12 +1159,7 @@ option:hover {
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .recent-section {
-        max-height: none;
         flex: 0 0 auto;
-    }
-    
-    .loadout-section {
-        flex: 1;
     }
     
     .loadout-section .loadout-grid {
