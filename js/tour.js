@@ -28,7 +28,7 @@ const TourGuide = {
         {
             title: "3. Analyze or Compare ⚡",
             description: "Hit 'Analyze' for a single item verdict, or 'Compare' to see how two items stack up side-by-side.",
-            target: ".h-card-actions",
+            target: "#action-buttons",
             position: "top"
         },
         {
@@ -212,7 +212,7 @@ const TourGuide = {
         // --- Spotlight ---
         if (target) {
             const rect = target.getBoundingClientRect();
-            const pad = 8;
+            const pad = 5;
             spotlight.style.display = 'block';
             spotlight.style.top = `${rect.top - pad}px`;
             spotlight.style.left = `${rect.left - pad}px`;
