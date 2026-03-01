@@ -1276,7 +1276,19 @@ Return ONLY the JSON object, no additional text.`;
             Analytics.trackError('scan_rejected', `${result.reject_reason}: ${result.message}`);
         }
         
-        if (result.reject_reason === 'not_game') {
+        if (result.reject_reason === 'multiple_items') {
+            this.renderRejection(
+                "Multiple Items Detected",
+                result.message || "It looks like your screenshot contains more than one item. Please crop or upload a screenshot showing a single item tooltip, then try again.",
+                confidence
+            );
+        } else if (result.reject_reason === 'single_item') {
+            this.renderRejection(
+                "Single Item Detected",
+                result.message || "Comparison mode requires two items side-by-side. Use the in-game comparison overlay, or switch to Analyze for a single item.",
+                confidence
+            );
+        } else if (result.reject_reason === 'not_game') {
             this.renderRejection(
                 "Not a Game Item", 
                 result.message || "This appears to be a real-world photo or non-game object. Please upload a clear screenshot of a Diablo item tooltip.",
