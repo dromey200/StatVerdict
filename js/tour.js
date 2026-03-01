@@ -28,7 +28,7 @@ const TourGuide = {
         {
             title: "3. Analyze or Compare ⚡",
             description: "Hit 'Analyze' for a single item verdict, or 'Compare' to see how two items stack up side-by-side.",
-            target: ".action-buttons",
+            target: ".h-card-actions",
             position: "top"
         },
         {
@@ -181,8 +181,9 @@ const TourGuide = {
         if (target) {
             this.scrollToTarget(target, () => this.updatePositions(step));
         } else {
-            // No visible target — show as centered overlay
-            this.updatePositions({ ...step, target: null });
+            // No visible target — centered overlay, scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => this.updatePositions({ ...step, target: null }), 400);
         }
     },
     
