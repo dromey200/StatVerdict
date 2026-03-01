@@ -1053,6 +1053,8 @@ const HoradricApp = {
         // Remove all phase classes
         if (scanCard) scanCard.classList.remove('phase-idle', 'phase-processing', 'phase-result');
         
+        const isProcessing = phase === 'processing';
+        
         switch(phase) {
             case 'idle':
                 if (scanCard) scanCard.classList.add('phase-idle');
@@ -1075,6 +1077,17 @@ const HoradricApp = {
                 this.el.analyzeBtn.style.opacity = '';
                 this.el.compareBtn.style.opacity = '';
                 break;
+        }
+        
+        // Disable demo button and journal clicks during processing
+        if (this.el.demoBtn) {
+            this.el.demoBtn.disabled = isProcessing;
+            this.el.demoBtn.style.opacity = isProcessing ? '0.5' : '';
+            this.el.demoBtn.style.pointerEvents = isProcessing ? 'none' : '';
+        }
+        if (this.el.historyList) {
+            this.el.historyList.style.pointerEvents = isProcessing ? 'none' : '';
+            this.el.historyList.style.opacity = isProcessing ? '0.5' : '';
         }
     },
 
@@ -2098,6 +2111,7 @@ Return ONLY the JSON object, no additional text.`;
         }, 3000);
     },
     runDemo() {
+        if (this.state.phase === 'processing') return;
         this.el.imagePreview.src = 'https://statverdict.com/assets/images/harlequin%20crest.jpg';
         this.el.imagePreview.style.display = 'block';
         const label = this.el.uploadZone.querySelector('.upload-label');
