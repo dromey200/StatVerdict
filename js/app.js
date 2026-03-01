@@ -158,7 +158,6 @@ const HoradricApp = {
         
         this.cacheElements();
         this.loadState();
-        this.initPreferences();
         // DISABLED: Loadout is a premium feature
         // this.initializeLoadout();
         this.attachEventListeners();
@@ -246,7 +245,7 @@ const HoradricApp = {
                 this.el.toggleAdvanced.style.display = '';
             } else {
                 this.el.toggleAdvanced.style.display = 'none';
-                if (this.el.advancedPanel) { this.el.advancedPanel.classList.add('h-hidden'); this.el.advancedPanel.style.display = 'none'; }
+                if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
             }
         });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
@@ -1060,8 +1059,6 @@ const HoradricApp = {
                 this.el.compareBtn.disabled = false;
                 this.el.analyzeBtn.style.opacity = '';
                 this.el.compareBtn.style.opacity = '';
-                this.el.analyzeBtn.style.pointerEvents = '';
-                this.el.compareBtn.style.pointerEvents = '';
                 break;
             case 'processing':
                 if (scanCard) scanCard.classList.add('phase-processing');
@@ -1069,8 +1066,6 @@ const HoradricApp = {
                 this.el.compareBtn.disabled = true;
                 this.el.analyzeBtn.style.opacity = '0.5';
                 this.el.compareBtn.style.opacity = '0.5';
-                this.el.analyzeBtn.style.pointerEvents = 'none';
-                this.el.compareBtn.style.pointerEvents = 'none';
                 break;
             case 'result':
                 if (scanCard) scanCard.classList.add('phase-result');
@@ -1078,30 +1073,7 @@ const HoradricApp = {
                 this.el.compareBtn.disabled = false;
                 this.el.analyzeBtn.style.opacity = '';
                 this.el.compareBtn.style.opacity = '';
-                this.el.analyzeBtn.style.pointerEvents = '';
-                this.el.compareBtn.style.pointerEvents = '';
                 break;
-            case 'error':
-                if (scanCard) scanCard.classList.add('phase-result');
-                this.el.analyzeBtn.disabled = true;
-                this.el.compareBtn.disabled = true;
-                this.el.analyzeBtn.style.opacity = '0.5';
-                this.el.compareBtn.style.opacity = '0.5';
-                this.el.analyzeBtn.style.pointerEvents = 'none';
-                this.el.compareBtn.style.pointerEvents = 'none';
-                break;
-        }
-        
-        // Disable demo button and journal clicks during processing and error
-        const isLocked = phase === 'processing' || phase === 'error';
-        if (this.el.demoBtn) {
-            this.el.demoBtn.disabled = isLocked;
-            this.el.demoBtn.style.opacity = isLocked ? '0.5' : '';
-            this.el.demoBtn.style.pointerEvents = isLocked ? 'none' : '';
-        }
-        if (this.el.historyList) {
-            this.el.historyList.style.pointerEvents = isLocked ? 'none' : '';
-            this.el.historyList.style.opacity = isLocked ? '0.5' : '';
         }
     },
 
@@ -1143,7 +1115,7 @@ const HoradricApp = {
         if (this.el.keyMechanic) this.el.keyMechanic.value = '';
         
         // Collapse advanced panel
-        if (this.el.advancedPanel) { this.el.advancedPanel.classList.add('h-hidden'); this.el.advancedPanel.style.display = 'none'; }
+        if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
         
         // Reset checkboxes
         ['needsStr', 'needsInt', 'needsWill', 'needsDex', 'needsRes'].forEach(k => {
@@ -1290,19 +1262,7 @@ Return ONLY the JSON object, no additional text.`;
             Analytics.trackError('scan_rejected', `${result.reject_reason}: ${result.message}`);
         }
         
-        if (result.reject_reason === 'multiple_items') {
-            this.renderRejection(
-                "Multiple Items Detected",
-                result.message || "It looks like your screenshot contains more than one item. Please crop or upload a screenshot showing a single item tooltip, then try again.",
-                confidence
-            );
-        } else if (result.reject_reason === 'single_item') {
-            this.renderRejection(
-                "Single Item Detected",
-                result.message || "Comparison mode requires two items side-by-side. Use the in-game comparison overlay, or switch to Analyze for a single item.",
-                confidence
-            );
-        } else if (result.reject_reason === 'not_game') {
+        if (result.reject_reason === 'not_game') {
             this.renderRejection(
                 "Not a Game Item", 
                 result.message || "This appears to be a real-world photo or non-game object. Please upload a clear screenshot of a Diablo item tooltip.",
@@ -1528,11 +1488,6 @@ Return ONLY the JSON object, no additional text.`;
 
     renderRejection(title, reason, confidence = 'high') {
         this.el.resultsCard.style.display = 'block';
-        this.setPhase('error');
-        
-        // Hide result action buttons (Discord, Check Price, Search Trade) on rejection
-        const resultActions = this.el.resultsCard.querySelector('.result-actions');
-        if (resultActions) resultActions.style.display = 'none';
         
         const confidenceText = confidence === 'low' || confidence === 'medium' 
             ? `<div style="margin-top: 15px; font-size: 0.85rem; color: #ffa500;">⚠️ Low confidence detection - image may be unclear</div>`
@@ -1545,9 +1500,6 @@ Return ONLY the JSON object, no additional text.`;
                 <p style="font-size: 1.1rem; color: #fff; line-height: 1.5;">${reason}</p>
                 ${confidenceText}
             </div>
-            <div style="text-align: center; margin-top: 15px;">
-                <button class="btn-reset-scan">🔄 New Scan</button>
-            </div>
         `;
         this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
     },
@@ -1559,12 +1511,6 @@ Return ONLY the JSON object, no additional text.`;
         const message = customMessage || `This looks like a ${detectedName} item, but you selected ${target}.`;
 
         this.el.resultsCard.style.display = 'block';
-        this.setPhase('error');
-        
-        // Hide result action buttons on rejection
-        const resultActions = this.el.resultsCard.querySelector('.result-actions');
-        if (resultActions) resultActions.style.display = 'none';
-        
         this.el.resultArea.innerHTML = `
             <div style="text-align: center; padding: 20px; color: var(--color-warning);">
                 <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
@@ -1574,9 +1520,6 @@ Return ONLY the JSON object, no additional text.`;
                     Please change the "Game Version" selector at the top to match your screenshot.
                 </div>
             </div>
-            <div style="text-align: center; margin-top: 15px;">
-                <button class="btn-reset-scan">🔄 New Scan</button>
-            </div>
         `;
         this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
     },
@@ -1584,10 +1527,6 @@ Return ONLY the JSON object, no additional text.`;
     renderSuccess(result) {
         this.state.currentItem = result;
         this.setPhase('result');
-        
-        // Restore result action buttons (hidden during rejections)
-        const resultActions = this.el.resultsCard.querySelector('.result-actions');
-        if (resultActions) resultActions.style.display = '';
         
         // ANALYTICS HOOK: Track successful scan
         if (typeof Analytics !== 'undefined' && Analytics.trackScan) {
@@ -1770,7 +1709,6 @@ Return ONLY the JSON object, no additional text.`;
         `;
         
         this.el.priceSection.style.display = 'none';
-        this.applyPriceVisibility();
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },
 
@@ -1910,21 +1848,13 @@ Return ONLY the JSON object, no additional text.`;
         addHoverEffect(document.getElementById('compare-item2'));
 
         this.el.priceSection.style.display = 'none';
-        this.applyPriceVisibility();
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },
 
     // UTILITIES
     toggleAdvanced() {
         if (this.el.advancedPanel) {
-            const isHidden = this.el.advancedPanel.classList.contains('h-hidden');
-            if (isHidden) {
-                this.el.advancedPanel.classList.remove('h-hidden');
-                this.el.advancedPanel.style.display = '';
-            } else {
-                this.el.advancedPanel.classList.add('h-hidden');
-                this.el.advancedPanel.style.display = 'none';
-            }
+            this.el.advancedPanel.classList.toggle('h-hidden');
         }
     },
 
@@ -1965,54 +1895,7 @@ Return ONLY the JSON object, no additional text.`;
     },
     openSettings() { this.el.settingsPanel.classList.add('open'); },
     closeSettings() { this.el.settingsPanel.classList.remove('open'); },
-    
-    // ============================================
-    // SETTINGS PREFERENCES
-    // ============================================
-    initPreferences() {
-        this.el.prefAutoSave = document.getElementById('auto-save-scans');
-        this.el.prefShowPrices = document.getElementById('show-prices');
-        
-        // Load saved preferences (default: both enabled)
-        const saved = JSON.parse(localStorage.getItem('sv_preferences') || '{}');
-        this.prefs = {
-            autoSave: saved.autoSave !== false,
-            showPrices: saved.showPrices !== false
-        };
-        
-        // Apply to checkboxes
-        if (this.el.prefAutoSave) this.el.prefAutoSave.checked = this.prefs.autoSave;
-        if (this.el.prefShowPrices) this.el.prefShowPrices.checked = this.prefs.showPrices;
-        
-        // Listen for changes
-        if (this.el.prefAutoSave) this.el.prefAutoSave.addEventListener('change', () => {
-            this.prefs.autoSave = this.el.prefAutoSave.checked;
-            this.savePreferences();
-        });
-        if (this.el.prefShowPrices) this.el.prefShowPrices.addEventListener('change', () => {
-            this.prefs.showPrices = this.el.prefShowPrices.checked;
-            this.savePreferences();
-            this.applyPriceVisibility();
-        });
-        
-        // Apply initial visibility
-        this.applyPriceVisibility();
-    },
-    savePreferences() {
-        localStorage.setItem('sv_preferences', JSON.stringify(this.prefs));
-    },
-    applyPriceVisibility() {
-        const show = this.prefs.showPrices;
-        // Hide/show market value section
-        if (this.el.priceSection) this.el.priceSection.style.display = show ? '' : 'none';
-        // Hide/show price-related action buttons
-        if (this.el.priceCheckBtn) this.el.priceCheckBtn.style.display = show ? '' : 'none';
-        if (this.el.searchTradeBtn) this.el.searchTradeBtn.style.display = show ? '' : 'none';
-    },
     saveToHistory(result) {
-        // Respect auto-save preference
-        if (this.prefs && !this.prefs.autoSave) return;
-        
         const item = { 
             id: Date.now(), 
             title: result.title, 
@@ -2077,7 +1960,6 @@ Return ONLY the JSON object, no additional text.`;
     clearHistory() { if(confirm('Clear all scan history?')) { this.state.history = []; localStorage.removeItem('horadric_history'); this.renderHistory(); } },
     checkPrice() {
         if(!this.state.currentItem) return;
-        if(this.prefs && !this.prefs.showPrices) return;
         this.el.priceSection.style.display = 'block';
         this.el.priceContent.innerHTML = 'Checking database...';
         setTimeout(() => {
@@ -2158,7 +2040,6 @@ Return ONLY the JSON object, no additional text.`;
         }, 3000);
     },
     runDemo() {
-        if (this.state.phase === 'processing') return;
         this.el.imagePreview.src = 'https://statverdict.com/assets/images/harlequin%20crest.jpg';
         this.el.imagePreview.style.display = 'block';
         const label = this.el.uploadZone.querySelector('.upload-label');
