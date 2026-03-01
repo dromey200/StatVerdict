@@ -507,6 +507,13 @@ body.dashboard-layout {
     gap: 12px;
 }
 
+.action-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
 .h-btn-primary {
     background: var(--accent-color);
     border: none;
