@@ -245,7 +245,7 @@ const HoradricApp = {
                 this.el.toggleAdvanced.style.display = '';
             } else {
                 this.el.toggleAdvanced.style.display = 'none';
-                if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
+                if (this.el.advancedPanel) { this.el.advancedPanel.classList.add('h-hidden'); this.el.advancedPanel.style.display = 'none'; }
             }
         });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
@@ -1115,7 +1115,7 @@ const HoradricApp = {
         if (this.el.keyMechanic) this.el.keyMechanic.value = '';
         
         // Collapse advanced panel
-        if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
+        if (this.el.advancedPanel) { this.el.advancedPanel.classList.add('h-hidden'); this.el.advancedPanel.style.display = 'none'; }
         
         // Reset checkboxes
         ['needsStr', 'needsInt', 'needsWill', 'needsDex', 'needsRes'].forEach(k => {
@@ -1854,7 +1854,14 @@ Return ONLY the JSON object, no additional text.`;
     // UTILITIES
     toggleAdvanced() {
         if (this.el.advancedPanel) {
-            this.el.advancedPanel.classList.toggle('h-hidden');
+            const isHidden = this.el.advancedPanel.classList.contains('h-hidden');
+            if (isHidden) {
+                this.el.advancedPanel.classList.remove('h-hidden');
+                this.el.advancedPanel.style.display = '';
+            } else {
+                this.el.advancedPanel.classList.add('h-hidden');
+                this.el.advancedPanel.style.display = 'none';
+            }
         }
     },
 
