@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -21,7 +21,7 @@
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
         script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com https://d4.maxroll.gg https://statverdict.com; 
         connect-src 'self' https://www.google-analytics.com https://analytics.google.com; 
@@ -49,7 +49,10 @@
     <link rel="preload" href="css/style.css" as="style">
     <link rel="preload" href="css/dashboard.css" as="style">
     
-    <!-- Critical CSS -->
+    <!-- Bootstrap 5 (CSS only — no JS bundle needed) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    
+    <!-- Critical CSS (loads AFTER Bootstrap to override) -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     
@@ -126,9 +129,6 @@
                     </svg>
                 </a>
                 <h1 class="dashboard-title">
-                    <span class="title-icon" id="app-logo" aria-label="Horadric AI logo">
-                        <img src="/assets/images/logo-cube-96.png" alt="Horadric AI" width="40" height="40" style="border-radius: 6px;">
-                    </span>
                     <span class="title-text">Horadric AI</span>
                 </h1>
             </div>
@@ -154,10 +154,10 @@
     <main class="dashboard-main" id="main-content" role="main">
         <div class="dashboard-grid">
             <div class="dashboard-card scan-card">
-                <div class="card-header">
-                    <h2 class="card-title"><span class="card-icon">📸</span> New Scan</h2>
+                <div class="h-card-header">
+                    <h2 class="h-card-title"><span class="h-card-icon">📸</span> New Scan</h2>
                 </div>
-                <div class="card-body" style="position: relative;">
+                <div class="h-card-body" style="position: relative;">
                     <div class="upload-zone" id="upload-zone">
                         <input type="file" id="image-upload" accept="image/png,image/jpeg,image/jpg,image/webp" class="upload-input" aria-label="Upload item screenshot">
                         <label for="image-upload" class="upload-label">
@@ -189,7 +189,7 @@
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
                     </button>
-                    <div id="advanced-panel" class="advanced-panel hidden">
+                    <div id="advanced-panel" class="advanced-panel h-hidden">
                         <div class="advanced-section">
                             <label class="advanced-label">Build Focus</label>
                             <select id="build-style" class="advanced-select">
@@ -206,12 +206,12 @@
                     <div id="image-error" class="message-box error" style="display: none;"></div>
                     <div id="image-success" class="message-box success" style="display: none;"></div>
                     <div id="progress-container" class="progress-container" style="display: none;">
-                        <div id="progress-bar" class="progress-bar"></div>
+                        <div id="h-progress-bar" class="h-progress-bar"></div>
                     </div>
-                    <div class="card-actions">
-                        <button id="analyze-btn" type="button" class="btn-primary btn-large">🔍 Analyze Item</button>
-                        <button id="compare-btn" type="button" class="btn-primary btn-large">⚖️ Compare Item</button>
-                        <button id="demo-btn" type="button" class="btn-secondary">🎮 Try Demo</button>
+                    <div class="h-card-actions">
+                        <button id="analyze-btn" type="button" class="h-btn-primary h-btn-large">🔍 Analyze Item</button>
+                        <button id="compare-btn" type="button" class="h-btn-primary h-btn-large">⚖️ Compare Item</button>
+                        <button id="demo-btn" type="button" class="h-btn-secondary">🎮 Try Demo</button>
                     </div>
                     <div id="loading" class="loading-state" style="display: none;">
                         <div class="loading-spinner"></div>
@@ -223,13 +223,13 @@
             <div class="dashboard-card recent-card recent-loadout-split">
                 <!-- Recent Scans Section (Top Half) -->
                 <div class="split-section recent-section">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <span class="card-icon">📜</span> Recent Scans <span id="scan-count" class="count-badge">0</span>
+                    <div class="h-card-header">
+                        <h2 class="h-card-title">
+                            <span class="h-card-icon">📜</span> Recent Scans <span id="scan-count" class="count-badge">0</span>
                         </h2>
-                        <button id="clear-history" class="btn-text" aria-label="Clear all scans">Clear All</button>
+                        <button id="clear-history" class="h-btn-text" aria-label="Clear all scans">Clear All</button>
                     </div>
-                    <div class="card-body card-body-compact">
+                    <div class="h-card-body h-card-body-compact">
                         <div id="history-list" class="recent-list">
                             <div class="empty-state">
                                 <div class="empty-icon">📭</div>
@@ -242,13 +242,13 @@
                 
                 <!-- Loadout Section (Bottom Half) — DISABLED: Premium feature (hidden) -->
                 <div class="split-section loadout-section" id="loadout-section" style="display: none;">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <span class="card-icon">⚔️</span> My Loadout
+                    <div class="h-card-header">
+                        <h2 class="h-card-title">
+                            <span class="h-card-icon">⚔️</span> My Loadout
                         </h2>
-                        <button id="clear-loadout-btn" class="btn-text" aria-label="Clear all loadout">Clear All</button>
+                        <button id="clear-loadout-btn" class="h-btn-text" aria-label="Clear all loadout">Clear All</button>
                     </div>
-                    <div class="card-body card-body-compact">
+                    <div class="h-card-body h-card-body-compact">
                         
                         <div id="build-synergy" class="build-synergy" style="display: none; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px;">
                             </div>
@@ -261,25 +261,25 @@
             </div>
             
             <div id="results-card" class="dashboard-card results-card" style="display: none;">
-                <div class="card-header">
-                    <h2 class="card-title"><span class="card-icon">📊</span> Analysis Results</h2>
-                    <button id="close-results" class="btn-icon" aria-label="Close results">
+                <div class="h-card-header">
+                    <h2 class="h-card-title"><span class="h-card-icon">📊</span> Analysis Results</h2>
+                    <button id="close-results" class="h-btn-icon" aria-label="Close results">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                 </div>
-                <div class="card-body">
+                <div class="h-card-body">
                     <div id="result-area" class="result-content"></div>
                     <div id="price-section" class="price-section" style="display: none;">
                         <div class="price-header">
                             <h3>💰 Market Value</h3>
-                            <button id="refresh-price-btn" class="btn-icon" aria-label="Refresh price">🔄</button>
+                            <button id="refresh-price-btn" class="h-btn-icon" aria-label="Refresh price">🔄</button>
                         </div>
                         <div id="price-content" class="price-content"></div>
                     </div>
                     <div class="result-actions">
-                        <button id="share-btn" class="btn-secondary" aria-label="Copy for Discord">📢 Copy for Discord</button>
-                        <button id="price-check-btn" class="btn-secondary" aria-label="Check price">💰 Check Price</button>
-                        <button id="search-trade-btn" class="btn-secondary" aria-label="Search trade">🔍 Search Trade</button>
+                        <button id="share-btn" class="h-btn-secondary" aria-label="Copy for Discord">📢 Copy for Discord</button>
+                        <button id="price-check-btn" class="h-btn-secondary" aria-label="Check price">💰 Check Price</button>
+                        <button id="search-trade-btn" class="h-btn-secondary" aria-label="Search trade">🔍 Search Trade</button>
                     </div>
                 </div>
             </div>
@@ -291,7 +291,7 @@
         <div class="settings-content">
             <div class="settings-header">
                 <h2 class="settings-title">⚙️ Settings</h2>
-                <button id="settings-close" class="btn-icon" aria-label="Close settings">
+                <button id="settings-close" class="h-btn-icon" aria-label="Close settings">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
@@ -319,10 +319,10 @@
         </div>
     </div>
 
-    <div id="help-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button id="modal-close-btn" class="modal-close" aria-label="Close">×</button>
-            <div id="modal-content-dynamic"></div>
+    <div id="help-modal" class="h-modal-overlay">
+        <div class="h-modal-content">
+            <button id="h-modal-close-btn" class="h-modal-close" aria-label="Close">×</button>
+            <div id="h-modal-content-dynamic"></div>
         </div>
     </div>
 
