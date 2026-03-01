@@ -1,6 +1,24 @@
 /* ====================================
    DASHBOARD LAYOUT STYLES
+   Bootstrap 5 Integration — Dark Theme Overrides
    ==================================== */
+
+/* Force Bootstrap to respect our dark theme */
+[data-bs-theme="dark"],
+.dashboard-layout {
+    --bs-body-bg: var(--bg-color, #121212);
+    --bs-body-color: var(--text-color, #e0e0e0);
+    --bs-border-color: #333;
+    --bs-emphasis-color: #fff;
+    color-scheme: dark;
+}
+
+/* Prevent Bootstrap from overriding our custom body styles */
+.dashboard-layout body,
+body.dashboard-layout {
+    background-color: var(--bg-color, #121212);
+    color: var(--text-color, #e0e0e0);
+}
 
 /* Dashboard Body */
 .dashboard-layout {
@@ -152,7 +170,7 @@
     flex-direction: column;
 }
 
-.card-header {
+.h-card-header {
     padding: 20px 24px;
     border-bottom: 1px solid #333;
     display: flex;
@@ -160,7 +178,7 @@
     align-items: center;
 }
 
-.card-title {
+.h-card-title {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -172,7 +190,7 @@
     flex-wrap: nowrap;
 }
 
-.card-icon {
+.h-card-icon {
     font-size: 1.3rem;
 }
 
@@ -186,7 +204,7 @@
     margin-left: 8px;
 }
 
-.btn-text {
+.h-btn-text {
     background: transparent;
     border: none;
     color: var(--accent-color);
@@ -197,11 +215,11 @@
     transition: background 0.2s;
 }
 
-.btn-text:hover {
+.h-btn-text:hover {
     background: rgba(211, 47, 47, 0.1);
 }
 
-.card-body {
+.h-card-body {
     padding: 24px;
     flex: 1;
     display: flex;
@@ -386,7 +404,7 @@
     transition: all 0.3s;
 }
 
-.advanced-panel:not(.hidden) {
+.advanced-panel:not(.h-hidden) {
     max-height: 500px;
     opacity: 1;
 }
@@ -475,7 +493,7 @@
     overflow: hidden;
 }
 
-.progress-bar {
+.h-progress-bar {
     height: 100%;
     background: var(--accent-color);
     transition: width 0.3s;
@@ -483,13 +501,13 @@
 }
 
 /* Card Actions */
-.card-actions {
+.h-card-actions {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.btn-primary {
+.h-btn-primary {
     background: var(--accent-color);
     border: none;
     color: white;
@@ -501,24 +519,24 @@
     transition: all 0.2s;
 }
 
-.btn-primary:hover {
+.h-btn-primary:hover {
     background: var(--button-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
 }
 
-.btn-primary:disabled {
+.h-btn-primary:disabled {
     background: var(--disabled-color);
     cursor: not-allowed;
     transform: none;
 }
 
-.btn-large {
+.h-btn-large {
     padding: 16px 24px;
     font-size: 1.1rem;
 }
 
-.btn-secondary {
+.h-btn-secondary {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid #444;
     color: var(--text-color);
@@ -529,7 +547,7 @@
     transition: all 0.2s;
 }
 
-.btn-secondary:hover {
+.h-btn-secondary:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: var(--accent-color);
 }
@@ -819,7 +837,7 @@
     margin: 0 0 16px 0;
 }
 
-.input-group {
+.h-input-group {
     margin-bottom: 12px;
 }
 
@@ -840,14 +858,14 @@
     background: rgba(255, 255, 255, 0.08);
 }
 
-.input-hint {
+.h-input-hint {
     display: block;
     font-size: 0.75rem;
     color: #888;
     margin-top: 6px;
 }
 
-.btn-link {
+.h-btn-link {
     display: inline-block;
     color: var(--accent-color);
     text-decoration: none;
@@ -856,7 +874,7 @@
     transition: opacity 0.2s;
 }
 
-.btn-link:hover {
+.h-btn-link:hover {
     opacity: 0.8;
 }
 
@@ -918,7 +936,7 @@
 }
 
 /* Modal Overlay */
-.modal-overlay {
+.h-modal-overlay {
     display: none;
     position: fixed;
     top: 0;
@@ -931,11 +949,11 @@
     align-items: center;
 }
 
-.modal-overlay.open {
+.h-modal-overlay.open {
     display: flex;
 }
 
-.modal-content {
+.h-modal-content {
     background: var(--card-bg);
     border: 1px solid #555;
     border-radius: 12px;
@@ -947,7 +965,7 @@
     position: relative;
 }
 
-.modal-close {
+.h-modal-close {
     position: absolute;
     top: 16px;
     right: 16px;
@@ -961,7 +979,7 @@
     transition: color 0.2s;
 }
 
-.modal-close:hover {
+.h-modal-close:hover {
     color: var(--text-color);
 }
 
@@ -1007,11 +1025,11 @@
         gap: 16px;
     }
     
-    .card-header {
+    .h-card-header {
         padding: 16px;
     }
     
-    .card-body {
+    .h-card-body {
         padding: 16px;
     }
     
@@ -1036,17 +1054,17 @@
         grid-template-columns: 1fr;
     }
     
-    .card-title {
+    .h-card-title {
         font-size: 1rem;
     }
 }
 
 /* Utility Classes */
-.hidden {
+.h-hidden {
     display: none !important;
 }
 
-.btn-icon {
+.h-btn-icon {
     background: transparent;
     border: none;
     color: #888;
@@ -1055,11 +1073,11 @@
     transition: color 0.2s;
 }
 
-.btn-icon:hover {
+.h-btn-icon:hover {
     color: var(--text-color);
 }
 
-.btn-icon svg {
+.h-btn-icon svg {
     width: 20px;
     height: 20px;
 }
@@ -1137,7 +1155,7 @@ option:hover {
 }
 
 /* Compact card body for split sections */
-.card-body-compact {
+.h-card-body-compact {
     padding: 16px;
     overflow-y: auto;
     min-height: 0;
@@ -1211,6 +1229,25 @@ option:hover {
     background: rgba(255, 255, 255, 0.12);
     color: #fff;
     border-color: var(--accent-color, #d4a44a);
+}
+
+/* ============================================
+   NEW SCAN RESET BUTTON (in result cards)
+   ============================================ */
+.btn-reset-scan {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ccc;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.btn-reset-scan:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
 }
 
 /* ============================================
