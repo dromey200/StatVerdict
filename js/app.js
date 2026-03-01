@@ -1515,6 +1515,10 @@ Return ONLY the JSON object, no additional text.`;
     renderRejection(title, reason, confidence = 'high') {
         this.el.resultsCard.style.display = 'block';
         
+        // Hide result action buttons (Discord, Check Price, Search Trade) on rejection
+        const resultActions = this.el.resultsCard.querySelector('.result-actions');
+        if (resultActions) resultActions.style.display = 'none';
+        
         const confidenceText = confidence === 'low' || confidence === 'medium' 
             ? `<div style="margin-top: 15px; font-size: 0.85rem; color: #ffa500;">⚠️ Low confidence detection - image may be unclear</div>`
             : '';
@@ -1525,6 +1529,9 @@ Return ONLY the JSON object, no additional text.`;
                 <h3 style="margin-bottom: 10px; color: var(--color-error);">${title}</h3>
                 <p style="font-size: 1.1rem; color: #fff; line-height: 1.5;">${reason}</p>
                 ${confidenceText}
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="btn-reset-scan">🔄 New Scan</button>
             </div>
         `;
         this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
@@ -1537,6 +1544,11 @@ Return ONLY the JSON object, no additional text.`;
         const message = customMessage || `This looks like a ${detectedName} item, but you selected ${target}.`;
 
         this.el.resultsCard.style.display = 'block';
+        
+        // Hide result action buttons on rejection
+        const resultActions = this.el.resultsCard.querySelector('.result-actions');
+        if (resultActions) resultActions.style.display = 'none';
+        
         this.el.resultArea.innerHTML = `
             <div style="text-align: center; padding: 20px; color: var(--color-warning);">
                 <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
@@ -1546,6 +1558,9 @@ Return ONLY the JSON object, no additional text.`;
                     Please change the "Game Version" selector at the top to match your screenshot.
                 </div>
             </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="btn-reset-scan">🔄 New Scan</button>
+            </div>
         `;
         this.el.resultsCard.scrollIntoView({ behavior: 'smooth' });
     },
@@ -1553,6 +1568,10 @@ Return ONLY the JSON object, no additional text.`;
     renderSuccess(result) {
         this.state.currentItem = result;
         this.setPhase('result');
+        
+        // Restore result action buttons (hidden during rejections)
+        const resultActions = this.el.resultsCard.querySelector('.result-actions');
+        if (resultActions) resultActions.style.display = '';
         
         // ANALYTICS HOOK: Track successful scan
         if (typeof Analytics !== 'undefined' && Analytics.trackScan) {
