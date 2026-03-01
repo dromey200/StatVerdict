@@ -10,7 +10,8 @@ const HoradricApp = {
         mode: 'identify',
         currentClass: 'barbarian',  // NEW: Track current class
         loadout: {},  // CHANGED: Dynamic loadout object
-        scanQuota: { remaining: null, limit: null }  // Track server-side rate limits
+        scanQuota: { remaining: null, limit: null },  // Track server-side rate limits
+        phase: 'idle'  // UI State Machine: idle | processing | result
     },
     
     // NEW: CLASS-SPECIFIC SLOT CONFIGURATIONS
@@ -162,15 +163,17 @@ const HoradricApp = {
         this.attachEventListeners();
         this.updateGameSelector();
         this.updateClassOptions();
-        // DISABLED: Loadout is a premium feature
-        // this.renderLoadoutGrid();
-        // this.updateBuildSynergy();
         
-        // Check if loaded game is unsupported and show coming soon overlay
-        const game = this.el.gameVersion.value;
-        const support = CONFIG.GAME_SUPPORT[game];
-        if (support && !support.enabled) {
-            this.showUnsupportedOverlay(game);
+        // Set initial UI phase
+        this.setPhase('idle');
+        
+        // Rating guide toggle
+        const ratingToggle = document.getElementById('rating-guide-toggle');
+        if (ratingToggle) {
+            ratingToggle.addEventListener('click', () => {
+                const guide = document.getElementById('rating-guide');
+                if (guide) guide.style.display = guide.style.display === 'none' ? 'block' : 'none';
+            });
         }
         
         console.log('👁️ Horadric Pipeline Active (Season 11 Class-Weapon System v12.0)');
@@ -221,21 +224,34 @@ const HoradricApp = {
     },
 
     attachEventListeners() {
-        this.el.gameVersion.addEventListener('change', () => this.handleGameChange());
-        // UPDATED: Class change listener
+        // Game is fixed to D4 — no change listener needed
+        
+        // Delegated listener for dynamically-created "New Scan" buttons (CSP-safe)
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-reset-scan')) {
+                this.resetScan();
+            }
+        });
+        
+        // UPDATED: Class change listener — also shows advanced options
         this.el.playerClass.addEventListener('change', () => {
             const selectedClass = this.el.playerClass.value.toLowerCase();
             this.state.currentClass = selectedClass;
             this.saveState();
             this.updateBuildOptions();
-            // DISABLED: Loadout is a premium feature
-            // this.renderLoadoutGrid();
-            // this.updateBuildSynergy();
+            
+            // Show/hide advanced options based on class selection
+            if (selectedClass && selectedClass !== 'any') {
+                this.el.toggleAdvanced.style.display = '';
+            } else {
+                this.el.toggleAdvanced.style.display = 'none';
+                if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
+            }
         });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
         this.el.toggleAdvanced.addEventListener('click', () => this.toggleAdvanced());
-        this.el.analyzeBtn.addEventListener('click', () => { this.state.mode = 'identify'; this.handleAnalyze(); });
-        this.el.compareBtn.addEventListener('click', () => { this.state.mode = 'compare'; this.handleAnalyze(); });
+        this.el.analyzeBtn.addEventListener('click', () => { this.clearDemoState(); this.state.mode = 'identify'; this.handleAnalyze(); });
+        this.el.compareBtn.addEventListener('click', () => { this.clearDemoState(); this.state.mode = 'compare'; this.handleAnalyze(); });
         this.el.demoBtn.addEventListener('click', () => this.runDemo());
         this.el.settingsTrigger.addEventListener('click', () => this.openSettings());
         this.el.settingsClose.addEventListener('click', () => this.closeSettings());
@@ -252,6 +268,12 @@ const HoradricApp = {
         // DISABLED: Loadout button
         // const clearLoadoutBtn = document.getElementById('clear-loadout-btn');
         // if(clearLoadoutBtn) clearLoadoutBtn.addEventListener('click', () => this.clearAllSlots());
+        
+        // Hide advanced options until class is selected
+        const currentClass = this.el.playerClass.value.toLowerCase();
+        if (!currentClass || currentClass === 'any') {
+            this.el.toggleAdvanced.style.display = 'none';
+        }
         
         this.setupDragDrop();
     },
@@ -273,90 +295,15 @@ const HoradricApp = {
         });
     },
 
-    updateGameSelector() {
-        const options = this.el.gameVersion.querySelectorAll('option');
-        options.forEach(opt => {
-            const game = opt.value;
-            const support = CONFIG.GAME_SUPPORT[game];
-            if (support && !support.enabled) {
-                opt.textContent = `${support.label} (Coming Soon)`;
-                opt.style.color = '#888';
-            }
-        });
-    },
+    // Game is hardcoded to D4 — these are kept as safe no-ops
+    updateGameSelector() {},
+    handleGameChange() {},
 
-    handleGameChange() {
-        const game = this.el.gameVersion.value;
-        const support = CONFIG.GAME_SUPPORT[game];
-        
-        if (support && !support.enabled) {
-            // Show coming soon overlay INSIDE the scan card
-            this.showUnsupportedOverlay(game);
-        } else {
-            // Hide overlay and re-enable everything
-            this.hideUnsupportedOverlay();
-        }
-        
-        this.updateClassOptions();
-        localStorage.setItem('selected_game', game);
-    },
-
-    showUnsupportedOverlay(game) {
-        const support = CONFIG.GAME_SUPPORT[game];
-        const gameName = support ? support.label : game.toUpperCase();
-        
-        // Set overlay message
-        if (this.el.unsupportedMessage) {
-            this.el.unsupportedMessage.textContent = `${gameName} analysis is coming soon! Currently only Diablo IV is supported.`;
-        }
-        
-        // Show overlay over the scan card content
-        if (this.el.unsupportedOverlay) {
-            this.el.unsupportedOverlay.style.display = 'block';
-        }
-        
-        // Disable all action buttons EXCEPT demo
-        this.el.analyzeBtn.disabled = true;
-        this.el.compareBtn.disabled = true;
-        this.el.analyzeBtn.style.opacity = '0.4';
-        this.el.compareBtn.style.opacity = '0.4';
-        
-        // Disable upload, class, and advanced controls
-        if (this.el.imageUpload) this.el.imageUpload.disabled = true;
-        if (this.el.playerClass) this.el.playerClass.disabled = true;
-        if (this.el.buildStyle) this.el.buildStyle.disabled = true;
-        if (this.el.keyMechanic) this.el.keyMechanic.disabled = true;
-        if (this.el.toggleAdvanced) this.el.toggleAdvanced.disabled = true;
-        
-        // Hide the results card if it was open
-        this.clearResults();
-    },
-
-    hideUnsupportedOverlay() {
-        // Hide overlay
-        if (this.el.unsupportedOverlay) {
-            this.el.unsupportedOverlay.style.display = 'none';
-        }
-        
-        // Re-enable all buttons
-        this.el.analyzeBtn.disabled = false;
-        this.el.compareBtn.disabled = false;
-        this.el.analyzeBtn.style.opacity = '1';
-        this.el.compareBtn.style.opacity = '1';
-        
-        // Re-enable controls
-        if (this.el.imageUpload) this.el.imageUpload.disabled = false;
-        if (this.el.playerClass) this.el.playerClass.disabled = false;
-        if (this.el.buildStyle) this.el.buildStyle.disabled = false;
-        if (this.el.keyMechanic) this.el.keyMechanic.disabled = false;
-        if (this.el.toggleAdvanced) this.el.toggleAdvanced.disabled = false;
-        
-        this.clearResults();
-    },
+    showUnsupportedOverlay() {},
+    hideUnsupportedOverlay() {},
 
     updateClassOptions() {
-        const game = this.el.gameVersion.value;
-        const classes = CONFIG.GAME_CLASSES[game] || CONFIG.GAME_CLASSES.d4;
+        const classes = CONFIG.GAME_CLASSES.d4;
         
         this.el.playerClass.innerHTML = '';
         classes.forEach(cls => {
@@ -369,9 +316,8 @@ const HoradricApp = {
     },
 
     updateBuildOptions() {
-        const game = this.el.gameVersion.value;
         const classId = this.el.playerClass.value;
-        const classes = CONFIG.GAME_CLASSES[game] || CONFIG.GAME_CLASSES.d4;
+        const classes = CONFIG.GAME_CLASSES.d4;
         const classDef = classes.find(c => c.id === classId);
         
         if (!classDef) return;
@@ -602,7 +548,7 @@ const HoradricApp = {
     // Replacement confirmation modal with synergy impact warning
     showReplaceConfirmModal(slot, newItem, existingItem, isTwoHanded) {
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'h-modal-overlay';
         modal.style.display = 'flex';
         
         const existingColor = this.getRarityColor(existingItem.rarity);
@@ -636,7 +582,7 @@ const HoradricApp = {
         const newSanctBadge = newItem.sanctified ? ' <span style="color: gold; font-size: 0.75rem;">🦋</span>' : '';
         
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 450px;">
+            <div class="h-modal-content" style="max-width: 450px;">
                 <h3 style="margin-top: 0; color: var(--accent-color);">⚔️ Replace ${slotName} Item?</h3>
                 
                 <div style="display: flex; flex-direction: column; gap: 8px; margin: 15px 0;">
@@ -666,8 +612,8 @@ const HoradricApp = {
                 ${warningHtml}
                 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="replace-confirm-btn" class="btn-primary" style="flex: 1;">⚔️ Replace</button>
-                    <button id="replace-cancel-btn" class="btn-secondary" style="flex: 1;">Cancel</button>
+                    <button id="replace-confirm-btn" class="h-btn-primary" style="flex: 1;">⚔️ Replace</button>
+                    <button id="replace-cancel-btn" class="h-btn-secondary" style="flex: 1;">Cancel</button>
                 </div>
             </div>
         `;
@@ -718,7 +664,7 @@ const HoradricApp = {
 
     showRingSelectionModal(result) {
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'h-modal-overlay';
         modal.style.display = 'flex';
         
         const ring1 = this.state.loadout.ring1;
@@ -749,12 +695,12 @@ const HoradricApp = {
         const ring2Warn = ring2Downgrade ? '<div style="color: #f44336; font-size: 0.75rem; margin-top: 4px;">⚠️ Downgrade</div>' : '';
         
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 420px;">
+            <div class="h-modal-content" style="max-width: 420px;">
                 <h3 style="margin-top: 0; color: var(--accent-color);">💍 Equip Ring</h3>
                 <p style="margin-bottom: 5px;">Equipping: <strong style="color: ${newColor};">${result.title}</strong> ${result.score ? '<span style="color: #999;">(Score: ' + result.score + ')</span>' : ''}</p>
                 <p style="margin-bottom: 15px; color: #999; font-size: 0.85rem;">Select a ring slot:</p>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button id="ring-slot-1" class="btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="ring-slot-1" class="h-btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-size: 0.75rem; opacity: 0.7; text-transform: uppercase;">${ring1Action} Ring Slot 1</div>
                             <div style="margin-top: 4px;">${ring1Label}</div>
@@ -762,7 +708,7 @@ const HoradricApp = {
                         </div>
                         <span style="font-size: 1.2rem;">${ring1 ? '🔄' : '➕'}</span>
                     </button>
-                    <button id="ring-slot-2" class="btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="ring-slot-2" class="h-btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-size: 0.75rem; opacity: 0.7; text-transform: uppercase;">${ring2Action} Ring Slot 2</div>
                             <div style="margin-top: 4px;">${ring2Label}</div>
@@ -770,7 +716,7 @@ const HoradricApp = {
                         </div>
                         <span style="font-size: 1.2rem;">${ring2 ? '🔄' : '➕'}</span>
                     </button>
-                    <button id="ring-cancel" class="btn-secondary">Cancel</button>
+                    <button id="ring-cancel" class="h-btn-secondary">Cancel</button>
                 </div>
             </div>
         `;
@@ -898,7 +844,7 @@ const HoradricApp = {
 
     showSlotDetails(slot, item) {
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'h-modal-overlay';
         modal.style.display = 'flex';
         
         const rarityColor = this.getRarityColor(item.rarity);
@@ -906,8 +852,8 @@ const HoradricApp = {
         const analysisHtml = renderMarkdown(item.analysis || '');
         
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-                <button class="modal-close" id="slot-modal-close">×</button>
+            <div class="h-modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                <button class="h-modal-close" id="slot-h-modal-close">×</button>
                 <div class="result-header" style="border-color: ${rarityColor};">
                     <h2 style="color: ${rarityColor}; margin: 0;">${item.title}</h2>
                     <span style="color: #999; font-size: 0.9rem;">${item.type || item.rarity || ''}</span>
@@ -919,8 +865,8 @@ const HoradricApp = {
                     ${analysisHtml}
                 </div>
                 <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                    <button id="unequip-btn" class="btn-secondary">🗑️ Unequip</button>
-                    <button id="slot-modal-close-btn" class="btn-primary">Close</button>
+                    <button id="unequip-btn" class="h-btn-secondary">🗑️ Unequip</button>
+                    <button id="slot-h-modal-close-btn" class="h-btn-primary">Close</button>
                 </div>
             </div>
         `;
@@ -929,8 +875,8 @@ const HoradricApp = {
         
         const closeModal = () => modal.remove();
         
-        document.getElementById('slot-modal-close').addEventListener('click', closeModal);
-        document.getElementById('slot-modal-close-btn').addEventListener('click', closeModal);
+        document.getElementById('slot-h-modal-close').addEventListener('click', closeModal);
+        document.getElementById('slot-h-modal-close-btn').addEventListener('click', closeModal);
         document.getElementById('unequip-btn').addEventListener('click', () => {
             this.clearSlot(slot);
             closeModal();
@@ -1095,11 +1041,97 @@ const HoradricApp = {
     },
 
     // ============================================
+    // UI STATE MACHINE: idle | processing | result
+    // ============================================
+    
+    setPhase(phase) {
+        this.state.phase = phase;
+        const scanCard = document.querySelector('.scan-card');
+        const resultsCard = this.el.resultsCard;
+        
+        // Remove all phase classes
+        if (scanCard) scanCard.classList.remove('phase-idle', 'phase-processing', 'phase-result');
+        
+        switch(phase) {
+            case 'idle':
+                if (scanCard) scanCard.classList.add('phase-idle');
+                this.el.analyzeBtn.disabled = false;
+                this.el.compareBtn.disabled = false;
+                this.el.analyzeBtn.style.opacity = '';
+                this.el.compareBtn.style.opacity = '';
+                break;
+            case 'processing':
+                if (scanCard) scanCard.classList.add('phase-processing');
+                this.el.analyzeBtn.disabled = true;
+                this.el.compareBtn.disabled = true;
+                this.el.analyzeBtn.style.opacity = '0.5';
+                this.el.compareBtn.style.opacity = '0.5';
+                break;
+            case 'result':
+                if (scanCard) scanCard.classList.add('phase-result');
+                this.el.analyzeBtn.disabled = false;
+                this.el.compareBtn.disabled = false;
+                this.el.analyzeBtn.style.opacity = '';
+                this.el.compareBtn.style.opacity = '';
+                break;
+        }
+    },
+
+    // ============================================
+    // DEMO STATE & SCAN RESET
+    // ============================================
+    
+    clearDemoState() {
+        this.state.isDemo = false;
+        this.el.imageError.style.display = 'none';
+        // If current result is a demo, clear it
+        if (this.state.currentItem && this.state.currentItem.isDemo) {
+            this.clearResults();
+            this.state.currentItem = null;
+        }
+    },
+    
+    resetScan() {
+        // Clear uploaded image — removeAttribute ensures external demo URLs are fully cleared
+        this.el.imagePreview.removeAttribute('src');
+        this.el.imagePreview.src = '';
+        this.el.imagePreview.style.display = 'none';
+        const label = this.el.uploadZone.querySelector('.upload-label');
+        if (label) label.style.display = '';
+        if (this.el.imageUpload) this.el.imageUpload.value = '';
+        
+        // Clear results
+        this.clearResults();
+        this.state.currentItem = null;
+        this.state.isDemo = false;
+        
+        // Clear errors
+        this.el.imageError.style.display = 'none';
+        
+        // Reset dropdowns to defaults
+        this.el.playerClass.value = 'Any';
+        this.el.playerClass.dispatchEvent(new Event('change'));
+        if (this.el.buildStyle) this.el.buildStyle.value = '';
+        if (this.el.keyMechanic) this.el.keyMechanic.value = '';
+        
+        // Collapse advanced panel
+        if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
+        
+        // Reset checkboxes
+        ['needsStr', 'needsInt', 'needsWill', 'needsDex', 'needsRes'].forEach(k => {
+            if (this.el[k]) this.el[k].checked = false;
+        });
+        
+        this.showLoading(false);
+        this.setPhase('idle');
+    },
+
+    // ============================================
     // ENHANCED ANALYSIS PIPELINE
     // ============================================
 
     async handleAnalyze() {
-        if (!this.el.imagePreview.src) return this.showError('No image loaded');
+        if (!this.el.imagePreview.src || this.el.imagePreview.src === window.location.href) return this.showError('No image loaded');
 
         const selectedGame = this.el.gameVersion.value;
         const support = CONFIG.GAME_SUPPORT[selectedGame];
@@ -1109,8 +1141,20 @@ const HoradricApp = {
             return;
         }
 
-        this.showLoading(true, "Analyzing...");
+        const loadingText = this.state.mode === 'compare' 
+            ? "Comparing items... (this takes a moment)" 
+            : "Analyzing...";
+        this.showLoading(true, loadingText);
         this.clearResults();
+        this.setPhase('processing');
+        
+        // Timeout: compare mode makes 2 API calls, so allow more time
+        const timeoutMs = this.state.mode === 'compare' ? 30000 : 20000;
+        const analysisTimeout = setTimeout(() => {
+            this.showLoading(false);
+            this.showError('Request timed out — please try again.');
+            this.setPhase('idle');
+        }, timeoutMs);
 
         try {
             const imageBase64 = this.el.imagePreview.src.split(',')[1];
@@ -1184,8 +1228,13 @@ const HoradricApp = {
                 Analytics.trackError('analysis_failed', error.message);
             }
             
-            this.showError(`Error: ${error.message}`);
+            const msg = error.name === 'AbortError' 
+                ? 'Request took too long — the AI may be busy. Please try again.'
+                : `Error: ${error.message}`;
+            this.showError(msg);
+            this.setPhase('idle');
         } finally {
+            clearTimeout(analysisTimeout);
             this.showLoading(false);
         }
     },
@@ -1284,15 +1333,21 @@ Return ONLY the JSON object, no additional text.`;
                 sendMime = compressed.mimeType;
             }
 
+            const controller = new AbortController();
+            const fetchTimeout = setTimeout(() => controller.abort(), 25000);
+            
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
                 body: JSON.stringify({
                     prompt,
                     imageBase64: sendBase64,
                     mimeType: sendMime
                 })
             });
+            
+            clearTimeout(fetchTimeout);
 
             // Handle rate limiting
             if (response.status === 429) {
@@ -1450,7 +1505,7 @@ Return ONLY the JSON object, no additional text.`;
     },
 
     renderWrongGame(detected, customMessage) {
-        const target = this.el.gameVersion.options[this.el.gameVersion.selectedIndex].text;
+        const target = 'Diablo IV';
         const map = { 'd4': 'Diablo IV', 'd2r': 'Diablo II: Resurrected', 'd3': 'Diablo III', 'di': 'Diablo Immortal' };
         const detectedName = map[detected] || detected.toUpperCase();
         const message = customMessage || `This looks like a ${detectedName} item, but you selected ${target}.`;
@@ -1471,6 +1526,7 @@ Return ONLY the JSON object, no additional text.`;
 
     renderSuccess(result) {
         this.state.currentItem = result;
+        this.setPhase('result');
         
         // ANALYTICS HOOK: Track successful scan
         if (typeof Analytics !== 'undefined' && Analytics.trackScan) {
@@ -1558,6 +1614,58 @@ Return ONLY the JSON object, no additional text.`;
                </div>`
             : '';
 
+        // Parse analysis markdown into structured sections
+        const analysisRaw = result.analysis || '';
+        let statsSection = '', synergySection = '', verdictSection = '';
+        
+        // Try to extract structured sections from the analysis markdown
+        const statsMatch = analysisRaw.match(/### Stats Breakdown\n([\s\S]*?)(?=###|$)/i);
+        const synergyMatch = analysisRaw.match(/### (?:Synergy|Build Synergy|Class Synergy)\n?([\s\S]*?)(?=###|$)/i) 
+                          || analysisRaw.match(/- Synergy: ([\s\S]*?)(?=\n-|\n###|$)/i);
+        const verdictMatch = analysisRaw.match(/### Verdict\n?([\s\S]*?)$/i);
+        
+        if (statsMatch) statsSection = renderMarkdown(statsMatch[1].trim());
+        if (synergyMatch) synergySection = renderMarkdown(synergyMatch[1].trim());
+        if (verdictMatch) verdictSection = renderMarkdown(verdictMatch[1].trim());
+        
+        // If structured extraction failed, fall back to full analysis
+        const hasStructured = statsSection || synergySection || verdictSection;
+
+        // Structured analysis cards
+        const structuredHtml = hasStructured ? `
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                ${statsSection ? `<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px;">
+                    <div style="color: var(--accent-color); font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">📊 Stats</div>
+                    <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${statsSection}</div>
+                </div>` : ''}
+                ${synergySection ? `<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px;">
+                    <div style="color: #00bcd4; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">🔗 Synergy</div>
+                    <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${synergySection}</div>
+                </div>` : ''}
+                ${verdictSection ? `<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px;">
+                    <div style="color: ${verdictBorderColor}; font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">⚖️ Verdict</div>
+                    <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${verdictSection}</div>
+                </div>` : ''}
+            </div>` : '';
+        
+        // Fallback: full analysis collapsed (if no structured sections or as additional detail)
+        const fallbackSection = (!hasStructured && analysisHtml && analysisHtml.trim())
+            ? `<details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+               </details>`
+            : (hasStructured && analysisHtml && analysisHtml.trim()) 
+            ? `<details style="margin-top: 10px;">
+                <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Raw Analysis</summary>
+                <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
+               </details>`
+            : '';
+
+        // New Scan button
+        const newScanBtn = `<div style="text-align: center; margin-top: 15px;">
+            <button class="btn-reset-scan">🔄 New Scan</button>
+        </div>`;
+
         this.el.resultArea.innerHTML = `
             ${demoBanner}
             <!-- Verdict + Score: The 3-second answer -->
@@ -1591,8 +1699,13 @@ Return ONLY the JSON object, no additional text.`;
                 </div>
             </div>
 
-            <!-- Full Analysis: Expandable for those who want depth -->
-            ${analysisSection}
+            <!-- Structured Analysis: Stats / Synergy / Verdict -->
+            ${structuredHtml}
+            
+            <!-- Full Analysis fallback -->
+            ${fallbackSection}
+            
+            ${newScanBtn}
         `;
         
         this.el.priceSection.style.display = 'none';
@@ -1633,16 +1746,37 @@ Return ONLY the JSON object, no additional text.`;
         const item1Glow = item1IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
         const item2Glow = item2IsWinner ? 'box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);' : '';
 
+        // Named verdict label: "Harlequin Crest Wins" instead of "ITEM1 WINS"
+        const item1Name = item1.title || 'Item 1';
+        const item2Name = item2.title || 'Item 2';
+        let verdictLabel = result.verdict || 'COMPARE';
+        if (item1IsWinner) verdictLabel = `${item1Name} Wins`;
+        if (item2IsWinner) verdictLabel = `${item2Name} Wins`;
+        if (isSimilar) verdictLabel = 'Sidegrade';
+
+        // Comparison summary section
+        const summaryHtml = result.insight ? `
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; margin-bottom: 15px;">
+                <div style="color: var(--accent-color); font-weight: 600; font-size: 0.85rem; margin-bottom: 8px;">📊 Comparison Summary: ${item1Name} vs ${item2Name}</div>
+                <div style="color: #ccc; font-size: 0.85rem; line-height: 1.6;">${result.insight}</div>
+                ${result.score_diff ? `<div style="color: #fff; font-size: 0.9rem; font-weight: 600; margin-top: 8px;">${result.score_diff}</div>` : ''}
+            </div>` : '';
+
+        // New Scan button
+        const newScanBtn = `<div style="text-align: center; margin-top: 15px;">
+            <button class="btn-reset-scan">🔄 New Scan</button>
+        </div>`;
+
         this.el.resultArea.innerHTML = `
             <div style="margin-bottom: 15px;">
                 <div class="verdict-container ${isSimilar ? 'neutral' : (item1IsWinner || item2IsWinner ? 'keep' : 'neutral')}">
-                    <div class="verdict-label">${result.verdict || 'COMPARE'}</div>
+                    <div class="verdict-label" style="font-size: ${verdictLabel.length > 20 ? '0.9rem' : '1.1rem'};">${verdictLabel}</div>
                     <div class="verdict-score">${result.score_diff || '-'}</div>
                 </div>
-                <div class="insight-box" style="margin-top: 10px;">
-                    <strong style="color: var(--accent-color);">💡 Insight:</strong> ${result.insight || ''}
-                </div>
             </div>
+
+            <!-- Comparison Summary -->
+            ${summaryHtml}
 
             <!-- Dual Item Cards -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
@@ -1659,7 +1793,7 @@ Return ONLY the JSON object, no additional text.`;
                 ">
                     ${item1Badge ? `<div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: ${item1IsWinner ? winnerBorder : similarBorder}; color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap;">${item1Badge}</div>` : ''}
                     <div style="text-align: center; margin-top: ${item1Badge ? '8px' : '0'};">
-                        <div style="color: ${item1RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item1.title || 'Item 1'}</div>
+                        <div style="color: ${item1RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item1Name}</div>
                         <div style="color: #999; font-size: 0.8rem; margin-bottom: 8px;">${item1.type || ''}${item1Sanctified}</div>
                         <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.85rem; margin-bottom: 8px;">
                             <span style="color: #ccc;">⚡ ${item1.item_power || '?'}</span>
@@ -1683,7 +1817,7 @@ Return ONLY the JSON object, no additional text.`;
                 ">
                     ${item2Badge ? `<div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: ${item2IsWinner ? winnerBorder : similarBorder}; color: #000; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap;">${item2Badge}</div>` : ''}
                     <div style="text-align: center; margin-top: ${item2Badge ? '8px' : '0'};">
-                        <div style="color: ${item2RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item2.title || 'Item 2'}</div>
+                        <div style="color: ${item2RarityColor}; font-weight: bold; font-size: 1rem; margin-bottom: 6px;">${item2Name}</div>
                         <div style="color: #999; font-size: 0.8rem; margin-bottom: 8px;">${item2.type || ''}${item2Sanctified}</div>
                         <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.85rem; margin-bottom: 8px;">
                             <span style="color: #ccc;">⚡ ${item2.item_power || '?'}</span>
@@ -1700,6 +1834,8 @@ Return ONLY the JSON object, no additional text.`;
                 <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; padding: 8px 0;">📋 View Full Analysis</summary>
                 <div class="analysis-text markdown-body" style="margin-top: 10px;">${analysisHtml}</div>
             </details>
+            
+            ${newScanBtn}
         `;
 
         // Hover effects
@@ -1718,7 +1854,7 @@ Return ONLY the JSON object, no additional text.`;
     // UTILITIES
     toggleAdvanced() {
         if (this.el.advancedPanel) {
-            this.el.advancedPanel.classList.toggle('hidden');
+            this.el.advancedPanel.classList.toggle('h-hidden');
         }
     },
 
@@ -1754,7 +1890,7 @@ Return ONLY the JSON object, no additional text.`;
     },
     closeResults() { this.el.resultsCard.style.display = 'none'; },
     loadState() {
-        const g = localStorage.getItem('selected_game'); if(g) this.el.gameVersion.value = g;
+        // Game is always D4 — no need to restore from localStorage
         try { const h = localStorage.getItem('horadric_history'); if(h) { this.state.history = JSON.parse(h); this.renderHistory(); } } catch(e){}
     },
     openSettings() { this.el.settingsPanel.classList.add('open'); },
@@ -1798,18 +1934,17 @@ Return ONLY the JSON object, no additional text.`;
         
         this.state.history.forEach(item => {
             const div = document.createElement('div');
-            const g = String(item.game || 'd4').toUpperCase();
             const r = String(item.rarity || 'common').split(' ')[0].toLowerCase();
             const sanctBadge = item.sanctified ? ' 🦋' : '';
             const scoreBadge = item.score ? ` · ${item.score}` : '';
             
             div.className = `recent-item rarity-${r}`;
             div.innerHTML = `
+                <div class="recent-name">${item.title || 'Unknown'}${sanctBadge}</div>
                 <div class="recent-header">
-                    <span>${g}${sanctBadge}</span>
+                    <span>${item.type || r}${item.item_power ? ` · IP ${item.item_power}` : ''}</span>
                     <span>${item.verdict || '?'}${scoreBadge}</span>
                 </div>
-                <div class="recent-name">${item.title || 'Unknown'}</div>
             `;
             
             // FIX: Add click listener to re-open the result
@@ -1830,10 +1965,18 @@ Return ONLY the JSON object, no additional text.`;
         setTimeout(() => {
             const isMythic = String(this.state.currentItem.rarity).toLowerCase().includes('mythic');
             const isSanctified = this.state.currentItem.sanctified;
-            let priceText = 'Check Trade Site';
-            if (isMythic) priceText = 'Priceless (Mythic)';
-            if (isSanctified) priceText = 'Untradable (Sanctified)';
-            this.el.priceContent.innerHTML = `<div>Value: ${priceText}</div>`;
+            const tradeQuery = this.state.currentItem.trade_query || this.state.currentItem.title || '';
+            
+            let priceHtml = '';
+            if (isSanctified) {
+                priceHtml = '<span style="color: #ffa500;">Untradable (Sanctified)</span>';
+            } else if (isMythic) {
+                priceHtml = '<span style="color: #e770ff;">Priceless (Mythic)</span>';
+            } else {
+                const tradeUrl = `https://diablo.trade/listings/items?exactItem=${encodeURIComponent(tradeQuery)}`;
+                priceHtml = `<a href="${tradeUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--accent-color); text-decoration: underline;">Check on Diablo.Trade →</a>`;
+            }
+            this.el.priceContent.innerHTML = `<div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">💰 Market: ${priceHtml}</div>`;
         }, 500);
     },
     searchTrade() { window.open('https://diablo.trade', '_blank'); },
