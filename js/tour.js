@@ -8,42 +8,41 @@ const TourGuide = {
     
     steps: [
         {
-            title: "Welcome to Horadric AI!",
+            title: "Welcome to Horadric AI! 🎮",
             description: "Let's get you started. This tool uses AI to analyze your Diablo IV loot and tell you if it's worth keeping.",
             target: null,
             position: "center"
         },
         {
-            title: "1. Your Game 🎲",
-            description: "You're scanning Diablo IV items. More games are coming soon — vote for the next one on our landing page!",
-            target: "#game-version",
-            position: "bottom"
-        },
-        {
-            title: "2. Select Your Class ⚔️",
+            title: "1. Select Your Class ⚔️",
             description: "Choose your character class. The AI uses this to determine if an item's stats are actually good for YOUR build.",
             target: "#player-class",
             position: "bottom"
         },
         {
-            title: "3. Advanced Options ⚙️",
-            description: "Click here to specify your Build Style (e.g., Thorns, Minions). This enables the 'Build Synergy' calculator!",
-            target: "#toggle-advanced", 
+            title: "2. Upload Your Item 📸",
+            description: "Drag & drop a screenshot here, or click to browse. We support PNG, JPEG, and WebP.",
+            target: "#upload-zone",
             position: "bottom"
         },
         {
-            title: "4. Upload Your Item 📸",
-            description: "Drag & drop a screenshot here, or click to browse. We support PNG, JPEG, and WebP.",
-            target: "#upload-zone",
-            position: "right"
+            title: "3. Analyze or Compare ⚡",
+            description: "Hit 'Analyze' for a single item verdict, or 'Compare' to see how two items stack up side-by-side.",
+            target: ".action-buttons",
+            position: "top"
         },
         {
             title: "Try Demo Mode! 🎭",
-            description: "Want to see how it works first? Click here to run a simulation and see how the analysis looks.",
+            description: "Want to see how it works first? Click 'Try Demo' to run a simulation with a Mythic Harlequin Crest.",
             target: "#demo-btn",
             position: "top"
         },
-        // --- LOADOUT STEP DISABLED: Premium feature ---
+        {
+            title: "Your Scan Journal 📜",
+            description: "Every scan is saved here. Click any past result to re-open it. Results persist between sessions.",
+            target: ".recent-card",
+            position: "left"
+        },
         {
             title: "Ready to Hunt! 🚀",
             description: "You're all set. No API key needed — just upload and scan. Good luck finding those triple-greater-affix items, Nephalem!",
@@ -53,7 +52,6 @@ const TourGuide = {
     ],
     
     init() {
-        // Ensure DOM is ready before creating overlay
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.setup());
         } else {
@@ -64,7 +62,6 @@ const TourGuide = {
     setup() {
         this.createOverlay();
         this.attachEventListeners();
-        // Small delay to ensure CSS is applied before checking start
         setTimeout(() => this.checkFirstVisit(), 500);
     },
     
@@ -80,7 +77,7 @@ const TourGuide = {
 
         const overlay = document.createElement('div');
         overlay.id = 'tour-overlay';
-        overlay.className = 'tour-overlay hidden'; // Start hidden
+        overlay.className = 'tour-overlay h-hidden';
         
         overlay.innerHTML = `
             <div class="tour-backdrop"></div>
@@ -103,14 +100,12 @@ const TourGuide = {
     },
     
     attachEventListeners() {
-        // Use document level delegation for robustness
         document.addEventListener('click', (e) => {
             if (!this.isActive) return;
             if (e.target.id === 'tour-skip') this.skip();
             if (e.target.id === 'tour-next') this.next();
         }, { passive: true });
         
-        // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (!this.isActive) return;
             if (e.key === 'Escape') this.skip();
@@ -118,7 +113,6 @@ const TourGuide = {
             if (e.key === 'ArrowLeft' && this.currentStep > 0) this.showStep(this.currentStep - 1);
         });
         
-        // Handle window resize/scroll with requestAnimationFrame
         const handleUpdate = () => {
             if (this.isActive && this.steps[this.currentStep]) {
                 requestAnimationFrame(() => {
@@ -132,20 +126,35 @@ const TourGuide = {
     },
     
     start() {
-        // Double check overlay exists
         this.createOverlay();
-        
         this.currentStep = 0;
         this.isActive = true;
         
         const overlay = document.getElementById('tour-overlay');
         if (overlay) {
-            overlay.classList.remove('hidden');
-            // Force browser repaint
+            overlay.classList.remove('h-hidden');
             void overlay.offsetWidth; 
         }
         
         this.showStep(0);
+    },
+    
+    // Check if a target element is visible and has a real bounding box
+    getVisibleTarget(selector) {
+        if (!selector) return null;
+        const el = document.querySelector(selector);
+        if (!el) return null;
+        
+        // Reject hidden inputs, display:none, visibility:hidden
+        if (el.type === 'hidden') return null;
+        const style = window.getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden') return null;
+        
+        // Reject zero-size elements (collapsed or offscreen)
+        const rect = el.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) return null;
+        
+        return el;
     },
     
     showStep(stepIndex) {
@@ -157,7 +166,6 @@ const TourGuide = {
         const step = this.steps[stepIndex];
         this.currentStep = stepIndex;
         
-        // Update text content
         const titleEl = document.querySelector('.tour-title');
         const descEl = document.querySelector('.tour-description');
         const counterEl = document.querySelector('.tour-step-counter');
@@ -168,25 +176,19 @@ const TourGuide = {
         if (counterEl) counterEl.textContent = `${stepIndex + 1} / ${this.steps.length}`;
         if (nextBtn) nextBtn.textContent = stepIndex === this.steps.length - 1 ? 'Finish' : 'Next';
         
-        // Handle positioning logic
-        if (step.target) {
-            const target = document.querySelector(step.target);
-            if (target) {
-                this.scrollToTarget(target, () => this.updatePositions(step));
-            } else {
-                // If target missing, fallback to center
-                this.updatePositions({ ...step, target: null });
-            }
+        const target = this.getVisibleTarget(step.target);
+        
+        if (target) {
+            this.scrollToTarget(target, () => this.updatePositions(step));
         } else {
-            this.updatePositions(step);
+            // No visible target — show as centered overlay
+            this.updatePositions({ ...step, target: null });
         }
     },
     
     scrollToTarget(target, callback) {
-        // Native smooth scroll
         target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-        // Wait for scroll to likely finish
-        setTimeout(callback, 500);
+        setTimeout(callback, 400);
     },
     
     updatePositions(step) {
@@ -195,76 +197,98 @@ const TourGuide = {
         
         if (!spotlight || !tooltip) return;
 
-        // 1. Position Spotlight
-        if (step.target) {
-            const target = document.querySelector(step.target);
-            if (target) {
-                const rect = target.getBoundingClientRect();
-                spotlight.style.display = 'block';
-                spotlight.style.top = `${rect.top - 5}px`;
-                spotlight.style.left = `${rect.left - 5}px`;
-                spotlight.style.width = `${rect.width + 10}px`;
-                spotlight.style.height = `${rect.height + 10}px`;
-            }
+        // Reset tooltip styles for clean calculation
+        tooltip.style.top = '';
+        tooltip.style.left = '';
+        tooltip.style.right = '';
+        tooltip.style.bottom = '';
+        tooltip.style.transform = '';
+        tooltip.style.width = '';
+        tooltip.style.position = 'fixed';
+        
+        const target = step.target ? this.getVisibleTarget(step.target) : null;
+
+        // --- Spotlight ---
+        if (target) {
+            const rect = target.getBoundingClientRect();
+            const pad = 8;
+            spotlight.style.display = 'block';
+            spotlight.style.top = `${rect.top - pad}px`;
+            spotlight.style.left = `${rect.left - pad}px`;
+            spotlight.style.width = `${rect.width + pad * 2}px`;
+            spotlight.style.height = `${rect.height + pad * 2}px`;
         } else {
             spotlight.style.display = 'none';
         }
 
-        // 2. Position Tooltip
-        tooltip.style.position = 'fixed';
-        
-        if (!step.target) {
-            // Center
+        // --- Tooltip ---
+        if (!target) {
+            // Center on screen
             tooltip.style.top = '50%';
             tooltip.style.left = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
-            tooltip.style.bottom = 'auto';
-            tooltip.style.right = 'auto';
-        } else {
-            const target = document.querySelector(step.target);
-            if (!target) return;
-            const rect = target.getBoundingClientRect();
-            
-            // Reset transform
-            tooltip.style.transform = 'none';
-            
-            // Default: Below target
-            let topPos = rect.bottom + 15;
-            let leftPos = rect.left;
-            
-            // Mobile adjustments
-            if (window.innerWidth <= 768) {
-                tooltip.style.left = '5%';
-                tooltip.style.width = '90%';
-                if (rect.top > window.innerHeight / 2) {
-                    tooltip.style.top = 'auto';
-                    tooltip.style.bottom = '20px';
-                } else {
-                    tooltip.style.top = 'auto';
-                    tooltip.style.bottom = '20px'; // Fallback to bottom on mobile often safer
-                }
+            return;
+        }
+        
+        const rect = target.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const margin = 15;
+        
+        // Mobile: always pin tooltip to bottom of viewport
+        if (vw <= 768) {
+            tooltip.style.left = '4%';
+            tooltip.style.width = '92%';
+            tooltip.style.bottom = '16px';
+            tooltip.style.top = 'auto';
+            return;
+        }
+        
+        // Desktop: position relative to target
+        const tw = tooltip.offsetWidth || 320;
+        const th = tooltip.offsetHeight || 150;
+        
+        let top, left;
+        
+        switch (step.position) {
+            case 'top':
+                top = rect.top - th - margin;
+                left = rect.left + (rect.width / 2) - (tw / 2);
+                break;
+            case 'left':
+                top = rect.top + (rect.height / 2) - (th / 2);
+                left = rect.left - tw - margin;
+                break;
+            case 'right':
+                top = rect.top + (rect.height / 2) - (th / 2);
+                left = rect.right + margin;
+                break;
+            case 'bottom':
+            default:
+                top = rect.bottom + margin;
+                left = rect.left + (rect.width / 2) - (tw / 2);
+                break;
+        }
+        
+        // Boundary clamping — keep tooltip fully on screen
+        if (top < margin) top = margin;
+        if (top + th > vh - margin) top = vh - th - margin;
+        if (left < margin) left = margin;
+        if (left + tw > vw - margin) left = vw - tw - margin;
+        
+        // If tooltip would overlap the spotlight, flip to opposite side
+        const spotTop = rect.top - 8;
+        const spotBottom = rect.bottom + 8;
+        if (top < spotBottom && top + th > spotTop) {
+            if (rect.bottom + margin + th < vh) {
+                top = rect.bottom + margin;
             } else {
-                // Desktop
-                if (step.position === 'top') {
-                    topPos = rect.top - tooltip.offsetHeight - 15;
-                } else if (step.position === 'right') {
-                    leftPos = rect.right + 15;
-                    topPos = rect.top;
-                }
-                
-                tooltip.style.top = `${topPos}px`;
-                tooltip.style.left = `${leftPos}px`;
-                
-                // Simple boundary check
-                const toolRect = tooltip.getBoundingClientRect();
-                if (toolRect.bottom > window.innerHeight) {
-                    tooltip.style.top = `${rect.top - toolRect.height - 15}px`;
-                }
-                if (toolRect.right > window.innerWidth) {
-                    tooltip.style.left = `${window.innerWidth - toolRect.width - 20}px`;
-                }
+                top = rect.top - th - margin;
             }
         }
+        
+        tooltip.style.top = `${Math.max(margin, top)}px`;
+        tooltip.style.left = `${Math.max(margin, left)}px`;
     },
     
     next() { this.showStep(this.currentStep + 1); },
@@ -272,7 +296,7 @@ const TourGuide = {
     skip() {
         this.isActive = false;
         const overlay = document.getElementById('tour-overlay');
-        if (overlay) overlay.classList.add('hidden');
+        if (overlay) overlay.classList.add('h-hidden');
         localStorage.setItem('horadric_tour_completed', 'true');
     },
     
