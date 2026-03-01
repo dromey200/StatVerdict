@@ -20,11 +20,12 @@
     
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
-        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; 
+        script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://vercel.live; 
         font-src 'self' https://fonts.gstatic.com; 
         img-src 'self' data: blob: https://www.google-analytics.com https://d4.maxroll.gg https://statverdict.com; 
-        connect-src 'self' https://www.google-analytics.com https://analytics.google.com; 
+        connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://cdn.jsdelivr.net https://vercel.live; 
+        frame-src https://vercel.live;
         base-uri 'self';
     ">
     
@@ -129,6 +130,9 @@
                     </svg>
                 </a>
                 <h1 class="dashboard-title">
+                    <span class="title-icon" id="app-logo" aria-label="Horadric AI logo">
+                        <img src="/assets/images/logo-cube-96.png" alt="Horadric AI" width="40" height="40" style="border-radius: 6px;">
+                    </span>
                     <span class="title-text">Horadric AI</span>
                 </h1>
             </div>
