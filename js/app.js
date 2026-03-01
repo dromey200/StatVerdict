@@ -158,6 +158,7 @@ const HoradricApp = {
         
         this.cacheElements();
         this.loadState();
+        this.initPreferences();
         // DISABLED: Loadout is a premium feature
         // this.initializeLoadout();
         this.attachEventListeners();
@@ -1709,6 +1710,7 @@ Return ONLY the JSON object, no additional text.`;
         `;
         
         this.el.priceSection.style.display = 'none';
+        this.applyPriceVisibility();
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },
 
@@ -1848,6 +1850,7 @@ Return ONLY the JSON object, no additional text.`;
         addHoverEffect(document.getElementById('compare-item2'));
 
         this.el.priceSection.style.display = 'none';
+        this.applyPriceVisibility();
         setTimeout(() => this.el.resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     },
 
@@ -1902,7 +1905,54 @@ Return ONLY the JSON object, no additional text.`;
     },
     openSettings() { this.el.settingsPanel.classList.add('open'); },
     closeSettings() { this.el.settingsPanel.classList.remove('open'); },
+    
+    // ============================================
+    // SETTINGS PREFERENCES
+    // ============================================
+    initPreferences() {
+        this.el.prefAutoSave = document.getElementById('auto-save-scans');
+        this.el.prefShowPrices = document.getElementById('show-prices');
+        
+        // Load saved preferences (default: both enabled)
+        const saved = JSON.parse(localStorage.getItem('sv_preferences') || '{}');
+        this.prefs = {
+            autoSave: saved.autoSave !== false,
+            showPrices: saved.showPrices !== false
+        };
+        
+        // Apply to checkboxes
+        if (this.el.prefAutoSave) this.el.prefAutoSave.checked = this.prefs.autoSave;
+        if (this.el.prefShowPrices) this.el.prefShowPrices.checked = this.prefs.showPrices;
+        
+        // Listen for changes
+        if (this.el.prefAutoSave) this.el.prefAutoSave.addEventListener('change', () => {
+            this.prefs.autoSave = this.el.prefAutoSave.checked;
+            this.savePreferences();
+        });
+        if (this.el.prefShowPrices) this.el.prefShowPrices.addEventListener('change', () => {
+            this.prefs.showPrices = this.el.prefShowPrices.checked;
+            this.savePreferences();
+            this.applyPriceVisibility();
+        });
+        
+        // Apply initial visibility
+        this.applyPriceVisibility();
+    },
+    savePreferences() {
+        localStorage.setItem('sv_preferences', JSON.stringify(this.prefs));
+    },
+    applyPriceVisibility() {
+        const show = this.prefs.showPrices;
+        // Hide/show market value section
+        if (this.el.priceSection) this.el.priceSection.style.display = show ? '' : 'none';
+        // Hide/show price-related action buttons
+        if (this.el.priceCheckBtn) this.el.priceCheckBtn.style.display = show ? '' : 'none';
+        if (this.el.searchTradeBtn) this.el.searchTradeBtn.style.display = show ? '' : 'none';
+    },
     saveToHistory(result) {
+        // Respect auto-save preference
+        if (this.prefs && !this.prefs.autoSave) return;
+        
         const item = { 
             id: Date.now(), 
             title: result.title, 
@@ -1967,6 +2017,7 @@ Return ONLY the JSON object, no additional text.`;
     clearHistory() { if(confirm('Clear all scan history?')) { this.state.history = []; localStorage.removeItem('horadric_history'); this.renderHistory(); } },
     checkPrice() {
         if(!this.state.currentItem) return;
+        if(this.prefs && !this.prefs.showPrices) return;
         this.el.priceSection.style.display = 'block';
         this.el.priceContent.innerHTML = 'Checking database...';
         setTimeout(() => {
