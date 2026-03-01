@@ -1141,15 +1141,20 @@ const HoradricApp = {
             return;
         }
 
-        this.showLoading(true, "Analyzing...");
+        const loadingText = this.state.mode === 'compare' 
+            ? "Comparing items... (this takes a moment)" 
+            : "Analyzing...";
+        this.showLoading(true, loadingText);
         this.clearResults();
         this.setPhase('processing');
         
-        // Timeout: re-enable buttons after 15 seconds
+        // Timeout: compare mode makes 2 API calls, so allow more time
+        const timeoutMs = this.state.mode === 'compare' ? 30000 : 20000;
         const analysisTimeout = setTimeout(() => {
             this.showLoading(false);
             this.showError('Request timed out — please try again.');
-        }, 15000);
+            this.setPhase('idle');
+        }, timeoutMs);
 
         try {
             const imageBase64 = this.el.imagePreview.src.split(',')[1];
@@ -1223,7 +1228,10 @@ const HoradricApp = {
                 Analytics.trackError('analysis_failed', error.message);
             }
             
-            this.showError(`Error: ${error.message}`);
+            const msg = error.name === 'AbortError' 
+                ? 'Request took too long — the AI may be busy. Please try again.'
+                : `Error: ${error.message}`;
+            this.showError(msg);
             this.setPhase('idle');
         } finally {
             clearTimeout(analysisTimeout);
@@ -1325,15 +1333,21 @@ Return ONLY the JSON object, no additional text.`;
                 sendMime = compressed.mimeType;
             }
 
+            const controller = new AbortController();
+            const fetchTimeout = setTimeout(() => controller.abort(), 25000);
+            
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
                 body: JSON.stringify({
                     prompt,
                     imageBase64: sendBase64,
                     mimeType: sendMime
                 })
             });
+            
+            clearTimeout(fetchTimeout);
 
             // Handle rate limiting
             if (response.status === 429) {
@@ -1966,7 +1980,50 @@ Return ONLY the JSON object, no additional text.`;
         }, 500);
     },
     searchTrade() { window.open('https://diablo.trade', '_blank'); },
-    shareResults() { const i = this.state.currentItem; if(i) navigator.clipboard.writeText(`${i.title} - ${i.verdict}`); },
+    shareResults() { 
+        const i = this.state.currentItem; 
+        if (!i) return;
+        
+        let text = '';
+        
+        if (i.mode === 'comparison' && i.item1 && i.item2) {
+            // Comparison mode — build a rich Discord-friendly summary
+            const item1Name = i.item1.title || 'Item 1';
+            const item2Name = i.item2.title || 'Item 2';
+            const w = (i.winner || '').toUpperCase();
+            const winnerName = w === 'ITEM1' ? item1Name : w === 'ITEM2' ? item2Name : 'Sidegrade';
+            
+            text = `⚔️ **Horadric AI — Item Comparison**\n`;
+            text += `\n`;
+            text += `🔹 ${item1Name}`;
+            if (i.item1.score) text += ` (${i.item1.score})`;
+            text += `\n`;
+            text += `🔸 ${item2Name}`;
+            if (i.item2.score) text += ` (${i.item2.score})`;
+            text += `\n\n`;
+            text += `🏆 **Winner: ${winnerName}**`;
+            if (i.score_diff) text += ` (+${i.score_diff})`;
+            text += `\n`;
+            if (i.insight) text += `\n💡 ${i.insight}\n`;
+            text += `\n🔗 statverdict.com`;
+        } else {
+            // Single item mode
+            const grade = i.score ? ` [${i.score}]` : '';
+            const rarity = i.rarity ? ` (${i.rarity})` : '';
+            text = `🔥 **Horadric AI — Item Analysis**\n`;
+            text += `\n`;
+            text += `📦 **${i.title}**${rarity}${grade}\n`;
+            text += `⚖️ Verdict: **${i.verdict}**\n`;
+            if (i.insight) text += `\n💡 ${i.insight}\n`;
+            text += `\n🔗 statverdict.com`;
+        }
+        
+        navigator.clipboard.writeText(text).then(() => {
+            this.showToast('Copied to clipboard — paste in Discord!');
+        }).catch(() => {
+            this.showToast('Copy failed — try again');
+        });
+    },
     restartTour() {
         if (typeof TourGuide !== 'undefined' && TourGuide.restart) {
             TourGuide.restart();
