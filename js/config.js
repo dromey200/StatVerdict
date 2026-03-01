@@ -328,6 +328,7 @@ const PROMPT_TEMPLATES = {
         • Diablo II markers: Pixelated fonts, "Defense:" stat, grid inventory
         • Diablo Immortal markers: "Combat Rating", mobile UI
         • Non-game images or unclear screenshots
+        • MULTIPLE separate item tooltips in Analyze mode (not a side-by-side comparison overlay). If you see 2+ distinct, unrelated item tooltips that are NOT the in-game comparison overlay (one labeled "EQUIPPED"), reject with reason "multiple_items"
         
         ═══════════════════════════════════════════════════════════
         STEP 2: ANALYSIS (Only if D4 confirmed)
@@ -366,27 +367,21 @@ const PROMPT_TEMPLATES = {
         If the item is a weapon, note which classes CAN equip it in your analysis.
         
         EVALUATION CRITERIA:
-        1. Item Power (scales with level; endgame 700-925, leveling items can be much lower)
-        2. Rarity (Common < Magic < Rare < Legendary < Unique < Mythic)
+        1. Item Power (700-925 scale, higher is better)
+        2. Rarity (Legendary < Unique < Mythic)
         3. Sanctified status (major endgame value — 3+ Greater Affixes, permanent optimization)
-        4. Greater Affix count (gold text = greater, more is better; only on Legendary+ items)
+        4. Greater Affix count (gold text = greater, more is better)
         5. Stat synergy with ${playerClass !== 'any' ? playerClass : 'general'} ${buildStyle || ''} build
         6. Roll quality (are stats near max ranges?)
-        7. Useful for current progression (leveling items are judged by level-appropriate standards, endgame items by Pit pushing, Helltide farming, Infernal Hordes potential)
+        7. Useful for endgame (Pit pushing, Helltide farming, Infernal Hordes)
         ${playerClass === 'any' ? '8. Since no class was specified, mention which classes benefit most from this item.' : ''}
-        
-        RARITY-SPECIFIC GRADING:
-        • Common/Magic items: Grade relative to leveling usefulness. These are typically D-C tier unless the player is early game.
-        • Rare items: Can be useful while leveling. Grade B max unless exceptional rolls.
-        • Legendary items: Full endgame analysis — affixes, synergy, Greater Affixes.
-        • Unique/Mythic items: Full endgame analysis with build-defining potential.
         
         OUTPUT FORMAT (JSON Only):
         
         IF NOT D4 / REJECTED:
         {
             "status": "rejected",
-            "reject_reason": "not_game" | "wrong_game_d3" | "wrong_game_d2r" | "wrong_game_di" | "unclear",
+            "reject_reason": "not_game" | "wrong_game_d3" | "wrong_game_d2r" | "wrong_game_di" | "unclear" | "multiple_items",
             "confidence": "high" | "medium" | "low",
             "message": "Brief helpful explanation"
         }
@@ -398,7 +393,7 @@ const PROMPT_TEMPLATES = {
             "confidence": "high" | "medium",
             "title": "Item Name",
             "type": "Item Type (Helm, Chest Armor, Boots, Two-Handed Sword, Ring, Shield, Glaive, etc.)",
-            "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
+            "rarity": "Legendary | Unique | Mythic",
             "sanctified": true | false,
             "item_power": 800,
             "greater_affix_count": 0,
@@ -428,6 +423,7 @@ const PROMPT_TEMPLATES = {
         VALIDATION:
         • Should show TWO item tooltips side-by-side
         • All should have D4 markers (Item Power, Ancestral, etc.)
+        • If you see only ONE item tooltip (not two), reject with reason "single_item"
         IMPORTANT: 'Paladin' and 'Spiritborn' are VALID classes in Diablo 4. Do not reject them.
 
         CLASS-SPECIFIC WEAPON RULES:
@@ -457,7 +453,7 @@ const PROMPT_TEMPLATES = {
         IF NOT VALID:
         {
             "status": "rejected",
-            "reject_reason": "not_comparison" | "wrong_game_d3",
+            "reject_reason": "not_comparison" | "wrong_game_d3" | "single_item",
             "message": "This doesn't appear to be a D4 comparison screenshot"
         }
         
@@ -469,7 +465,7 @@ const PROMPT_TEMPLATES = {
             "item1": {
                 "title": "Left/First Item Name",
                 "type": "Item Type for slot detection",
-                "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
+                "rarity": "Legendary | Unique | Mythic",
                 "sanctified": true | false,
                 "item_power": 850,
                 "greater_affix_count": 0,
@@ -479,7 +475,7 @@ const PROMPT_TEMPLATES = {
             "item2": {
                 "title": "Right/Second Item Name",
                 "type": "Item Type for slot detection",
-                "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
+                "rarity": "Legendary | Unique | Mythic",
                 "sanctified": true | false,
                 "item_power": 860,
                 "greater_affix_count": 1,
