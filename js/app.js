@@ -225,6 +225,14 @@ const HoradricApp = {
 
     attachEventListeners() {
         // Game is fixed to D4 — no change listener needed
+        
+        // Delegated listener for dynamically-created "New Scan" buttons (CSP-safe)
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-reset-scan')) {
+                this.resetScan();
+            }
+        });
+        
         // UPDATED: Class change listener — also shows advanced options
         this.el.playerClass.addEventListener('change', () => {
             const selectedClass = this.el.playerClass.value.toLowerCase();
@@ -237,7 +245,7 @@ const HoradricApp = {
                 this.el.toggleAdvanced.style.display = '';
             } else {
                 this.el.toggleAdvanced.style.display = 'none';
-                if (this.el.advancedPanel) this.el.advancedPanel.classList.add('hidden');
+                if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
             }
         });
         this.el.imageUpload.addEventListener('change', (e) => this.handleFileSelect(e));
@@ -540,7 +548,7 @@ const HoradricApp = {
     // Replacement confirmation modal with synergy impact warning
     showReplaceConfirmModal(slot, newItem, existingItem, isTwoHanded) {
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'h-modal-overlay';
         modal.style.display = 'flex';
         
         const existingColor = this.getRarityColor(existingItem.rarity);
@@ -574,7 +582,7 @@ const HoradricApp = {
         const newSanctBadge = newItem.sanctified ? ' <span style="color: gold; font-size: 0.75rem;">🦋</span>' : '';
         
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 450px;">
+            <div class="h-modal-content" style="max-width: 450px;">
                 <h3 style="margin-top: 0; color: var(--accent-color);">⚔️ Replace ${slotName} Item?</h3>
                 
                 <div style="display: flex; flex-direction: column; gap: 8px; margin: 15px 0;">
@@ -604,8 +612,8 @@ const HoradricApp = {
                 ${warningHtml}
                 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="replace-confirm-btn" class="btn-primary" style="flex: 1;">⚔️ Replace</button>
-                    <button id="replace-cancel-btn" class="btn-secondary" style="flex: 1;">Cancel</button>
+                    <button id="replace-confirm-btn" class="h-btn-primary" style="flex: 1;">⚔️ Replace</button>
+                    <button id="replace-cancel-btn" class="h-btn-secondary" style="flex: 1;">Cancel</button>
                 </div>
             </div>
         `;
@@ -656,7 +664,7 @@ const HoradricApp = {
 
     showRingSelectionModal(result) {
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'h-modal-overlay';
         modal.style.display = 'flex';
         
         const ring1 = this.state.loadout.ring1;
@@ -687,12 +695,12 @@ const HoradricApp = {
         const ring2Warn = ring2Downgrade ? '<div style="color: #f44336; font-size: 0.75rem; margin-top: 4px;">⚠️ Downgrade</div>' : '';
         
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 420px;">
+            <div class="h-modal-content" style="max-width: 420px;">
                 <h3 style="margin-top: 0; color: var(--accent-color);">💍 Equip Ring</h3>
                 <p style="margin-bottom: 5px;">Equipping: <strong style="color: ${newColor};">${result.title}</strong> ${result.score ? '<span style="color: #999;">(Score: ' + result.score + ')</span>' : ''}</p>
                 <p style="margin-bottom: 15px; color: #999; font-size: 0.85rem;">Select a ring slot:</p>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button id="ring-slot-1" class="btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="ring-slot-1" class="h-btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-size: 0.75rem; opacity: 0.7; text-transform: uppercase;">${ring1Action} Ring Slot 1</div>
                             <div style="margin-top: 4px;">${ring1Label}</div>
@@ -700,7 +708,7 @@ const HoradricApp = {
                         </div>
                         <span style="font-size: 1.2rem;">${ring1 ? '🔄' : '➕'}</span>
                     </button>
-                    <button id="ring-slot-2" class="btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="ring-slot-2" class="h-btn-primary" style="text-align: left; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-size: 0.75rem; opacity: 0.7; text-transform: uppercase;">${ring2Action} Ring Slot 2</div>
                             <div style="margin-top: 4px;">${ring2Label}</div>
@@ -708,7 +716,7 @@ const HoradricApp = {
                         </div>
                         <span style="font-size: 1.2rem;">${ring2 ? '🔄' : '➕'}</span>
                     </button>
-                    <button id="ring-cancel" class="btn-secondary">Cancel</button>
+                    <button id="ring-cancel" class="h-btn-secondary">Cancel</button>
                 </div>
             </div>
         `;
@@ -836,7 +844,7 @@ const HoradricApp = {
 
     showSlotDetails(slot, item) {
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'h-modal-overlay';
         modal.style.display = 'flex';
         
         const rarityColor = this.getRarityColor(item.rarity);
@@ -844,8 +852,8 @@ const HoradricApp = {
         const analysisHtml = renderMarkdown(item.analysis || '');
         
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-                <button class="modal-close" id="slot-modal-close">×</button>
+            <div class="h-modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                <button class="h-modal-close" id="slot-h-modal-close">×</button>
                 <div class="result-header" style="border-color: ${rarityColor};">
                     <h2 style="color: ${rarityColor}; margin: 0;">${item.title}</h2>
                     <span style="color: #999; font-size: 0.9rem;">${item.type || item.rarity || ''}</span>
@@ -857,8 +865,8 @@ const HoradricApp = {
                     ${analysisHtml}
                 </div>
                 <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                    <button id="unequip-btn" class="btn-secondary">🗑️ Unequip</button>
-                    <button id="slot-modal-close-btn" class="btn-primary">Close</button>
+                    <button id="unequip-btn" class="h-btn-secondary">🗑️ Unequip</button>
+                    <button id="slot-h-modal-close-btn" class="h-btn-primary">Close</button>
                 </div>
             </div>
         `;
@@ -867,8 +875,8 @@ const HoradricApp = {
         
         const closeModal = () => modal.remove();
         
-        document.getElementById('slot-modal-close').addEventListener('click', closeModal);
-        document.getElementById('slot-modal-close-btn').addEventListener('click', closeModal);
+        document.getElementById('slot-h-modal-close').addEventListener('click', closeModal);
+        document.getElementById('slot-h-modal-close-btn').addEventListener('click', closeModal);
         document.getElementById('unequip-btn').addEventListener('click', () => {
             this.clearSlot(slot);
             closeModal();
@@ -1107,7 +1115,7 @@ const HoradricApp = {
         if (this.el.keyMechanic) this.el.keyMechanic.value = '';
         
         // Collapse advanced panel
-        if (this.el.advancedPanel) this.el.advancedPanel.classList.add('hidden');
+        if (this.el.advancedPanel) this.el.advancedPanel.classList.add('h-hidden');
         
         // Reset checkboxes
         ['needsStr', 'needsInt', 'needsWill', 'needsDex', 'needsRes'].forEach(k => {
@@ -1641,7 +1649,7 @@ Return ONLY the JSON object, no additional text.`;
 
         // New Scan button
         const newScanBtn = `<div style="text-align: center; margin-top: 15px;">
-            <button onclick="HoradricApp.resetScan()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">🔄 New Scan</button>
+            <button class="btn-reset-scan">🔄 New Scan</button>
         </div>`;
 
         this.el.resultArea.innerHTML = `
@@ -1742,7 +1750,7 @@ Return ONLY the JSON object, no additional text.`;
 
         // New Scan button
         const newScanBtn = `<div style="text-align: center; margin-top: 15px;">
-            <button onclick="HoradricApp.resetScan()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">🔄 New Scan</button>
+            <button class="btn-reset-scan">🔄 New Scan</button>
         </div>`;
 
         this.el.resultArea.innerHTML = `
@@ -1832,7 +1840,7 @@ Return ONLY the JSON object, no additional text.`;
     // UTILITIES
     toggleAdvanced() {
         if (this.el.advancedPanel) {
-            this.el.advancedPanel.classList.toggle('hidden');
+            this.el.advancedPanel.classList.toggle('h-hidden');
         }
     },
 
