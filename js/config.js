@@ -316,18 +316,13 @@ const PROMPT_TEMPLATES = {
         • Ornate decorative borders around tooltip
         IMPORTANT: 'Paladin' and 'Spiritborn' are VALID classes in Diablo 4. Do not reject them.
         
-        🔄 COMPARISON SCREENSHOTS (STILL VALID D4):
-        • If you see TWO item tooltips side-by-side → This IS valid D4
-        • One side usually labeled "EQUIPPED" 
-        • Focus analysis on the RIGHT/NEW item (unless told otherwise)
-        • Both tooltips should have D4 markers
-        
         ❌ REJECT IF YOU SEE:
         • Real-world objects (clothing, cans, furniture, phones)
         • Diablo III markers: "Primary/Secondary" sections, black backgrounds
         • Diablo II markers: Pixelated fonts, "Defense:" stat, grid inventory
         • Diablo Immortal markers: "Combat Rating", mobile UI
         • Non-game images or unclear screenshots
+        • TWO OR MORE item tooltips visible in the image, regardless of layout. This includes: the in-game comparison overlay, two separate tooltip windows, an inventory view showing multiple items, or any screenshot where more than one distinct item can be read. Analyze mode is for SINGLE items only. If you see more than one item, you MUST reject with reason "multiple_items" and message "Your screenshot shows more than one item. Please crop to a single item tooltip for Analyze, or click Compare instead to evaluate both items."
         
         ═══════════════════════════════════════════════════════════
         STEP 2: ANALYSIS (Only if D4 confirmed)
@@ -366,27 +361,21 @@ const PROMPT_TEMPLATES = {
         If the item is a weapon, note which classes CAN equip it in your analysis.
         
         EVALUATION CRITERIA:
-        1. Item Power (scales with level; endgame 700-925, leveling items can be much lower)
-        2. Rarity (Common < Magic < Rare < Legendary < Unique < Mythic)
+        1. Item Power (700-925 scale, higher is better)
+        2. Rarity (Legendary < Unique < Mythic)
         3. Sanctified status (major endgame value — 3+ Greater Affixes, permanent optimization)
-        4. Greater Affix count (gold text = greater, more is better; only on Legendary+ items)
+        4. Greater Affix count (gold text = greater, more is better)
         5. Stat synergy with ${playerClass !== 'any' ? playerClass : 'general'} ${buildStyle || ''} build
         6. Roll quality (are stats near max ranges?)
-        7. Useful for current progression (leveling items are judged by level-appropriate standards, endgame items by Pit pushing, Helltide farming, Infernal Hordes potential)
+        7. Useful for endgame (Pit pushing, Helltide farming, Infernal Hordes)
         ${playerClass === 'any' ? '8. Since no class was specified, mention which classes benefit most from this item.' : ''}
-        
-        RARITY-SPECIFIC GRADING:
-        • Common/Magic items: Grade relative to leveling usefulness. These are typically D-C tier unless the player is early game.
-        • Rare items: Can be useful while leveling. Grade B max unless exceptional rolls.
-        • Legendary items: Full endgame analysis — affixes, synergy, Greater Affixes.
-        • Unique/Mythic items: Full endgame analysis with build-defining potential.
         
         OUTPUT FORMAT (JSON Only):
         
         IF NOT D4 / REJECTED:
         {
             "status": "rejected",
-            "reject_reason": "not_game" | "wrong_game_d3" | "wrong_game_d2r" | "wrong_game_di" | "unclear",
+            "reject_reason": "not_game" | "wrong_game_d3" | "wrong_game_d2r" | "wrong_game_di" | "unclear" | "multiple_items",
             "confidence": "high" | "medium" | "low",
             "message": "Brief helpful explanation"
         }
@@ -398,7 +387,7 @@ const PROMPT_TEMPLATES = {
             "confidence": "high" | "medium",
             "title": "Item Name",
             "type": "Item Type (Helm, Chest Armor, Boots, Two-Handed Sword, Ring, Shield, Glaive, etc.)",
-            "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
+            "rarity": "Legendary | Unique | Mythic",
             "sanctified": true | false,
             "item_power": 800,
             "greater_affix_count": 0,
@@ -428,6 +417,7 @@ const PROMPT_TEMPLATES = {
         VALIDATION:
         • Should show TWO item tooltips side-by-side
         • All should have D4 markers (Item Power, Ancestral, etc.)
+        • If you see only ONE item tooltip (not two), reject with reason "single_item"
         IMPORTANT: 'Paladin' and 'Spiritborn' are VALID classes in Diablo 4. Do not reject them.
 
         CLASS-SPECIFIC WEAPON RULES:
@@ -457,7 +447,7 @@ const PROMPT_TEMPLATES = {
         IF NOT VALID:
         {
             "status": "rejected",
-            "reject_reason": "not_comparison" | "wrong_game_d3",
+            "reject_reason": "not_comparison" | "wrong_game_d3" | "single_item",
             "message": "This doesn't appear to be a D4 comparison screenshot"
         }
         
@@ -469,7 +459,7 @@ const PROMPT_TEMPLATES = {
             "item1": {
                 "title": "Left/First Item Name",
                 "type": "Item Type for slot detection",
-                "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
+                "rarity": "Legendary | Unique | Mythic",
                 "sanctified": true | false,
                 "item_power": 850,
                 "greater_affix_count": 0,
@@ -479,7 +469,7 @@ const PROMPT_TEMPLATES = {
             "item2": {
                 "title": "Right/Second Item Name",
                 "type": "Item Type for slot detection",
-                "rarity": "Common | Magic | Rare | Legendary | Unique | Mythic",
+                "rarity": "Legendary | Unique | Mythic",
                 "sanctified": true | false,
                 "item_power": 860,
                 "greater_affix_count": 1,
