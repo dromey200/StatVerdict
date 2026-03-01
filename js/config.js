@@ -317,9 +317,8 @@ const PROMPT_TEMPLATES = {
         IMPORTANT: 'Paladin' and 'Spiritborn' are VALID classes in Diablo 4. Do not reject them.
         
         🔄 COMPARISON SCREENSHOTS (STILL VALID D4):
-        • If you see TWO item tooltips side-by-side → This IS valid D4
-        • One side usually labeled "EQUIPPED" 
-        • Focus analysis on the RIGHT/NEW item (unless told otherwise)
+        • The in-game comparison overlay shows ONE tooltip on the left labeled "EQUIPPED" and ONE tooltip on the right for the new item, connected within a single comparison UI frame
+        • If you see this specific in-game comparison overlay → Focus analysis on the RIGHT/NEW item (unless told otherwise)
         • Both tooltips should have D4 markers
         
         ❌ REJECT IF YOU SEE:
@@ -328,7 +327,7 @@ const PROMPT_TEMPLATES = {
         • Diablo II markers: Pixelated fonts, "Defense:" stat, grid inventory
         • Diablo Immortal markers: "Combat Rating", mobile UI
         • Non-game images or unclear screenshots
-        • MULTIPLE separate item tooltips in Analyze mode (not a side-by-side comparison overlay). If you see 2+ distinct, unrelated item tooltips that are NOT the in-game comparison overlay (one labeled "EQUIPPED"), reject with reason "multiple_items"
+        • TWO OR MORE item tooltips visible in the image that are NOT the in-game comparison overlay described above. This includes: two separate tooltip windows, an inventory view showing multiple items, or any screenshot where more than one distinct item can be read. If detected, you MUST reject with reason "multiple_items" and message "Your screenshot shows more than one item. Please crop to a single item tooltip and use Analyze, or use the in-game comparison overlay and click Compare."
         
         ═══════════════════════════════════════════════════════════
         STEP 2: ANALYSIS (Only if D4 confirmed)
