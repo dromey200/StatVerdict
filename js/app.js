@@ -1053,8 +1053,6 @@ const HoradricApp = {
         // Remove all phase classes
         if (scanCard) scanCard.classList.remove('phase-idle', 'phase-processing', 'phase-result');
         
-        const isProcessing = phase === 'processing';
-        
         switch(phase) {
             case 'idle':
                 if (scanCard) scanCard.classList.add('phase-idle');
@@ -1077,17 +1075,25 @@ const HoradricApp = {
                 this.el.analyzeBtn.style.opacity = '';
                 this.el.compareBtn.style.opacity = '';
                 break;
+            case 'error':
+                if (scanCard) scanCard.classList.add('phase-result');
+                this.el.analyzeBtn.disabled = true;
+                this.el.compareBtn.disabled = true;
+                this.el.analyzeBtn.style.opacity = '0.5';
+                this.el.compareBtn.style.opacity = '0.5';
+                break;
         }
         
-        // Disable demo button and journal clicks during processing
+        // Disable demo button and journal clicks during processing and error
+        const isLocked = phase === 'processing' || phase === 'error';
         if (this.el.demoBtn) {
-            this.el.demoBtn.disabled = isProcessing;
-            this.el.demoBtn.style.opacity = isProcessing ? '0.5' : '';
-            this.el.demoBtn.style.pointerEvents = isProcessing ? 'none' : '';
+            this.el.demoBtn.disabled = isLocked;
+            this.el.demoBtn.style.opacity = isLocked ? '0.5' : '';
+            this.el.demoBtn.style.pointerEvents = isLocked ? 'none' : '';
         }
         if (this.el.historyList) {
-            this.el.historyList.style.pointerEvents = isProcessing ? 'none' : '';
-            this.el.historyList.style.opacity = isProcessing ? '0.5' : '';
+            this.el.historyList.style.pointerEvents = isLocked ? 'none' : '';
+            this.el.historyList.style.opacity = isLocked ? '0.5' : '';
         }
     },
 
@@ -1514,6 +1520,7 @@ Return ONLY the JSON object, no additional text.`;
 
     renderRejection(title, reason, confidence = 'high') {
         this.el.resultsCard.style.display = 'block';
+        this.setPhase('error');
         
         // Hide result action buttons (Discord, Check Price, Search Trade) on rejection
         const resultActions = this.el.resultsCard.querySelector('.result-actions');
@@ -1544,6 +1551,7 @@ Return ONLY the JSON object, no additional text.`;
         const message = customMessage || `This looks like a ${detectedName} item, but you selected ${target}.`;
 
         this.el.resultsCard.style.display = 'block';
+        this.setPhase('error');
         
         // Hide result action buttons on rejection
         const resultActions = this.el.resultsCard.querySelector('.result-actions');
