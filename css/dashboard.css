@@ -1,6 +1,24 @@
 /* ====================================
    DASHBOARD LAYOUT STYLES
+   Bootstrap 5 Integration — Dark Theme Overrides
    ==================================== */
+
+/* Force Bootstrap to respect our dark theme */
+[data-bs-theme="dark"],
+.dashboard-layout {
+    --bs-body-bg: var(--bg-color, #121212);
+    --bs-body-color: var(--text-color, #e0e0e0);
+    --bs-border-color: #333;
+    --bs-emphasis-color: #fff;
+    color-scheme: dark;
+}
+
+/* Prevent Bootstrap from overriding our custom body styles */
+.dashboard-layout body,
+body.dashboard-layout {
+    background-color: var(--bg-color, #121212);
+    color: var(--text-color, #e0e0e0);
+}
 
 /* Dashboard Body */
 .dashboard-layout {
@@ -74,25 +92,7 @@
     margin-left: auto;
 }
 
-.game-selector {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid #444;
-    color: var(--text-color);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    min-width: 140px;
-}
-
-.game-selector:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--accent-color);
-}
-
 /* Style all select dropdown options */
-.game-selector option,
 .option-select option,
 .advanced-select option {
     background: #1e1e1e;
@@ -100,7 +100,6 @@
     padding: 8px;
 }
 
-.game-selector option:hover,
 .option-select option:hover,
 .advanced-select option:hover {
     background: #2c2c2c;
@@ -171,7 +170,7 @@
     flex-direction: column;
 }
 
-.card-header {
+.h-card-header {
     padding: 20px 24px;
     border-bottom: 1px solid #333;
     display: flex;
@@ -179,7 +178,7 @@
     align-items: center;
 }
 
-.card-title {
+.h-card-title {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -191,7 +190,7 @@
     flex-wrap: nowrap;
 }
 
-.card-icon {
+.h-card-icon {
     font-size: 1.3rem;
 }
 
@@ -205,7 +204,7 @@
     margin-left: 8px;
 }
 
-.btn-text {
+.h-btn-text {
     background: transparent;
     border: none;
     color: var(--accent-color);
@@ -216,11 +215,11 @@
     transition: background 0.2s;
 }
 
-.btn-text:hover {
+.h-btn-text:hover {
     background: rgba(211, 47, 47, 0.1);
 }
 
-.card-body {
+.h-card-body {
     padding: 24px;
     flex: 1;
     display: flex;
@@ -405,7 +404,7 @@
     transition: all 0.3s;
 }
 
-.advanced-panel:not(.hidden) {
+.advanced-panel:not(.h-hidden) {
     max-height: 500px;
     opacity: 1;
 }
@@ -494,7 +493,7 @@
     overflow: hidden;
 }
 
-.progress-bar {
+.h-progress-bar {
     height: 100%;
     background: var(--accent-color);
     transition: width 0.3s;
@@ -502,13 +501,20 @@
 }
 
 /* Card Actions */
-.card-actions {
+.h-card-actions {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.btn-primary {
+.action-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.h-btn-primary {
     background: var(--accent-color);
     border: none;
     color: white;
@@ -520,24 +526,24 @@
     transition: all 0.2s;
 }
 
-.btn-primary:hover {
+.h-btn-primary:hover {
     background: var(--button-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
 }
 
-.btn-primary:disabled {
+.h-btn-primary:disabled {
     background: var(--disabled-color);
     cursor: not-allowed;
     transform: none;
 }
 
-.btn-large {
+.h-btn-large {
     padding: 16px 24px;
     font-size: 1.1rem;
 }
 
-.btn-secondary {
+.h-btn-secondary {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid #444;
     color: var(--text-color);
@@ -548,7 +554,7 @@
     transition: all 0.2s;
 }
 
-.btn-secondary:hover {
+.h-btn-secondary:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: var(--accent-color);
 }
@@ -594,16 +600,25 @@
     border: 1px solid #333;
     border-left: 4px solid #444;
     border-radius: 6px;
-    padding: 12px;
+    padding: 10px 14px;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    overflow: hidden;
 }
 
 .recent-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
     border-color: var(--accent-color);
-    transform: translateX(4px);
+    transform: translateX(3px);
+}
+
+.recent-item:active {
+    transform: translateX(1px);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .recent-item.rarity-mythic { border-left-color: var(--color-mythic); }
@@ -615,16 +630,19 @@
 .recent-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 0.75rem;
     color: #888;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .recent-name {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-color);
-    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .recent-verdict {
@@ -806,11 +824,11 @@
 }
 
 .settings-body {
-    padding: 24px;
+    padding: 20px;
 }
 
 .settings-section {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .section-title {
@@ -826,7 +844,7 @@
     margin: 0 0 16px 0;
 }
 
-.input-group {
+.h-input-group {
     margin-bottom: 12px;
 }
 
@@ -847,14 +865,14 @@
     background: rgba(255, 255, 255, 0.08);
 }
 
-.input-hint {
+.h-input-hint {
     display: block;
     font-size: 0.75rem;
     color: #888;
     margin-top: 6px;
 }
 
-.btn-link {
+.h-btn-link {
     display: inline-block;
     color: var(--accent-color);
     text-decoration: none;
@@ -863,17 +881,21 @@
     transition: opacity 0.2s;
 }
 
-.btn-link:hover {
+.h-btn-link:hover {
     opacity: 0.8;
 }
 
 .setting-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 0;
+    gap: 10px;
+    padding: 10px 0;
     border-bottom: 1px solid #333;
     cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.3;
+    width: fit-content;
 }
 
 .setting-item:last-child {
@@ -882,6 +904,18 @@
 
 .setting-item input[type="checkbox"] {
     cursor: pointer;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    flex-shrink: 0;
+    margin: 0;
+    accent-color: var(--accent-color);
+    -webkit-appearance: checkbox;
+    appearance: checkbox;
+}
+
+.setting-item span {
+    white-space: nowrap;
 }
 
 .about-text {
@@ -909,7 +943,7 @@
 }
 
 /* Modal Overlay */
-.modal-overlay {
+.h-modal-overlay {
     display: none;
     position: fixed;
     top: 0;
@@ -922,11 +956,11 @@
     align-items: center;
 }
 
-.modal-overlay.open {
+.h-modal-overlay.open {
     display: flex;
 }
 
-.modal-content {
+.h-modal-content {
     background: var(--card-bg);
     border: 1px solid #555;
     border-radius: 12px;
@@ -938,7 +972,7 @@
     position: relative;
 }
 
-.modal-close {
+.h-modal-close {
     position: absolute;
     top: 16px;
     right: 16px;
@@ -952,7 +986,7 @@
     transition: color 0.2s;
 }
 
-.modal-close:hover {
+.h-modal-close:hover {
     color: var(--text-color);
 }
 
@@ -985,12 +1019,6 @@
         display: none;
     }
     
-    .game-selector {
-        font-size: 0.8rem;
-        padding: 6px 10px;
-        min-width: 100px;
-    }
-    
     .icon-btn {
         width: 36px;
         height: 36px;
@@ -1004,11 +1032,11 @@
         gap: 16px;
     }
     
-    .card-header {
+    .h-card-header {
         padding: 16px;
     }
     
-    .card-body {
+    .h-card-body {
         padding: 16px;
     }
     
@@ -1033,17 +1061,17 @@
         grid-template-columns: 1fr;
     }
     
-    .card-title {
+    .h-card-title {
         font-size: 1rem;
     }
 }
 
 /* Utility Classes */
-.hidden {
+.h-hidden {
     display: none !important;
 }
 
-.btn-icon {
+.h-btn-icon {
     background: transparent;
     border: none;
     color: #888;
@@ -1052,11 +1080,11 @@
     transition: color 0.2s;
 }
 
-.btn-icon:hover {
+.h-btn-icon:hover {
     color: var(--text-color);
 }
 
-.btn-icon svg {
+.h-btn-icon svg {
     width: 20px;
     height: 20px;
 }
@@ -1121,34 +1149,45 @@ option:hover {
     flex-direction: column;
 }
 
-/* Recent scans section (top) */
+/* Recent scans section — full card since loadout is disabled */
 .recent-section {
     flex: 1;
-    border-bottom: 2px solid #333;
     min-height: 0;
-    max-height: 50%;
 }
 
-/* Loadout section (bottom) */
+/* Loadout section (bottom) — hidden/disabled */
 .loadout-section {
     flex: 1;
     min-height: 0;
 }
 
 /* Compact card body for split sections */
-.card-body-compact {
+.h-card-body-compact {
     padding: 16px;
     overflow-y: auto;
     min-height: 0;
+    flex: 1;
 }
 
-/* Recent list in split view */
+/* Recent list */
 .recent-section .recent-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 300px;
+    max-height: none;
     overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #444 transparent;
+}
+
+.recent-section .recent-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.recent-section .recent-list::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
 }
 
 /* Loadout grid in split view */
@@ -1161,12 +1200,7 @@ option:hover {
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .recent-section {
-        max-height: none;
         flex: 0 0 auto;
-    }
-    
-    .loadout-section {
-        flex: 1;
     }
     
     .loadout-section .loadout-grid {
@@ -1177,5 +1211,232 @@ option:hover {
 @media (max-width: 480px) {
     .loadout-section .loadout-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   NEW SCAN HEADER BUTTON
+   ============================================ */
+.btn-new-scan {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    color: #ccc;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 12px;
+}
+
+.btn-new-scan:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: var(--accent-color, #d4a44a);
+}
+
+/* ============================================
+   NEW SCAN RESET BUTTON (in result cards)
+   ============================================ */
+.btn-reset-scan {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ccc;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.btn-reset-scan:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+/* ============================================
+   UI STATE MACHINE PHASE CLASSES
+   ============================================ */
+
+/* Phase: Processing — dim the upload zone, pulse the card border */
+.scan-card.phase-processing .upload-zone {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.scan-card.phase-processing {
+    border-color: var(--accent-color, #d4a44a);
+    animation: phase-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes phase-pulse {
+    0%, 100% { border-color: rgba(212, 164, 74, 0.3); }
+    50% { border-color: rgba(212, 164, 74, 0.7); }
+}
+
+/* Phase: Result — show the uploaded image thumbnail in results */
+.scan-card.phase-result .upload-zone {
+    max-height: 120px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.scan-card.phase-result .upload-preview {
+    max-height: 100px;
+    object-fit: contain;
+}
+
+/* ============================================
+   RATING GUIDE
+   ============================================ */
+.rating-guide-section {
+    max-width: 800px;
+    margin: 30px auto 0;
+    padding: 0 20px;
+}
+
+.rating-guide-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #ccc;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rating-guide-trigger:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--accent-color, #d4a44a);
+    color: #fff;
+}
+
+.rating-guide-content {
+    margin-top: 12px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.rating-guide-intro {
+    color: #aaa;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0 0 18px;
+}
+
+.rating-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.rating-table th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #444;
+    color: #888;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rating-table td {
+    padding: 12px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #ccc;
+    vertical-align: top;
+}
+
+.rating-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.grade-badge {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1rem;
+    border-radius: 6px;
+}
+
+.grade-s-badge { background: rgba(255, 215, 0, 0.2); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.4); }
+.grade-a-badge { background: rgba(76, 175, 80, 0.2); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.4); }
+.grade-b-badge { background: rgba(33, 150, 243, 0.2); color: #2196f3; border: 1px solid rgba(33, 150, 243, 0.4); }
+.grade-c-badge { background: rgba(255, 165, 0, 0.2); color: #ffa500; border: 1px solid rgba(255, 165, 0, 0.4); }
+.grade-d-badge { background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); }
+
+.rating-guide-notes {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+}
+
+.rating-guide-notes h4 {
+    color: #ddd;
+    font-size: 0.9rem;
+    margin: 0 0 12px;
+}
+
+.modifier-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modifier-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.modifier-badge {
+    white-space: nowrap;
+    font-weight: 600;
+    color: #ddd;
+    min-width: 140px;
+}
+
+.rating-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(255, 165, 0, 0.08);
+    border-radius: 6px;
+    border-left: 3px solid #ffa500;
+    color: #bbb;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+/* Mobile rating table */
+@media (max-width: 600px) {
+    .rating-table th:nth-child(3),
+    .rating-table td:nth-child(3) {
+        display: none;
+    }
+    
+    .modifier-item {
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .modifier-badge {
+        min-width: auto;
     }
 }
