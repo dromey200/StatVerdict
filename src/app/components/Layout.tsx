@@ -59,7 +59,7 @@ export function Layout() {
                 aria-label="Back to StatVerdict"
               >
                 <img
-                  src="/assets/images/statverdict-icon.png"
+                  src="/assets/statverdict-icon.png"
                   alt="StatVerdict Icon"
                   className="w-8 h-8 object-contain opacity-80 group-hover:opacity-100 transition-opacity rounded-lg"
                 />
