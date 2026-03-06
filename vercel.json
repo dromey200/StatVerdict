@@ -1,21 +1,12 @@
 {
-  "buildCommand": "",
-  "outputDirectory": ".",
-  "framework": null,
-  "headers": [
+  "rewrites": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    }
-  ],
-  "redirects": [
+      "source": "/diablo-4-scanner",
+      "destination": "/diablo-4-scanner.html"
+    },
     {
-      "source": "/horadric.html",
-      "destination": "/diablo-4-scanner.html",
-      "permanent": true
+      "source": "/diablo-4-scanner/(.*)",
+      "destination": "/diablo-4-scanner.html"
     }
   ]
 }
