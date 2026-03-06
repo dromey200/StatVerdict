@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, RotateCcw, Sparkles, CheckCircle2, Zap, TrendingUp } from 'lucide-react';
+import { CheckCircle, XCircle, RotateCcw, Sparkles, CheckCircle2, Zap, TrendingUp, Crown, Star, AlertTriangle, Trash2 } from 'lucide-react';
 
 interface ScanResult {
   title: string;
@@ -31,6 +31,17 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
     B: 'bg-gradient-to-br from-blue-600 to-cyan-600 shadow-lg shadow-blue-600/50',
     C: 'bg-gradient-to-br from-yellow-600 to-orange-600 shadow-lg shadow-yellow-600/50',
     D: 'bg-gradient-to-br from-red-600 to-rose-600 shadow-lg shadow-red-600/50',
+  };
+
+  const getGradeIcon = (grade: string) => {
+    switch (grade) {
+      case 'S': return Crown;
+      case 'A': return Sparkles;
+      case 'B': return Star;
+      case 'C': return AlertTriangle;
+      case 'D': return Trash2;
+      default: return Trash2;
+    }
   };
 
   const parseAnalysis = (analysis: string) => {
@@ -99,8 +110,12 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
                 )}
               </div>
             </div>
-            <div className={`w-20 h-20 rounded-xl ${gradeColors[result.grade] || gradeColors.D} flex items-center justify-center`}>
-              <span className="text-4xl font-bold text-white">{result.grade}</span>
+            <div className={`w-20 h-20 rounded-xl ${gradeColors[result.grade] || gradeColors.D} flex flex-col items-center justify-center gap-1`}>
+              {(() => {
+                const GradeIcon = getGradeIcon(result.grade);
+                return <GradeIcon className="w-8 h-8 text-white" />;
+              })()}
+              <span className="text-2xl font-bold text-white">{result.grade}</span>
             </div>
           </div>
         </div>
