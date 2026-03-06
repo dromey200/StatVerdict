@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Filter, Search, Calendar, X, Eye, CheckCircle2, XCircle, TrendingUp, Zap } from 'lucide-react';
+import { Trash2, Filter, Search, Calendar, X, Eye, CheckCircle2, XCircle, TrendingUp, Zap, Crown, Sparkles, Star, AlertTriangle } from 'lucide-react';
 
 interface HistoryItem {
   title: string;
@@ -68,6 +68,17 @@ export function HistoryPage() {
     B: 'bg-blue-600',
     C: 'bg-yellow-600',
     D: 'bg-red-600',
+  };
+
+  const getGradeIcon = (grade: string) => {
+    switch (grade) {
+      case 'S': return Crown;
+      case 'A': return Sparkles;
+      case 'B': return Star;
+      case 'C': return AlertTriangle;
+      case 'D': return Trash2;
+      default: return Trash2;
+    }
   };
 
   const parseAnalysis = (analysis: string) => {
@@ -175,7 +186,8 @@ export function HistoryPage() {
                       <h3 className="text-xl font-bold text-white">{item.title}</h3>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="px-2 py-0.5 bg-slate-700 rounded text-xs text-slate-300 capitalize">{item.rarity}</span>
-                        <span className={`px-2 py-0.5 ${gradeColors[item.grade]} text-white rounded text-xs font-bold`}>
+                        <span className={`flex items-center gap-1 px-2 py-0.5 ${gradeColors[item.grade]} text-white rounded text-xs font-bold`}>
+                          {(() => { const Icon = getGradeIcon(item.grade); return <Icon className="w-3 h-3" />; })()}
                           Grade {item.grade}
                         </span>
                         <span className={`px-2 py-0.5 ${item.verdict === 'keep' ? 'bg-green-600/30 text-green-300' : 'bg-red-600/30 text-red-300'} rounded text-xs`}>
@@ -245,7 +257,8 @@ export function HistoryPage() {
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{selectedItem.title}</h2>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-3 py-1 bg-slate-800 rounded-full text-sm text-slate-300 capitalize">{selectedItem.rarity}</span>
-                  <span className={`px-3 py-1 ${gradeColors[selectedItem.grade]} text-white rounded-full text-sm font-bold`}>
+                  <span className={`flex items-center gap-1 px-3 py-1 ${gradeColors[selectedItem.grade]} text-white rounded-full text-sm font-bold`}>
+                    {(() => { const Icon = getGradeIcon(selectedItem.grade); return <Icon className="w-3.5 h-3.5" />; })()}
                     Grade {selectedItem.grade}
                   </span>
                   <span className={`px-3 py-1 ${selectedItem.verdict === 'keep' ? 'bg-green-600' : 'bg-red-600'} text-white rounded-full text-sm`}>
