@@ -1,0 +1,46 @@
+{
+  "name": "statverdict",
+  "version": "3.0.0",
+  "description": "AI-powered loot analysis for ARPGs - Horadric AI Diablo IV Gear Scanner",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && vercel --prod",
+    "lint": "eslint . --ext .ts,.tsx,.js",
+    "format": "prettier --write \"**/*.{ts,tsx,js,css,html,md}\""
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.1",
+    "tailwindcss": "^4.0.0",
+    "terser": "^5.26.0",
+    "typescript": "~5.6.2",
+    "vite": "^6.4.1"
+  },
+  "keywords": [
+    "diablo4",
+    "arpg",
+    "loot",
+    "ai",
+    "gaming",
+    "react",
+    "typescript"
+  ],
+  "author": "StatVerdict",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

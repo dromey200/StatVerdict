@@ -174,9 +174,6 @@
                     <p class="sv-game-subtitle sv-text-live">Horadric AI - Season 11</p>
                     <p class="sv-game-description">
                         Full analysis for Diablo IV with Sanctified item detection
-                        <span style="display: block; margin-top: 8px; font-size: 0.85em; color: #ffa500;">
-                            🚧 D3, D2R & Immortal coming soon
-                        </span>
                     </p>
                     
                     <ul class="sv-game-features" aria-label="Features">
@@ -320,42 +317,49 @@
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">What is StatVerdict?</summary>
                 <div class="sv-faq-answer">
-                    <p>StatVerdict is an AI-powered loot analysis platform built for Action RPG players. Upload a screenshot of any in-game item and get an instant, detailed evaluation — including a score, build-specific recommendations, and whether you should keep, salvage, or equip the item. Our first supported game is Diablo IV through our Horadric AI scanner, with more ARPGs coming soon.</p>
+                    <p>StatVerdict is an AI-powered loot analysis platform built for Action RPG players. Upload a screenshot of any in-game item and get an instant, detailed evaluation — including a score, build-specific recommendations, and whether you should keep, salvage, or equip the item. Our first supported game is Diablo IV through our Horadric AI scanner, with plans to expand to every major ARPG.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">How does it work?</summary>
                 <div class="sv-faq-answer">
-                    <p>You upload a screenshot of an item tooltip from your game. Our AI reads the image using optical character recognition (OCR), identifies every stat, affix, and property on the item, then evaluates it against your selected class and build. The result is a letter grade (S through D), a verdict (Keep, Salvage, Equip, Sanctify), and a detailed breakdown of why.</p>
+                    <p>You upload a screenshot of an item tooltip from your game. Our AI reads the image, identifies every stat, affix, and property on the item, then evaluates it against your selected class and build. The result is a letter grade (S through D), a verdict (Keep, Salvage, Equip, Sanctify), and a detailed breakdown of why.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">Is it free to use?</summary>
                 <div class="sv-faq-answer">
-                    <p>Yes! StatVerdict is free to use. You provide your own Gemini API key (Google's AI service), which has a generous free tier. This means your scans are processed directly through your own API key — we never see your data, and there's no subscription or paywall on our end.</p>
+                    <p>Yes — StatVerdict is completely free to use. No API keys, no accounts, no subscriptions. Just open the scanner and start analyzing your items. We handle the AI processing on our end so you don't have to set up anything.</p>
+                </div>
+            </details>
+
+            <details class="sv-faq-item">
+                <summary class="sv-faq-question">Are there any usage limits?</summary>
+                <div class="sv-faq-answer">
+                    <p>To keep the service free for everyone, there is a daily scan limit per user. This resets every 24 hours. For most players, the free tier is more than enough for a full gear evaluation session.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">Why was StatVerdict created?</summary>
                 <div class="sv-faq-answer">
-                    <p>As ARPG players ourselves, we got tired of alt-tabbing to wikis, asking Discord, or guessing whether a drop was actually good. We wanted a tool that could look at an item and instantly tell you if it's worth keeping — tailored to your specific class and build. StatVerdict was built to solve that problem, starting with Diablo IV and expanding to every major ARPG.</p>
+                    <p>As ARPG players ourselves, we got tired of alt-tabbing to wikis, asking Discord, or guessing whether a drop was actually good. We wanted a tool that could look at an item and instantly tell you if it's worth keeping — tailored to your specific class and build. StatVerdict was built to solve that problem, currently supporting Diablo IV with plans to expand to every major ARPG.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">Which games are supported?</summary>
                 <div class="sv-faq-answer">
-                    <p>Currently, Diablo IV is fully supported through our Horadric AI scanner, including all 7 classes, Sanctified item detection, Greater Affix analysis, and the Season 11 Heavenly Forge system. Path of Exile 2, Last Epoch, and additional Diablo titles (D3, D2R, Immortal) are on our roadmap — you can vote for the next game on the landing page.</p>
+                    <p>Currently, Diablo IV is fully supported through our Horadric AI scanner — including all 7 classes (Barbarian, Druid, Necromancer, Rogue, Sorcerer, Spiritborn, Paladin), every item rarity from Common to Mythic, Sanctified item detection, Greater Affix analysis, and Season 11's Heavenly Forge system. Want to see your favorite ARPG next? <a href="#voting-section" style="color: var(--sv-accent);">Vote for the next game</a> in our community poll.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">Is my data private?</summary>
                 <div class="sv-faq-answer">
-                    <p>Absolutely. Your API key is stored locally in your browser only. Item screenshots are sent directly from your browser to Google's Gemini API for analysis — they never pass through our servers. Scan history, loadout data, and preferences are all stored locally in your browser. We don't collect personal information or track individual users.</p>
+                    <p>Yes. Item screenshots are sent to our secure server for AI processing and are not stored after analysis. Scan history, loadout data, and preferences are all kept locally in your browser — we never have access to them. We don't collect personal information or track individual users.</p>
                 </div>
             </details>
 
@@ -367,23 +371,16 @@
             </details>
 
             <details class="sv-faq-item">
-                <summary class="sv-faq-question">How do I get a Gemini API key?</summary>
-                <div class="sv-faq-answer">
-                    <p>Visit <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Google AI Studio</a> and sign in with your Google account. Click "Create API Key" — it's free and takes about 30 seconds. Copy the key and paste it into the Settings panel in Horadric AI. The free tier gives you plenty of scans per day for normal use.</p>
-                </div>
-            </details>
-
-            <details class="sv-faq-item">
                 <summary class="sv-faq-question">Can I use it on mobile?</summary>
                 <div class="sv-faq-answer">
-                    <p>Yes! You can screenshot an item on your console or PC, then scan it from your phone. The interface is optimized for touch with large tap targets and mobile-friendly layouts.</p>
+                    <p>Yes! Screenshot an item on your console or PC, then scan it from your phone. The interface is fully responsive with touch-friendly controls and mobile-optimized layouts.</p>
                 </div>
             </details>
 
             <details class="sv-faq-item">
                 <summary class="sv-faq-question">How can I contribute or report issues?</summary>
                 <div class="sv-faq-answer">
-                    <p>We'd love your feedback! Use the "Report Issue" or "Suggest a Game" links in the footer to submit feedback via Google Forms. You can also follow us on <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Instagram @StatVerdict</a> for updates, previews, and community polls. Vote for the next supported game in the voting section above!</p>
+                    <p>We'd love your feedback! Found a bug or have a suggestion? <a href="https://forms.gle/Mrh1My2NiGv2c6KN9" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Submit a report</a> and we'll look into it. You can also follow us on <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer" style="color: var(--sv-accent);">Instagram @StatVerdict</a> for updates, previews, and community polls. Want to influence the roadmap? <a href="#voting-section" style="color: var(--sv-accent);">Vote for the next game</a> below.</p>
                 </div>
             </details>
         </div>
@@ -391,7 +388,7 @@
 
     <footer class="sv-footer" role="contentinfo">
         <div class="sv-footer-content">
-            <p>© 2025 StatVerdict. Built for the ARPG community.</p>
+            <p>© 2025-2026 StatVerdict. Built for the ARPG community.</p>
             <div class="sv-footer-links">
                 <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer" aria-label="Follow StatVerdict on Instagram">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
@@ -417,10 +414,10 @@
             <h3>Privacy & Data</h3>
             <div class="privacy-content">
                 <ul>
-                    <li>API keys stored locally in encrypted form</li>
-                    <li>Images processed in real-time, never saved on servers</li>
-                    <li>Scan history stored locally in your browser</li>
-                    <li>No personal data collected or transmitted</li>
+                    <li>Item screenshots are processed securely and never stored after analysis</li>
+                    <li>Scan history, loadout data, and preferences are stored locally in your browser</li>
+                    <li>No accounts, no personal data collected, no individual user tracking</li>
+                    <li>Anonymous usage counts help us improve the service</li>
                 </ul>
             </div>
         </div>
