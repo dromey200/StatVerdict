@@ -1,5 +1,5 @@
 import { X, Info } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -8,14 +8,28 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [autoSave, setAutoSave] = useState(() => {
+    try {
+      const saved = localStorage.getItem('horadric_auto_save');
+      return saved === null ? true : saved === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const handleAutoSaveChange = (checked: boolean) => {
+    setAutoSave(checked);
+    try {
+      localStorage.setItem('horadric_auto_save', String(checked));
+    } catch {
+      // Storage unavailable
+    }
+  };
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
+      if (e.key === 'Escape' && isOpen) onClose();
     };
-
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
@@ -26,9 +40,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     } else {
       document.body.style.overflow = 'unset';
     }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+    return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -70,7 +82,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <div className="flex items-start gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-blue-200">
-                  Analysis is performed using advanced AI to evaluate gear based on current meta, 
+                  Analysis is performed using advanced AI to evaluate gear based on current meta,
                   class synergies, and your character's progression stage — from campaign leveling to endgame content.
                 </p>
               </div>
@@ -84,7 +96,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <label className="flex items-center gap-3 p-4 bg-slate-800/50 border border-red-900/30 rounded-lg cursor-pointer hover:bg-slate-800/70 transition-all">
                 <input
                   type="checkbox"
-                  defaultChecked
+                  checked={autoSave}
+                  onChange={(e) => handleAutoSaveChange(e.target.checked)}
                   className="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-0"
                 />
                 <span className="text-sm text-slate-300">Auto-save scan results</span>
@@ -96,7 +109,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           <section className="space-y-4">
             <h3 className="text-lg font-bold text-white">About</h3>
             <div className="bg-slate-800/50 border border-red-900/30 rounded-lg p-4 space-y-3">
-              <p className="text-sm text-slate-400">Horadric AI v4.0.0</p>
+              <p className="text-sm text-slate-400">Horadric AI v3.0.0</p>
               <p className="text-sm text-slate-400">Season 11 Update</p>
               <p className="text-sm text-slate-400">Made with ❤️ for Sanctuary</p>
               <div className="pt-3 space-y-2 border-t border-slate-700">
@@ -130,7 +143,11 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <div className="flex items-start gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-blue-200">
-                  Contact us at <a href="mailto:support@horadricai.com" className="text-blue-400 hover:text-blue-300 transition-colors">support@horadricai.com</a> for more details.
+                  Contact us at{' '}
+                  <a href="mailto:support@horadricai.com" className="text-blue-400 hover:text-blue-300 transition-colors">
+                    support@horadricai.com
+                  </a>{' '}
+                  for more details.
                 </p>
               </div>
             </div>
