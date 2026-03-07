@@ -56,18 +56,54 @@ async function callAPI(prompt: string, imageBase64: string, mimeType: string) {
   });
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-    throw new Error(err.error || `Analysis failed: ${response.status}`);
+    const err = await response.json().catch(() => ({ error: '' }));
+    throw new Error(getErrorMessage(response.status, err.error));
   }
 
   return response.json();
+}
+
+/**
+ * User-friendly error messages for common HTTP errors
+ */
+function getErrorMessage(status: number, serverMessage: string): string {
+  switch (status) {
+    case 413:
+      return 'Your image is too large to process. Please resize or compress your screenshot to under 4MB and try again. Tip: Use a cropped screenshot of just the item tooltip instead of a full-screen capture.';
+    case 429:
+      return 'Too many requests — the analysis service is temporarily rate-limited. Please wait a moment and try again.';
+    case 500:
+      return 'The analysis service encountered an internal error. Please try again in a few seconds. If this persists, the AI service may be temporarily unavailable.';
+    case 502:
+    case 503:
+    case 504:
+      return 'The analysis service is temporarily unavailable. Please try again in a few moments.';
+    case 401:
+    case 403:
+      return 'Authentication error with the analysis service. Please report this issue using the Settings panel.';
+    default:
+      return serverMessage || `An unexpected error occurred (HTTP ${status}). Please try again.`;
+  }
 }
 
 // ============================================
 // FILE HELPERS
 // ============================================
 
+const MAX_IMAGE_SIZE = 3.5 * 1024 * 1024; // 3.5MB target (leaves room for JSON wrapper)
+
 async function fileToBase64(file: File): Promise<{ base64: string; mimeType: string }> {
+  // If the file is small enough, use it directly
+  if (file.size <= MAX_IMAGE_SIZE) {
+    return readFileAsBase64(file);
+  }
+
+  // Compress the image using canvas
+  const compressed = await compressImage(file);
+  return readFileAsBase64(compressed);
+}
+
+function readFileAsBase64(file: File | Blob): Promise<{ base64: string; mimeType: string }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -78,6 +114,62 @@ async function fileToBase64(file: File): Promise<{ base64: string; mimeType: str
     };
     reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Compress an image using canvas to stay under the size limit
+ */
+async function compressImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+
+      // Scale down if very large
+      let { width, height } = img;
+      const maxDimension = 2048;
+      if (width > maxDimension || height > maxDimension) {
+        const scale = maxDimension / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Failed to create canvas context'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Try progressively lower quality until under limit
+      const tryQuality = (quality: number) => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to compress image'));
+              return;
+            }
+            if (blob.size <= MAX_IMAGE_SIZE || quality <= 0.3) {
+              resolve(blob);
+            } else {
+              tryQuality(quality - 0.1);
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+
+      tryQuality(0.8);
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image for compression'));
+    img.src = URL.createObjectURL(file);
   });
 }
 
