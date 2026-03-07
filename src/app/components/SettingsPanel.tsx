@@ -141,7 +141,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 <p className="text-xs text-blue-200">
                   Contact us at{' '}
                   <a href="mailto:support@horadricai.com" className="text-blue-400 hover:text-blue-300 transition-colors">
-                    support@horadricai.com
+                    statverdict@gmail.com
                   </a>{' '}
                   for more details.
                 </p>
