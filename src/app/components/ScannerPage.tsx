@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Upload, Camera, Loader2, X, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { Upload, Camera, Loader2, X, ChevronDown, ChevronUp, AlertCircle, RotateCcw } from 'lucide-react';
 import { ResultsDisplay } from './ResultsDisplay';
 import { scanItem, type ScanResult, type AnalysisContext } from '../services/gemini';
+import { CLASS_DATA, BUILD_FOCUSES } from '../data/classData';
 
 export function ScannerPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -11,53 +12,40 @@ export function ScannerPage() {
   const [error, setError] = useState<string | null>(null);
   const [playerClass, setPlayerClass] = useState('any');
   const [characterLevel, setCharacterLevel] = useState('');
-  const [buildMechanics, setBuildMechanics] = useState('general');
+  const [buildStyle, setBuildStyle] = useState('');
+  const [buildMechanics, setBuildMechanics] = useState('');
   const [buildFocus, setBuildFocus] = useState('balanced');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Get current class data
+  const currentClass = useMemo(
+    () => CLASS_DATA.find((c) => c.id === playerClass) || CLASS_DATA[0],
+    [playerClass]
+  );
+
+  // Reset build style and mechanics when class changes
+  useEffect(() => {
+    setBuildStyle('');
+    setBuildMechanics('');
+  }, [playerClass]);
+
   // Keyboard shortcuts: Ctrl+U = upload, Ctrl+Enter = analyze
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    const isModifier = e.ctrlKey || e.metaKey;
-    if (!isModifier) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const isModifier = e.ctrlKey || e.metaKey;
+      if (!isModifier) return;
 
-    if (e.key === 'u') {
-      e.preventDefault();
-      fileInputRef.current?.click();
-    } else if (e.key === 'Enter' && selectedFile && !loading && !result) {
-      e.preventDefault();
-      handleAnalyze();
-    }
-  }, [selectedFile, loading, result]);
-
-  const classes = [
-    { id: 'any', name: 'Any Class' },
-    { id: 'barbarian', name: 'Barbarian' },
-    { id: 'druid', name: 'Druid' },
-    { id: 'necromancer', name: 'Necromancer' },
-    { id: 'rogue', name: 'Rogue' },
-    { id: 'sorcerer', name: 'Sorcerer' },
-    { id: 'spiritborn', name: 'Spiritborn' },
-  ];
-
-  const mechanics = [
-    { id: 'general', name: 'General' },
-    { id: 'crit', name: 'Critical Strike' },
-    { id: 'dot', name: 'Damage Over Time' },
-    { id: 'summon', name: 'Summoner' },
-    { id: 'tank', name: 'Tank/Defensive' },
-    { id: 'speed', name: 'Movement/Speed' },
-    { id: 'resource', name: 'Resource Generation' },
-  ];
-
-  const focuses = [
-    { id: 'balanced', name: 'Balanced' },
-    { id: 'damage', name: 'Max Damage' },
-    { id: 'survivability', name: 'Survivability' },
-    { id: 'speed', name: 'Speed Farming' },
-    { id: 'pit', name: 'Pit Pushing' },
-    { id: 'pvp', name: 'PvP' },
-  ];
+      if (e.key === 'u') {
+        e.preventDefault();
+        fileInputRef.current?.click();
+      } else if (e.key === 'Enter' && selectedFile && !loading && !result) {
+        e.preventDefault();
+        handleAnalyze();
+      }
+    },
+    [selectedFile, loading, result]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -74,6 +62,7 @@ export function ScannerPage() {
       };
       reader.readAsDataURL(file);
       setResult(null);
+      setError(null);
     }
   };
 
@@ -99,6 +88,7 @@ export function ScannerPage() {
       };
       reader.readAsDataURL(file);
       setResult(null);
+      setError(null);
     }
   };
 
@@ -111,13 +101,12 @@ export function ScannerPage() {
       const context: AnalysisContext = {
         playerClass,
         characterLevel,
-        buildMechanics,
+        buildMechanics: buildStyle ? `${buildStyle}${buildMechanics ? ' / ' + buildMechanics : ''}` : buildMechanics,
         buildFocus,
       };
 
       const analysisResult = await scanItem(selectedFile, context);
 
-      // Attach the uploaded image to the result for display
       const resultWithImage: ScanResult = {
         ...analysisResult,
         image: selectedImage || undefined,
@@ -125,7 +114,7 @@ export function ScannerPage() {
 
       setResult(resultWithImage);
 
-      // Save to history (without image to prevent storage quota issues)
+      // Save to history
       try {
         const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
         history.unshift({
@@ -138,6 +127,7 @@ export function ScannerPage() {
           timestamp: Date.now(),
           class: playerClass,
           level: characterLevel,
+          build: buildStyle,
           mechanics: buildMechanics,
           focus: buildFocus,
         });
@@ -145,7 +135,6 @@ export function ScannerPage() {
         localStorage.setItem('horadric_history', JSON.stringify(limitedHistory));
       } catch (storageError) {
         if (storageError instanceof DOMException && storageError.name === 'QuotaExceededError') {
-          console.warn('Storage quota exceeded. Clearing old history...');
           try {
             const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
             localStorage.setItem('horadric_history', JSON.stringify(history.slice(0, 10)));
@@ -175,18 +164,17 @@ export function ScannerPage() {
 
   return (
     <div className="space-y-8">
-      {/* Show scanner section only when no result */}
-      {!result && (
+      {/* Show scanner section only when no result and no error */}
+      {!result && !error && (
         <>
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-white">
-              Gear Scanner
-            </h1>
-            <p className="text-lg text-slate-400">Upload your Diablo IV loot for AI-powered analysis — from leveling to endgame</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-white">Gear Scanner</h1>
+            <p className="text-lg text-slate-400">
+              Upload your Diablo IV loot for AI-powered analysis — from leveling to endgame
+            </p>
           </div>
 
           <div className="max-w-2xl mx-auto">
-            {/* Upload Section */}
             <div className="space-y-6">
               <div className="bg-slate-800/50 backdrop-blur-sm border border-red-900/30 rounded-xl p-6 space-y-6">
                 <div className="flex items-center justify-between">
@@ -220,11 +208,7 @@ export function ScannerPage() {
 
                   {selectedImage ? (
                     <div className="space-y-4">
-                      <img
-                        src={selectedImage}
-                        alt="Selected gear"
-                        className="max-h-64 mx-auto rounded-lg shadow-lg"
-                      />
+                      <img src={selectedImage} alt="Selected gear" className="max-h-64 mx-auto rounded-lg shadow-lg" />
                       <p className="text-sm text-slate-400">Click to change image</p>
                     </div>
                   ) : (
@@ -248,8 +232,10 @@ export function ScannerPage() {
                     onChange={(e) => setPlayerClass(e.target.value)}
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   >
-                    {classes.map((cls) => (
-                      <option key={cls.id} value={cls.id}>{cls.name}</option>
+                    {CLASS_DATA.map((cls) => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -271,7 +257,7 @@ export function ScannerPage() {
                   </p>
                 </div>
 
-                {/* Advanced Settings */}
+                {/* Advanced Settings — show when a specific class is selected */}
                 {playerClass !== 'any' && (
                   <>
                     <div className="space-y-2">
@@ -288,19 +274,49 @@ export function ScannerPage() {
 
                     {showAdvanced && (
                       <div className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-slate-300">Build Mechanics</label>
-                          <select
-                            value={buildMechanics}
-                            onChange={(e) => setBuildMechanics(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                          >
-                            {mechanics.map((mech) => (
-                              <option key={mech.id} value={mech.id}>{mech.name}</option>
-                            ))}
-                          </select>
-                        </div>
+                        {/* Build Style — class-specific builds */}
+                        {currentClass.builds.length > 0 && (
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-300">
+                              Build Style <span className="text-slate-500">({currentClass.name})</span>
+                            </label>
+                            <select
+                              value={buildStyle}
+                              onChange={(e) => setBuildStyle(e.target.value)}
+                              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            >
+                              <option value="">General</option>
+                              {currentClass.builds.map((build) => (
+                                <option key={build} value={build}>
+                                  {build}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
 
+                        {/* Build Mechanics — class-specific mechanics */}
+                        {currentClass.mechanics.length > 0 && (
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-300">
+                              Key Mechanic <span className="text-slate-500">({currentClass.name})</span>
+                            </label>
+                            <select
+                              value={buildMechanics}
+                              onChange={(e) => setBuildMechanics(e.target.value)}
+                              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            >
+                              <option value="">None</option>
+                              {currentClass.mechanics.map((mech) => (
+                                <option key={mech} value={mech}>
+                                  {mech}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                        {/* Build Focus — same for all classes */}
                         <div className="space-y-2">
                           <label className="block text-sm font-medium text-slate-300">Build Focus</label>
                           <select
@@ -308,8 +324,10 @@ export function ScannerPage() {
                             onChange={(e) => setBuildFocus(e.target.value)}
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                           >
-                            {focuses.map((focus) => (
-                              <option key={focus.id} value={focus.id}>{focus.name}</option>
+                            {BUILD_FOCUSES.map((focus) => (
+                              <option key={focus.id} value={focus.id}>
+                                {focus.name}
+                              </option>
                             ))}
                           </select>
                         </div>
@@ -338,26 +356,44 @@ export function ScannerPage() {
                     )}
                   </button>
                 </div>
-
-                {/* Error Display */}
-                {error && (
-                  <div className="flex items-start gap-3 p-4 bg-red-600/10 border border-red-500/30 rounded-lg">
-                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm text-red-200">{error}</p>
-                      <button
-                        onClick={() => setError(null)}
-                        className="text-xs text-red-400 hover:text-red-300 mt-2 transition-colors"
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </>
+      )}
+
+      {/* Error State — full takeover, hides scanner */}
+      {error && !result && !loading && (
+        <div className="space-y-8">
+          <div className="text-center space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-white">Analysis Error</h1>
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-red-500/30 rounded-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-red-600 to-red-700 p-6">
+                <div className="flex items-center gap-4">
+                  <AlertCircle className="w-12 h-12 text-white flex-shrink-0" />
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Something Went Wrong</h2>
+                    <p className="text-red-100 text-sm mt-1">The analysis could not be completed</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+                  <p className="text-slate-300 leading-relaxed">{error}</p>
+                </div>
+                <button
+                  onClick={startNewScan}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-lg font-medium shadow-lg shadow-red-600/50 hover:shadow-red-500/60 transition-all"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  New Scan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Show results when available */}
