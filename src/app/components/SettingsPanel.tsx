@@ -93,15 +93,15 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           <section className="space-y-4">
             <h3 className="text-lg font-bold text-white">Preferences</h3>
             <div className="space-y-3">
-              <label className="flex items-center gap-3 p-4 bg-slate-800/50 border border-red-900/30 rounded-lg cursor-pointer hover:bg-slate-800/70 transition-all">
-                <input
-                  type="checkbox"
-                  checked={autoSave}
-                  onChange={(e) => handleAutoSaveChange(e.target.checked)}
-                  className="w-5 h-5 rounded bg-slate-700 border-slate-600 text-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-0"
-                />
+              <button
+                onClick={() => handleAutoSaveChange(!autoSave)}
+                className="flex items-center justify-between w-full p-4 bg-slate-800/50 border border-red-900/30 rounded-lg hover:bg-slate-800/70 transition-all"
+              >
                 <span className="text-sm text-slate-300">Auto-save scan results</span>
-              </label>
+                <div className={`relative w-11 h-6 rounded-full transition-colors ${autoSave ? 'bg-red-600' : 'bg-slate-600'}`}>
+                  <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${autoSave ? 'translate-x-5' : 'translate-x-0'}`} />
+                </div>
+              </button>
             </div>
           </section>
 
