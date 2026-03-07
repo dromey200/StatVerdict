@@ -114,32 +114,43 @@ export function ScannerPage() {
 
       setResult(resultWithImage);
 
-      // Save to history
-      try {
-        const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
-        history.unshift({
-          title: resultWithImage.title,
-          rarity: resultWithImage.rarity,
-          grade: resultWithImage.grade,
-          verdict: resultWithImage.verdict,
-          analysis: resultWithImage.analysis,
-          sanctified: resultWithImage.sanctified,
-          timestamp: Date.now(),
-          class: playerClass,
-          level: characterLevel,
-          build: buildStyle,
-          mechanics: buildMechanics,
-          focus: buildFocus,
-        });
-        const limitedHistory = history.slice(0, 20);
-        localStorage.setItem('horadric_history', JSON.stringify(limitedHistory));
-      } catch (storageError) {
-        if (storageError instanceof DOMException && storageError.name === 'QuotaExceededError') {
-          try {
-            const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
-            localStorage.setItem('horadric_history', JSON.stringify(history.slice(0, 10)));
-          } catch (_retryError) {
-            localStorage.removeItem('horadric_history');
+      // Save to history (if auto-save is enabled)
+      const autoSaveEnabled = (() => {
+        try {
+          const saved = localStorage.getItem('horadric_auto_save');
+          return saved === null ? true : saved === 'true';
+        } catch {
+          return true;
+        }
+      })();
+
+      if (autoSaveEnabled) {
+        try {
+          const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
+          history.unshift({
+            title: resultWithImage.title,
+            rarity: resultWithImage.rarity,
+            grade: resultWithImage.grade,
+            verdict: resultWithImage.verdict,
+            analysis: resultWithImage.analysis,
+            sanctified: resultWithImage.sanctified,
+            timestamp: Date.now(),
+            class: playerClass,
+            level: characterLevel,
+            build: buildStyle,
+            mechanics: buildMechanics,
+            focus: buildFocus,
+          });
+          const limitedHistory = history.slice(0, 20);
+          localStorage.setItem('horadric_history', JSON.stringify(limitedHistory));
+        } catch (storageError) {
+          if (storageError instanceof DOMException && storageError.name === 'QuotaExceededError') {
+            try {
+              const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
+              localStorage.setItem('horadric_history', JSON.stringify(history.slice(0, 10)));
+            } catch (_retryError) {
+              localStorage.removeItem('horadric_history');
+            }
           }
         }
       }
