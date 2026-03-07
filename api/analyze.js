@@ -1,6 +1,15 @@
 // Vercel Serverless Function: /api/analyze
 // Proxies requests to Google Gemini API using server-side GEMINI_API_KEY
 
+// Increase body size limit to support 10MB image uploads
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '15mb', // 10MB image + base64 overhead + JSON wrapper
+    },
+  },
+};
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
