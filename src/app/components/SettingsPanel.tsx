@@ -106,7 +106,6 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           <section className="space-y-4">
             <h3 className="text-lg font-bold text-white">About</h3>
             <div className="bg-slate-800/50 border border-red-900/30 rounded-lg p-4 space-y-3">
-              <p className="text-sm text-slate-400">Horadric AI v3.0.0</p>
               <p className="text-sm text-slate-400">Season 11 Update</p>
               <p className="text-sm text-slate-400">Made with ❤️ for Sanctuary</p>
               <div className="pt-3 space-y-2 border-t border-slate-700">
