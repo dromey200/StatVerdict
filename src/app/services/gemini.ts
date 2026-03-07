@@ -69,7 +69,7 @@ async function callAPI(prompt: string, imageBase64: string, mimeType: string) {
 function getErrorMessage(status: number, serverMessage: string): string {
   switch (status) {
     case 413:
-      return 'Your image is too large to process. Please resize or compress your screenshot to under 4MB and try again. Tip: Use a cropped screenshot of just the item tooltip instead of a full-screen capture.';
+      return 'Your image is too large to process. Please use a cropped screenshot of just the item tooltip rather than a full-screen capture, and ensure the file is under 10MB.';
     case 429:
       return 'Too many requests — the analysis service is temporarily rate-limited. Please wait a moment and try again.';
     case 500:
@@ -90,7 +90,7 @@ function getErrorMessage(status: number, serverMessage: string): string {
 // FILE HELPERS
 // ============================================
 
-const MAX_IMAGE_SIZE = 3.5 * 1024 * 1024; // 3.5MB target (leaves room for JSON wrapper)
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB as advertised
 
 async function fileToBase64(file: File): Promise<{ base64: string; mimeType: string }> {
   // If the file is small enough, use it directly
