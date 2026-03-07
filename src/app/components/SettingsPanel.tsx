@@ -76,9 +76,6 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           <section className="space-y-4">
             <h3 className="text-lg font-bold text-white">AI Engine</h3>
             <div className="bg-slate-800/50 border border-red-900/30 rounded-lg p-4 space-y-2">
-              <p className="text-sm text-slate-400">
-                Powered by Google Gemini 2.5 Flash — no setup required.
-              </p>
               <div className="flex items-start gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-blue-200">
