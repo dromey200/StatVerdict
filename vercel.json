@@ -1,6 +1,6 @@
 {
-  "buildCommand": "",
-  "outputDirectory": ".",
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
   "framework": null,
   "headers": [
     {
@@ -16,6 +16,24 @@
       "source": "/horadric.html",
       "destination": "/diablo-4-scanner.html",
       "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/diablo-4-scanner",
+      "destination": "/diablo-4-scanner.html"
+    },
+    {
+      "source": "/diablo-4-scanner/(.*)",
+      "destination": "/diablo-4-scanner.html"
+    },
+    {
+      "source": "/updates/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api|assets|_next).*)",
+      "destination": "/index.html"
     }
   ]
 }
