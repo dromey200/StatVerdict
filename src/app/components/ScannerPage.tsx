@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Upload, Camera, Loader2, X, ChevronDown, ChevronUp, AlertCircle, RotateCcw } from 'lucide-react';
 import { ResultsDisplay } from './ResultsDisplay';
+import { EventTimers } from './EventTimers';
 import { scanItem, type ScanResult, type AnalysisContext } from '../services/gemini';
 import { CLASS_DATA, BUILD_FOCUSES } from '../data/classData';
 
@@ -44,6 +45,7 @@ export function ScannerPage() {
         handleAnalyze();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedFile, loading, result]
   );
 
@@ -101,7 +103,9 @@ export function ScannerPage() {
       const context: AnalysisContext = {
         playerClass,
         characterLevel,
-        buildMechanics: buildStyle ? `${buildStyle}${buildMechanics ? ' / ' + buildMechanics : ''}` : buildMechanics,
+        buildMechanics: buildStyle
+          ? `${buildStyle}${buildMechanics ? ' / ' + buildMechanics : ''}`
+          : buildMechanics,
         buildFocus,
       };
 
@@ -114,7 +118,7 @@ export function ScannerPage() {
 
       setResult(resultWithImage);
 
-      // Save to history (if auto-save is enabled)
+      // Save to history if auto-save is enabled
       const autoSaveEnabled = (() => {
         try {
           const saved = localStorage.getItem('horadric_auto_save');
@@ -144,10 +148,16 @@ export function ScannerPage() {
           const limitedHistory = history.slice(0, 20);
           localStorage.setItem('horadric_history', JSON.stringify(limitedHistory));
         } catch (storageError) {
-          if (storageError instanceof DOMException && storageError.name === 'QuotaExceededError') {
+          if (
+            storageError instanceof DOMException &&
+            storageError.name === 'QuotaExceededError'
+          ) {
             try {
               const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
-              localStorage.setItem('horadric_history', JSON.stringify(history.slice(0, 10)));
+              localStorage.setItem(
+                'horadric_history',
+                JSON.stringify(history.slice(0, 10))
+              );
             } catch (_retryError) {
               localStorage.removeItem('horadric_history');
             }
@@ -155,7 +165,8 @@ export function ScannerPage() {
         }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Analysis failed. Please try again.';
+      const message =
+        err instanceof Error ? err.message : 'Analysis failed. Please try again.';
       setError(message);
       console.error('Analysis error:', err);
     } finally {
@@ -175,9 +186,11 @@ export function ScannerPage() {
 
   return (
     <div className="space-y-8">
-      {/* Show scanner section only when no result and no error */}
+
+      {/* ── SCANNER FORM — hidden once a result or error is showing ── */}
       {!result && !error && (
         <>
+          {/* Page heading */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl md:text-5xl font-bold text-white">Loot Scanner</h1>
             <p className="text-lg text-slate-400">
@@ -185,9 +198,17 @@ export function ScannerPage() {
             </p>
           </div>
 
+          {/* ── LIVE EVENT TIMERS ── */}
+          <div className="max-w-2xl mx-auto w-full">
+            <EventTimers />
+          </div>
+
+          {/* ── MAIN SCANNER CARD ── */}
           <div className="max-w-2xl mx-auto">
             <div className="space-y-6">
               <div className="bg-slate-800/50 backdrop-blur-sm border border-red-900/30 rounded-xl p-6 space-y-6">
+
+                {/* Upload zone header */}
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold text-white">Upload Image</h2>
                   {selectedImage && (
@@ -201,7 +222,7 @@ export function ScannerPage() {
                   )}
                 </div>
 
-                {/* Upload Zone */}
+                {/* Upload zone */}
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -219,7 +240,11 @@ export function ScannerPage() {
 
                   {selectedImage ? (
                     <div className="space-y-4">
-                      <img src={selectedImage} alt="Selected gear" className="max-h-64 mx-auto rounded-lg shadow-lg" />
+                      <img
+                        src={selectedImage}
+                        alt="Selected gear"
+                        className="max-h-64 mx-auto rounded-lg shadow-lg"
+                      />
                       <p className="text-sm text-slate-400">Click to change image</p>
                     </div>
                   ) : (
@@ -228,14 +253,16 @@ export function ScannerPage() {
                         <Upload className="w-8 h-8 text-slate-400 group-hover:text-white transition-colors" />
                       </div>
                       <div className="space-y-2">
-                        <p className="text-lg text-slate-300">Drop image here or click to browse</p>
+                        <p className="text-lg text-slate-300">
+                          Drop image here or click to browse
+                        </p>
                         <p className="text-sm text-slate-500">PNG, JPEG, WebP • Max 10MB</p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Class Selection */}
+                {/* Class selection */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-300">Class</label>
                   <select
@@ -251,103 +278,105 @@ export function ScannerPage() {
                   </select>
                 </div>
 
-                {/* Character Level */}
+                {/* Character level */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-300">
-                    Character Level <span className="text-slate-500">(Optional)</span>
+                    Character Level{' '}
+                    <span className="text-slate-500">(Optional)</span>
                   </label>
                   <input
                     type="text"
                     value={characterLevel}
                     onChange={(e) => setCharacterLevel(e.target.value)}
-                    placeholder="e.g., 45 or Paragon 120"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    placeholder="e.g. 45, 100, Paragon 120"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   />
-                  <p className="text-xs text-slate-500">
-                    Enter your level (1-60) or Paragon level (e.g., "Paragon 150" or "P150") for level-appropriate analysis
-                  </p>
                 </div>
 
-                {/* Advanced Settings — show when a specific class is selected */}
-                {playerClass !== 'any' && (
-                  <>
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => setShowAdvanced(!showAdvanced)}
-                        className="w-full py-3 px-4 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-lg font-medium transition-all"
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                          Advanced Settings
-                        </span>
-                      </button>
-                    </div>
+                {/* Advanced settings toggle */}
+                <div>
+                  <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+                  >
+                    {showAdvanced ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                    Advanced Settings
+                  </button>
 
-                    {showAdvanced && (
-                      <div className="space-y-4">
-                        {/* Build Style — class-specific builds */}
-                        {currentClass.builds.length > 0 && (
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-slate-300">
-                              Build Style <span className="text-slate-500">({currentClass.name})</span>
-                            </label>
-                            <select
-                              value={buildStyle}
-                              onChange={(e) => setBuildStyle(e.target.value)}
-                              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            >
-                              <option value="">General</option>
-                              {currentClass.builds.map((build) => (
-                                <option key={build} value={build}>
-                                  {build}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
+                  {showAdvanced && (
+                    <div className="mt-4 space-y-4 pt-4 border-t border-slate-700">
 
-                        {/* Build Mechanics — class-specific mechanics */}
-                        {currentClass.mechanics.length > 0 && (
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-slate-300">
-                              Key Mechanic <span className="text-slate-500">({currentClass.name})</span>
-                            </label>
-                            <select
-                              value={buildMechanics}
-                              onChange={(e) => setBuildMechanics(e.target.value)}
-                              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            >
-                              <option value="">None</option>
-                              {currentClass.mechanics.map((mech) => (
-                                <option key={mech} value={mech}>
-                                  {mech}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-
-                        {/* Build Focus — same for all classes */}
+                      {/* Build style — class-specific builds */}
+                      {currentClass.builds.length > 0 && (
                         <div className="space-y-2">
-                          <label className="block text-sm font-medium text-slate-300">Build Focus</label>
+                          <label className="block text-sm font-medium text-slate-300">
+                            Build Style{' '}
+                            <span className="text-slate-500">({currentClass.name})</span>
+                          </label>
                           <select
-                            value={buildFocus}
-                            onChange={(e) => setBuildFocus(e.target.value)}
+                            value={buildStyle}
+                            onChange={(e) => setBuildStyle(e.target.value)}
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                           >
-                            {BUILD_FOCUSES.map((focus) => (
-                              <option key={focus.id} value={focus.id}>
-                                {focus.name}
+                            <option value="">None</option>
+                            {currentClass.builds.map((build) => (
+                              <option key={build} value={build}>
+                                {build}
                               </option>
                             ))}
                           </select>
                         </div>
-                      </div>
-                    )}
-                  </>
-                )}
+                      )}
 
-                {/* Action Buttons */}
+                      {/* Key mechanic — class-specific */}
+                      {currentClass.mechanics.length > 0 && (
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-slate-300">
+                            Key Mechanic{' '}
+                            <span className="text-slate-500">({currentClass.name})</span>
+                          </label>
+                          <select
+                            value={buildMechanics}
+                            onChange={(e) => setBuildMechanics(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                          >
+                            <option value="">None</option>
+                            {currentClass.mechanics.map((mech) => (
+                              <option key={mech} value={mech}>
+                                {mech}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Build focus — universal */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-slate-300">
+                          Build Focus
+                        </label>
+                        <select
+                          value={buildFocus}
+                          onChange={(e) => setBuildFocus(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        >
+                          {BUILD_FOCUSES.map((focus) => (
+                            <option key={focus.id} value={focus.id}>
+                              {focus.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+
+                {/* Analyze button */}
                 <div className="space-y-3">
                   <button
                     onClick={handleAnalyze}
@@ -367,13 +396,14 @@ export function ScannerPage() {
                     )}
                   </button>
                 </div>
+
               </div>
             </div>
           </div>
         </>
       )}
 
-      {/* Error State — full takeover, hides scanner */}
+      {/* ── ERROR STATE — full takeover, hides scanner ── */}
       {error && !result && !loading && (
         <div className="space-y-8">
           <div className="text-center space-y-4">
@@ -386,7 +416,9 @@ export function ScannerPage() {
                   <AlertCircle className="w-12 h-12 text-white flex-shrink-0" />
                   <div>
                     <h2 className="text-xl font-bold text-white">Something Went Wrong</h2>
-                    <p className="text-red-100 text-sm mt-1">The analysis could not be completed</p>
+                    <p className="text-red-100 text-sm mt-1">
+                      The analysis could not be completed
+                    </p>
                   </div>
                 </div>
               </div>
@@ -407,7 +439,7 @@ export function ScannerPage() {
         </div>
       )}
 
-      {/* Show results when available */}
+      {/* ── RESULTS VIEW ── */}
       {result && (
         <div className="space-y-6">
           <div>
@@ -416,6 +448,7 @@ export function ScannerPage() {
           <ResultsDisplay result={result} onNewScan={startNewScan} />
         </div>
       )}
+
     </div>
   );
 }
