@@ -179,7 +179,7 @@ export function ScannerPage() {
       {!result && !error && (
         <>
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-white">Gear Scanner</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white">Loot Scanner</h1>
             <p className="text-lg text-slate-400">
               Upload your Diablo IV loot for AI-powered analysis — from leveling to endgame
             </p>
