@@ -36,7 +36,6 @@ export function ScannerPage() {
     (e: KeyboardEvent) => {
       const isModifier = e.ctrlKey || e.metaKey;
       if (!isModifier) return;
-
       if (e.key === 'u') {
         e.preventDefault();
         fileInputRef.current?.click();
@@ -59,9 +58,7 @@ export function ScannerPage() {
     if (file && file.type.startsWith('image/')) {
       setSelectedFile(file);
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setSelectedImage(event.target?.result as string);
-      };
+      reader.onload = (event) => setSelectedImage(event.target?.result as string);
       reader.readAsDataURL(file);
       setResult(null);
       setError(null);
@@ -85,9 +82,7 @@ export function ScannerPage() {
     if (file && file.type.startsWith('image/')) {
       setSelectedFile(file);
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setSelectedImage(event.target?.result as string);
-      };
+      reader.onload = (event) => setSelectedImage(event.target?.result as string);
       reader.readAsDataURL(file);
       setResult(null);
       setError(null);
@@ -154,10 +149,7 @@ export function ScannerPage() {
           ) {
             try {
               const history = JSON.parse(localStorage.getItem('horadric_history') || '[]');
-              localStorage.setItem(
-                'horadric_history',
-                JSON.stringify(history.slice(0, 10))
-              );
+              localStorage.setItem('horadric_history', JSON.stringify(history.slice(0, 10)));
             } catch (_retryError) {
               localStorage.removeItem('horadric_history');
             }
@@ -179,15 +171,13 @@ export function ScannerPage() {
     setSelectedFile(null);
     setResult(null);
     setError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
     <div className="space-y-8">
 
-      {/* ── SCANNER FORM — hidden once a result or error is showing ── */}
+      {/* ── SCANNER FORM — hidden once result or error is showing ── */}
       {!result && !error && (
         <>
           {/* Page heading */}
@@ -198,14 +188,16 @@ export function ScannerPage() {
             </p>
           </div>
 
-          {/* ── LIVE EVENT TIMERS ── */}
-          <div className="max-w-2xl mx-auto w-full">
-            <EventTimers />
-          </div>
+          {/* ── TWO-COLUMN LAYOUT: Timers left | Scanner right (stacks on mobile) ── */}
+          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
 
-          {/* ── MAIN SCANNER CARD ── */}
-          <div className="max-w-2xl mx-auto">
-            <div className="space-y-6">
+            {/* ── Live Event Timers (sidebar on desktop, top on mobile) ── */}
+            <div className="order-2 lg:order-1">
+              <EventTimers />
+            </div>
+
+            {/* ── Scanner card ── */}
+            <div className="order-1 lg:order-2">
               <div className="bg-slate-800/50 backdrop-blur-sm border border-red-900/30 rounded-xl p-6 space-y-6">
 
                 {/* Upload zone header */}
@@ -237,7 +229,6 @@ export function ScannerPage() {
                     onChange={handleFileSelect}
                     className="hidden"
                   />
-
                   {selectedImage ? (
                     <div className="space-y-4">
                       <img
@@ -253,10 +244,8 @@ export function ScannerPage() {
                         <Upload className="w-8 h-8 text-slate-400 group-hover:text-white transition-colors" />
                       </div>
                       <div className="space-y-2">
-                        <p className="text-lg text-slate-300">
-                          Drop image here or click to browse
-                        </p>
-                        <p className="text-sm text-slate-500">PNG, JPEG, WebP • Max 10MB</p>
+                        <p className="text-lg text-slate-300">Drop image here or click to browse</p>
+                        <p className="text-sm text-slate-500">PNG, JPEG, WebP · Max 10MB</p>
                       </div>
                     </div>
                   )}
@@ -271,9 +260,7 @@ export function ScannerPage() {
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   >
                     {CLASS_DATA.map((cls) => (
-                      <option key={cls.id} value={cls.id}>
-                        {cls.name}
-                      </option>
+                      <option key={cls.id} value={cls.id}>{cls.name}</option>
                     ))}
                   </select>
                 </div>
@@ -281,8 +268,7 @@ export function ScannerPage() {
                 {/* Character level */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-300">
-                    Character Level{' '}
-                    <span className="text-slate-500">(Optional)</span>
+                    Character Level <span className="text-slate-500">(Optional)</span>
                   </label>
                   <input
                     type="text"
@@ -299,23 +285,18 @@ export function ScannerPage() {
                     onClick={() => setShowAdvanced(!showAdvanced)}
                     className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
                   >
-                    {showAdvanced ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
+                    {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     Advanced Settings
                   </button>
 
                   {showAdvanced && (
                     <div className="mt-4 space-y-4 pt-4 border-t border-slate-700">
 
-                      {/* Build style — class-specific builds */}
+                      {/* Build style */}
                       {currentClass.builds.length > 0 && (
                         <div className="space-y-2">
                           <label className="block text-sm font-medium text-slate-300">
-                            Build Style{' '}
-                            <span className="text-slate-500">({currentClass.name})</span>
+                            Build Style <span className="text-slate-500">({currentClass.name})</span>
                           </label>
                           <select
                             value={buildStyle}
@@ -324,20 +305,17 @@ export function ScannerPage() {
                           >
                             <option value="">None</option>
                             {currentClass.builds.map((build) => (
-                              <option key={build} value={build}>
-                                {build}
-                              </option>
+                              <option key={build} value={build}>{build}</option>
                             ))}
                           </select>
                         </div>
                       )}
 
-                      {/* Key mechanic — class-specific */}
+                      {/* Key mechanic */}
                       {currentClass.mechanics.length > 0 && (
                         <div className="space-y-2">
                           <label className="block text-sm font-medium text-slate-300">
-                            Key Mechanic{' '}
-                            <span className="text-slate-500">({currentClass.name})</span>
+                            Key Mechanic <span className="text-slate-500">({currentClass.name})</span>
                           </label>
                           <select
                             value={buildMechanics}
@@ -346,28 +324,22 @@ export function ScannerPage() {
                           >
                             <option value="">None</option>
                             {currentClass.mechanics.map((mech) => (
-                              <option key={mech} value={mech}>
-                                {mech}
-                              </option>
+                              <option key={mech} value={mech}>{mech}</option>
                             ))}
                           </select>
                         </div>
                       )}
 
-                      {/* Build focus — universal */}
+                      {/* Build focus */}
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-slate-300">
-                          Build Focus
-                        </label>
+                        <label className="block text-sm font-medium text-slate-300">Build Focus</label>
                         <select
                           value={buildFocus}
                           onChange={(e) => setBuildFocus(e.target.value)}
                           className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         >
                           {BUILD_FOCUSES.map((focus) => (
-                            <option key={focus.id} value={focus.id}>
-                              {focus.name}
-                            </option>
+                            <option key={focus.id} value={focus.id}>{focus.name}</option>
                           ))}
                         </select>
                       </div>
@@ -377,25 +349,23 @@ export function ScannerPage() {
                 </div>
 
                 {/* Analyze button */}
-                <div className="space-y-3">
-                  <button
-                    onClick={handleAnalyze}
-                    disabled={!selectedFile || loading}
-                    className="w-full py-3 px-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-lg font-medium shadow-lg shadow-red-600/50 hover:shadow-red-500/60 disabled:shadow-none transition-all disabled:cursor-not-allowed"
-                  >
-                    {loading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Consulting the archives...
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        <Camera className="w-5 h-5" />
-                        Analyze Item
-                      </span>
-                    )}
-                  </button>
-                </div>
+                <button
+                  onClick={handleAnalyze}
+                  disabled={!selectedFile || loading}
+                  className="w-full py-3 px-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-lg font-medium shadow-lg shadow-red-600/50 hover:shadow-red-500/60 disabled:shadow-none transition-all disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Consulting the archives...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <Camera className="w-5 h-5" />
+                      Analyze Item
+                    </span>
+                  )}
+                </button>
 
               </div>
             </div>
@@ -403,7 +373,7 @@ export function ScannerPage() {
         </>
       )}
 
-      {/* ── ERROR STATE — full takeover, hides scanner ── */}
+      {/* ── ERROR STATE ── */}
       {error && !result && !loading && (
         <div className="space-y-8">
           <div className="text-center space-y-4">
@@ -416,9 +386,7 @@ export function ScannerPage() {
                   <AlertCircle className="w-12 h-12 text-white flex-shrink-0" />
                   <div>
                     <h2 className="text-xl font-bold text-white">Something Went Wrong</h2>
-                    <p className="text-red-100 text-sm mt-1">
-                      The analysis could not be completed
-                    </p>
+                    <p className="text-red-100 text-sm mt-1">The analysis could not be completed</p>
                   </div>
                 </div>
               </div>
