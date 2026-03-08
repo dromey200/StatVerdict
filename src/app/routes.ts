@@ -1,14 +1,26 @@
-import { createBrowserRouter } from 'react-router';
-import Landing from './components/Landing';
-import BlogPost from './components/BlogPost';
+import { createBrowserRouter } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { ScannerPage } from './components/ScannerPage';
+import { TutorialPage } from './components/TutorialPage';
+import { RatingGuide } from './components/RatingGuide';
+import { HistoryPage } from './components/HistoryPage';
+import { NotFound } from './components/NotFound';
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      Component: Layout,
+      children: [
+        { index: true, Component: ScannerPage },
+        { path: 'tutorial', Component: TutorialPage },
+        { path: 'guide', Component: RatingGuide },
+        { path: 'history', Component: HistoryPage },
+        { path: '*', Component: NotFound },
+      ],
+    },
+  ],
   {
-    path: '/',
-    Component: Landing,
+    basename: '/diablo-4-scanner',
   },
-  {
-    path: '/updates/:slug',
-    Component: BlogPost,
-  },
-]);
+);
