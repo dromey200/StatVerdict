@@ -12,7 +12,7 @@ export function TutorialPage() {
     verdict: 'keep',
     sanctified: true,
     analysis: 'A Mythic Unique helmet - the rarest item tier in Diablo IV. This is universally considered Best-in-Slot for virtually every endgame build across all classes.\n\n**Key Stats:**\n• +4 to All Skills\n• +20.0% Cooldown Reduction\n• +1,000 Maximum Life\n• +20.0% Damage Reduction\n• Item Power: 925\n\n**Unique Power:**\nGain +4 Ranks to all Skills. This massive skill boost affects every ability in your arsenal, dramatically increasing your damage, survivability, and utility.\n\n**Build Synergy:**\nUniversal Best-in-Slot - Works for all classes and build types. The +4 All Skills is one of the most powerful effects in the game, scaling with your entire build. The combination of cooldown reduction, life, and damage reduction provides excellent defensive layers while maximizing offensive potential.\n\n**Recommendation:**\nKEEP PERMANENTLY - This is an ultra-rare Mythic Unique. Lock this item immediately and never salvage it. This helm is build-defining and works for every class at all levels of play including Pit pushing, PvP, and speed farming.',
-    image: '/public/assets/example-shako.png',
+    image: '/assets/example-shako.png',
   };
 
   return (
