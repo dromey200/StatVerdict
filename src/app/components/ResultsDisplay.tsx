@@ -1,5 +1,25 @@
-import { CheckCircle, XCircle, RotateCcw, Sparkles, CheckCircle2, Zap, TrendingUp, Crown, Star, AlertTriangle, Trash2 } from 'lucide-react';
+// ── ICON CONTRACT ────────────────────────────────────────────────────────────
+//  S → Crown   A → Sparkles   B → Star   C → AlertTriangle   D → Trash2
+//  Matches: HistoryPage.tsx · RatingGuide.tsx
+// ─────────────────────────────────────────────────────────────────────────────
+import {
+  CheckCircle,
+  XCircle,
+  RotateCcw,
+  Sparkles,
+  CheckCircle2,
+  Zap,
+  TrendingUp,
+  Crown,
+  Star,
+  AlertTriangle,
+  Trash2,
+  Droplets,
+} from 'lucide-react';
 
+// ── ScanResult interface (Season 12) ─────────────────────────────────────────
+// `sanctified` retained for backward-compat with existing history items but
+// no longer displayed. `bloodied` is the Season 12 equivalent surface.
 interface ScanResult {
   title: string;
   rarity: string;
@@ -7,7 +27,9 @@ interface ScanResult {
   verdict: string;
   analysis: string;
   image?: string;
-  sanctified?: boolean;
+  sanctified?: boolean;    // S11 legacy — kept for type compat, not displayed
+  bloodied?: boolean;      // S12 — shown as badge when true
+  socket_count?: number;   // S12 — shown in header chips when present
 }
 
 interface ResultsDisplayProps {
@@ -25,6 +47,7 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
     common: 'from-gray-600 to-gray-500',
   };
 
+  // ── Grade colours — matches RatingGuide & HistoryPage exactly ────────────
   const gradeColors: Record<string, string> = {
     S: 'bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-600/50',
     A: 'bg-gradient-to-br from-green-600 to-emerald-600 shadow-lg shadow-green-600/50',
@@ -33,6 +56,7 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
     D: 'bg-gradient-to-br from-red-600 to-rose-600 shadow-lg shadow-red-600/50',
   };
 
+  // ── Canonical grade icon map ──────────────────────────────────────────────
   const getGradeIcon = (grade: string) => {
     switch (grade) {
       case 'S': return Crown;
@@ -40,35 +64,34 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
       case 'B': return Star;
       case 'C': return AlertTriangle;
       case 'D': return Trash2;
-      default: return Trash2;
+      default:  return Trash2;
     }
   };
 
   const parseAnalysis = (analysis: string) => {
     const sections: { type: string; content: string }[] = [];
     const parts = analysis.split(/\*\*([^*]+):\*\*/);
-
-    if (parts[0].trim()) {
-      sections.push({ type: 'summary', content: parts[0].trim() });
-    }
-
+    if (parts[0].trim()) sections.push({ type: 'summary', content: parts[0].trim() });
     for (let i = 1; i < parts.length; i += 2) {
       const heading = parts[i].trim();
       const content = parts[i + 1]?.trim() || '';
       sections.push({ type: heading.toLowerCase().replace(/\s+/g, '_'), content });
     }
-
     return sections;
   };
 
   const extractStats = (content: string) => {
-    const lines = content.split('\n').filter((line) => line.trim());
-    return lines.map((line) => line.replace(/^[•\-*]\s*/, '').trim()).filter(Boolean);
+    return content
+      .split('\n')
+      .filter((l) => l.trim())
+      .map((l) => l.replace(/^[•\-*]\s*/, '').trim())
+      .filter(Boolean);
   };
 
   return (
     <div className="grid lg:grid-cols-[400px_1fr] gap-6">
-      {/* Image Display */}
+
+      {/* ── Screenshot preview ── */}
       {result.image && (
         <div className="bg-slate-800/50 backdrop-blur-sm border border-red-900/30 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-4">Scanned Item</h3>
@@ -80,17 +103,23 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
         </div>
       )}
 
-      {/* Results Card */}
+      {/* ── Results card ── */}
       <div className="bg-slate-800/50 backdrop-blur-sm border border-red-900/30 rounded-xl overflow-hidden">
-        {/* Header */}
+
+        {/* Rarity-coloured header */}
         <div className={`bg-gradient-to-r ${rarityColors[result.rarity] || rarityColors.common} p-6`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-2">
               <h2 className="text-2xl font-bold text-white">{result.title}</h2>
+
+              {/* Badge row */}
               <div className="flex flex-wrap items-center gap-2">
+                {/* Rarity chip */}
                 <span className="px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full text-sm text-white capitalize">
                   {result.rarity}
                 </span>
+
+                {/* Keep / Salvage */}
                 {result.verdict === 'keep' ? (
                   <span className="flex items-center gap-1 px-3 py-1 bg-green-600/30 backdrop-blur-sm rounded-full text-sm text-white">
                     <CheckCircle className="w-4 h-4" />
@@ -102,15 +131,32 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
                     Salvage
                   </span>
                 )}
-                {result.sanctified && (
-                  <span className="flex items-center gap-1 px-3 py-1 bg-yellow-600/30 backdrop-blur-sm rounded-full text-sm text-white">
-                    <Sparkles className="w-4 h-4" />
-                    Sanctified
+
+                {/* Season 12 — Bloodied badge (replaces S11 Sanctified) */}
+                {result.bloodied && (
+                  <span className="flex items-center gap-1 px-3 py-1 bg-red-700/40 backdrop-blur-sm rounded-full text-sm text-red-200 border border-red-600/40">
+                    <Droplets className="w-4 h-4" />
+                    Bloodied
+                  </span>
+                )}
+
+                {/* Season 12 — Socket count chip */}
+                {result.socket_count !== undefined && result.socket_count > 0 && (
+                  <span className={`px-3 py-1 backdrop-blur-sm rounded-full text-sm border ${
+                    result.socket_count >= 2
+                      ? 'bg-amber-700/30 text-amber-200 border-amber-600/40'
+                      : 'bg-slate-700/50 text-slate-300 border-slate-600/40'
+                  }`}>
+                    {result.socket_count} {result.socket_count === 1 ? 'Socket' : 'Sockets'}
                   </span>
                 )}
               </div>
             </div>
-            <div className={`w-20 h-20 rounded-xl ${gradeColors[result.grade] || gradeColors.D} flex flex-col items-center justify-center gap-1`}>
+
+            {/* Grade badge */}
+            <div
+              className={`w-20 h-20 rounded-xl ${gradeColors[result.grade] || gradeColors.D} flex flex-col items-center justify-center gap-1 flex-shrink-0`}
+            >
               {(() => {
                 const GradeIcon = getGradeIcon(result.grade);
                 return <GradeIcon className="w-8 h-8 text-white" />;
@@ -120,18 +166,18 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
           </div>
         </div>
 
-        {/* Analysis */}
+        {/* Analysis body */}
         <div className="p-6 space-y-4">
           {(() => {
             const sections = parseAnalysis(result.analysis);
-            const summarySection = sections.find((s) => s.type === 'summary');
-            const keyStatsSection = sections.find((s) => s.type.includes('key') || s.type.includes('stat'));
+            const summarySection      = sections.find((s) => s.type === 'summary');
+            const keyStatsSection     = sections.find((s) => s.type.includes('key') || s.type.includes('stat'));
             const buildSynergySection = sections.find((s) => s.type.includes('build') || s.type.includes('synergy'));
             const recommendationSection = sections.find((s) => s.type.includes('recommend'));
 
             return (
               <>
-                {/* Quick Verdict Banner */}
+                {/* Verdict banner */}
                 <div
                   className={`${
                     result.verdict === 'keep'
@@ -199,7 +245,7 @@ export function ResultsDisplay({ result, onNewScan }: ResultsDisplayProps) {
             );
           })()}
 
-          {/* New Scan Button */}
+          {/* New Scan button */}
           <div className="pt-4 border-t border-slate-700">
             <button
               onClick={onNewScan}
