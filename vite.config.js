@@ -1,29 +1,22 @@
 import { defineConfig } from 'vite';
-import compression from 'vite-plugin-compression';
-import { createHtmlPlugin } from 'vite-plugin-html';
-import autoprefixer from 'autoprefixer';
-import cssnano from 'cssnano';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
-    createHtmlPlugin({
-      minify: true,
-      inject: {
-        data: {
-          title: 'StatVerdict - AI-Powered ARPG Loot Analysis',
-        },
-      },
-    }),
-    compression({
-      algorithm: 'gzip',
-      ext: '.gz',
-    }),
-    compression({
-      algorithm: 'brotliCompress',
-      ext: '.br',
-    }),
+    react(),
+    tailwindcss(),
   ],
-  
+
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@shared': resolve(__dirname, 'src/shared'),
+      '@styles': resolve(__dirname, 'src/styles'),
+    },
+  },
+
   build: {
     target: 'es2020',
     minify: 'terser',
@@ -34,36 +27,23 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      output: {},
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        scanner: resolve(__dirname, 'diablo-4-scanner.html'),
+      },
     },
     sourcemap: true,
     cssCodeSplit: true,
     chunkSizeWarningLimit: 1000,
   },
-  
+
   server: {
     port: 3000,
     open: true,
     cors: true,
   },
-  
+
   preview: {
     port: 8080,
-  },
-  
-  optimizeDeps: {
-    include: [],
-  },
-  
-  css: {
-    devSourcemap: true,
-    postcss: {
-      plugins: [
-        autoprefixer(),
-        cssnano({
-          preset: 'default',
-        }),
-      ],
-    },
   },
 });
