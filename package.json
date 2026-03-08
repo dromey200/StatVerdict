@@ -1,27 +1,35 @@
 {
   "name": "statverdict",
-  "version": "3.0.0",
-  "description": "AI-powered loot analysis for ARPGs - Next-gen StatVerdict with enhanced performance and modern architecture",
+  "version": "3.5.0",
+  "description": "AI-powered loot analysis for ARPGs - StatVerdict with React, TypeScript, and Tailwind v4",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "npm run build && vercel --prod",
-    "lint": "eslint . --ext .js",
-    "format": "prettier --write \"**/*.{js,css,html,md}\""
+    "lint": "eslint . --ext .ts,.tsx,.js",
+    "format": "prettier --write \"**/*.{ts,tsx,js,css,html,md}\""
   },
   "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.1.0",
+    "react-router-dom": "^7.1.0",
+    "lucide-react": "^0.469.0",
     "@google-analytics/data": "^4.0.0"
   },
   "devDependencies": {
-    "vite": "^5.0.0",
-    "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-html": "^3.2.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "tw-animate-css": "^1.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
     "eslint": "^8.55.0",
     "prettier": "^3.1.1",
-    "autoprefixer": "^10.4.16",
-    "cssnano": "^6.0.2",
     "terser": "^5.26.0"
   },
   "keywords": [
@@ -30,8 +38,8 @@
     "loot",
     "ai",
     "gaming",
-    "performance",
-    "accessibility"
+    "react",
+    "typescript"
   ],
   "author": "StatVerdict",
   "license": "MIT",
