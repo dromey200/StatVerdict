@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { Sparkles, GitCompare, Users, Target, BarChart3, ScrollText, BookOpen, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowLeftRight, Users, Target, BarChart3, ScrollText, BookOpen, ArrowRight } from 'lucide-react';
 import logoIcon from '/assets/statverdict-icon.png';
 import { projectId, publicAnonKey } from '@shared/utils/supabase/info';
 import '@styles/landing.css';
@@ -508,7 +508,7 @@ export default function Landing() {
           {[
             { icon: Target, title: 'Instant Analysis', desc: 'Upload a screenshot and get detailed item evaluation in seconds. No more guessing if that drop is worth keeping.' },
             { icon: BarChart3, title: 'Build-Aware Scoring', desc: 'Tell us your class and playstyle. Get recommendations tailored to YOUR build, not generic advice.' },
-            { icon: GitCompare, title: 'Side-by-Side Compare', desc: 'Can\'t decide between two drops? Upload both and get a direct comparison to see which item wins for your build.' },
+            { icon: ArrowLeftRight, title: 'Side-by-Side Compare', desc: 'Can\'t decide between two drops? Upload both and get a direct comparison to see which item wins for your build.' },
             { icon: ScrollText, title: 'Scan Journal', desc: 'Keep track of all your analyzed items. Review past scans and compare gear easily.' },
           ].map((feature, i) => (
             <article key={i}
