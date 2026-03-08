@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Sparkles, TrendingUp, Users, Target, BarChart3, ScrollText, BookOpen, ArrowRight } from 'lucide-react';
-import logoIcon from '/assets/statverdict-icon.png';
+import logoIcon from '/assets/Stat Verdict-icon.png';
 import { projectId, publicAnonKey } from '@shared/utils/supabase/info';
 import '@styles/landing.css';
 
@@ -132,7 +132,7 @@ export default function Landing() {
                    background: 'linear-gradient(135deg, var(--sv-accent-light) 0%, var(--sv-accent) 100%)',
                    boxShadow: '0 4px 20px var(--sv-accent-glow)'
                  }}>
-              <img src={logoIcon} alt="StatVerdict" className="w-full h-full object-cover" />
+              <img src={logoIcon} alt="Stat Verdict" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="font-bold text-xl"
@@ -405,7 +405,7 @@ export default function Landing() {
           </h2>
         </div>
         <p className="text-center text-lg mb-10" style={{ color: 'var(--sv-text-secondary)' }}>
-          Your vote directly influences what we build next. Which ARPG should we add to StatVerdict?
+          Your vote directly influences what we build next. Which ARPG should we add to Stat Verdict?
         </p>
 
         {!showResults ? (
@@ -499,7 +499,7 @@ export default function Landing() {
       <section id="features" className="relative z-10 max-w-[1200px] mx-auto px-6 py-20">
         <h2 className="text-3xl text-center mb-12"
             style={{ fontFamily: 'var(--sv-font-display)', color: 'var(--sv-text-primary)' }}>
-          Why StatVerdict?
+          Why Stat Verdict?
         </h2>
         
         <div className="grid md:grid-cols-2 gap-6 max-w-[1000px] mx-auto">
@@ -537,8 +537,8 @@ export default function Landing() {
         <div className="flex flex-col gap-3">
           {[
             {
-              q: 'What is StatVerdict?',
-              a: 'StatVerdict is an AI-powered loot analysis tool built for Diablo IV players. Upload a screenshot of any in-game item and get an instant, detailed evaluation — including a score, build-specific recommendations, and whether you should keep, salvage, or equip the item.'
+              q: 'What is Stat Verdict?',
+              a: 'Stat Verdict is an AI-powered loot analysis tool built for Diablo IV players. Upload a screenshot of any in-game item and get an instant, detailed evaluation — including a score, build-specific recommendations, and whether you should keep, salvage, or equip the item.'
             },
             {
               q: 'How does it work?',
@@ -546,7 +546,7 @@ export default function Landing() {
             },
             {
               q: 'Is it free to use?',
-              a: 'Yes — StatVerdict is completely free to use. No accounts required, no subscriptions. Just open the scanner and start analyzing your items.'
+              a: 'Yes — Stat Verdict is completely free to use. No accounts required, no subscriptions. Just open the scanner and start analyzing your items.'
             },
             {
               q: 'Are there any usage limits?',
@@ -585,10 +585,10 @@ export default function Landing() {
               style={{ borderColor: 'var(--sv-border)' }}>
         <div className="max-w-[1200px] mx-auto px-6 text-center">
           <p className="text-sm mb-3" style={{ color: 'var(--sv-text-muted)' }}>
-            © 2025-2026 StatVerdict. Built for the ARPG community.
+            © 2025-2026 Stat Verdict. Built for the ARPG community.
           </p>
           <div className="flex justify-center items-center gap-4 flex-wrap text-sm">
-            <a href="https://www.instagram.com/statverdict" target="_blank" rel="noopener noreferrer"
+            <a href="https://www.instagram.com/StatVerdict" target="_blank" rel="noopener noreferrer"
                className="transition-colors" style={{ color: 'var(--sv-accent)' }}>
               @StatVerdict
             </a>
@@ -606,7 +606,7 @@ export default function Landing() {
           <div className="mt-5 text-xs leading-relaxed max-w-[600px] mx-auto"
                style={{ color: '#666' }}>
             Game titles, trademarks, and logos referenced on this site are the property of their respective owners. 
-            StatVerdict is an independent product and is not affiliated with or endorsed by any game publisher.
+            Stat Verdict is an independent product and is not affiliated with or endorsed by any game publisher.
           </div>
         </div>
       </footer>
