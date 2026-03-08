@@ -12,7 +12,7 @@ import {
   Eye,
   CheckCircle2,
   XCircle,
-  TrendingUp,
+  BarChart2,
   Zap,
   Crown,
   Sparkles,
@@ -449,7 +449,7 @@ export function HistoryPage() {
                       {buildSynergySection && (
                         <div className="bg-gradient-to-br from-orange-950/50 to-red-950/50 border border-orange-700/30 rounded-lg p-4">
                           <div className="flex items-center gap-2 mb-3">
-                            <TrendingUp className="w-5 h-5 text-orange-400" />
+                            <BarChart2 className="w-5 h-5 text-orange-400" />
                             <h3 className="font-bold text-white">Build Synergy</h3>
                           </div>
                           {buildSynergySection.content.split('\n').filter(Boolean).map((line, idx) => (
