@@ -264,7 +264,7 @@ export default function Landing() {
           {/* Stats */}
           <div className="flex justify-center gap-10 flex-wrap">
             <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--sv-text-secondary)' }}>
-              <ArrowLeftRight className="w-5 h-5" style={{ color: 'var(--sv-accent)' }} />
+              <Sparkles className="w-5 h-5" style={{ color: 'var(--sv-accent)' }} />
               <span>
                 <strong style={{ color: 'var(--sv-accent)' }}>{stats.scans}</strong> Items Analyzed
               </span>
@@ -311,14 +311,14 @@ export default function Landing() {
                 Diablo IV
               </h2>
               <p className="text-base font-semibold mb-3" style={{ color: 'var(--sv-diablo-secondary)' }}>
-                Season 12 Ready
+                Season 12 — Vessels of Hatred
               </p>
               <p className="text-sm mb-6" style={{ color: 'var(--sv-text-secondary)' }}>
-                Full analysis for Diablo IV with Sanctified item detection, all 7 classes, and build optimization.
+                Full analysis for Diablo IV with Bloodied item support, all 7 classes, and build optimization.
               </p>
 
               <ul className="flex flex-col gap-2 mb-6">
-                {['D4 Item Analysis', 'Compare Items', '7 Classes + Builds', 'Sanctified Detection', 'Scan History'].map((feature, i) => (
+                {['D4 Item Analysis', 'Compare Items', '7 Classes + Builds', 'Bloodied Item Detection', 'Scan History'].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'var(--sv-text-muted)' }}>
                     <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--sv-accent)' }} />
                     <span>{feature}</span>
@@ -544,7 +544,7 @@ export default function Landing() {
             },
             {
               q: 'How does it work?',
-              a: 'You upload a screenshot of an item tooltip from Diablo IV. Our AI reads the image, identifies every stat, affix, and property on the item, then evaluates it against your selected class and build. The result is a letter grade (S through D), a verdict (Keep, Salvage, Equip, Sanctify), and a detailed breakdown of why.'
+              a: 'You upload a screenshot of an item tooltip from Diablo IV. Our AI reads the image, identifies every stat, affix, and property on the item, then evaluates it against your selected class and build. The result is a letter grade (S through D), a verdict (Keep, Salvage, or Equip), and a detailed breakdown of why.'
             },
             {
               q: 'Is it free to use?',
