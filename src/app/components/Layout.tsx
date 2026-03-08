@@ -56,11 +56,11 @@ export function Layout() {
               <a
                 href="https://statverdict.com"
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition-all group"
-                aria-label="Back to StatVerdict"
+                aria-label="Back to Stat Verdict"
               >
                 <img
-                  src="/public/assets/statverdict-icon.png"
-                  alt="StatVerdict Icon"
+                  src="StatVerdict/public/assets/statverdict-icon.png"
+                  alt="Stat Verdict Icon"
                   className="w-8 h-8 object-contain opacity-80 group-hover:opacity-100 transition-opacity rounded-lg"
                 />
                 <div>
