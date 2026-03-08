@@ -1,0 +1,63 @@
+/* StatVerdict Landing Page - Custom Styles */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@400;500;600&display=swap');
+
+:root {
+    /* Backgrounds: Deep navy-blue tones */
+    --sv-bg-primary: #060b18;
+    --sv-bg-secondary: #0a1225;
+    --sv-bg-card: #0d1730;
+    --sv-bg-card-hover: #12203d;
+    
+    /* Text */
+    --sv-text-primary: #e8ecf4;
+    --sv-text-secondary: #8b9bc0;
+    --sv-text-muted: #4a5a80;
+    
+    /* Primary accent: Golden */
+    --sv-accent: #d4a017;
+    --sv-accent-light: #ffd54f;
+    --sv-accent-dark: #b8860b;
+    --sv-accent-glow: rgba(212, 160, 23, 0.35);
+    
+    /* Secondary accent: Cyan/teal */
+    --sv-cyan: #00bcd4;
+    --sv-cyan-light: #4dd0e1;
+    --sv-cyan-dark: #0097a7;
+    --sv-cyan-glow: rgba(0, 188, 212, 0.25);
+    
+    /* Diablo styling */
+    --sv-diablo-primary: #991b1b;
+    --sv-diablo-secondary: #c2410c;
+    --sv-diablo-glow: rgba(185, 28, 28, 0.4);
+    
+    /* Status */
+    --sv-success: #22c55e;
+    --sv-warning: #eab308;
+    --sv-error: #ef4444;
+    
+    /* Borders */
+    --sv-border: rgba(100, 150, 255, 0.08);
+    --sv-border-hover: rgba(100, 150, 255, 0.18);
+    
+    --sv-container: 1200px;
+    --sv-gap: 24px;
+    --sv-font-display: 'Cinzel', Georgia, serif;
+    --sv-font-body: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    
+    --sv-transition-fast: 0.15s ease;
+    --sv-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --sv-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: var(--sv-font-body);
+    background: var(--sv-bg-primary);
+    color: var(--sv-text-primary);
+    overflow-x: hidden;
+}
+
+/* Smooth scroll */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
