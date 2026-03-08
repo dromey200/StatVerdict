@@ -311,7 +311,7 @@ export default function Landing() {
                 Diablo IV
               </h2>
               <p className="text-base font-semibold mb-3" style={{ color: 'var(--sv-diablo-secondary)' }}>
-                Season 11 Ready • S12 in Progress
+                Season 12 Ready
               </p>
               <p className="text-sm mb-6" style={{ color: 'var(--sv-text-secondary)' }}>
                 Full analysis for Diablo IV with Sanctified item detection, all 7 classes, and build optimization.
