@@ -1,379 +1,361 @@
-// src/app/components/EventTimers.tsx
-// ============================================
-// DIABLO IV — LIVE EVENT TIMERS (Season 12)
-// World Boss · Helltide · Legion
-//
-// Data source: helltides.com/api/schedule (proxied via /api/events)
-// Refreshes every 60 seconds. Countdown ticks every second via setInterval.
-// ============================================
-
 import { useState, useEffect, useCallback } from 'react';
-import { Skull, Flame, Users, RefreshCw, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Skull, Flame, Users, AlertCircle } from 'lucide-react';
 
-// ──────────────────────────────────────────
-// TYPES
-// ──────────────────────────────────────────
-
-interface WorldBossEvent {
-  id: number;
-  timestamp: number;
-  boss: string;
-  startTime: string;
-  zone: { id: string; name: string; boss: string }[];
-}
-
-interface ScheduledEvent {
-  id: number;
-  timestamp: number;
-  startTime: string;
-}
-
-interface ScheduleData {
-  world_boss: WorldBossEvent[];
-  legion: ScheduledEvent[];
-  helltide: ScheduledEvent[];
-}
-
-interface EventState {
-  label: string;         // e.g. "Ashava" or "Active"
-  zone?: string;         // World boss zone name
-  nextTime: Date | null; // Absolute time of next/current event
-  isActive: boolean;     // Whether the event is currently live
-  secondsUntil: number;  // Seconds until start (or seconds remaining if active)
-}
-
-// ──────────────────────────────────────────
-// CONSTANTS
-// ──────────────────────────────────────────
-
-// Event durations in seconds
-const HELLTIDE_DURATION_S  = 55 * 60;  // 55 minutes
-const WORLD_BOSS_WINDOW_S  = 15 * 60;  // 15-minute kill window
-const LEGION_WINDOW_S      = 15 * 60;  // ~15-minute event window
-
-// How often to re-fetch schedule data (ms)
+// ─── Constants ───────────────────────────────────────────────────────────────
 const FETCH_INTERVAL_MS = 60_000;
+const TICK_INTERVAL_MS = 1_000;
+const HELLTIDE_DURATION_S = 55 * 60;
+const WORLD_BOSS_WINDOW_S = 15 * 60;
+const LEGION_WINDOW_S = 15 * 60;
 
-// World boss icon mapping
-const BOSS_EMOJI: Record<string, string> = {
-  'Ashava':          '🦂',
-  'Avarice':         '💰',
-  'Wandering Death': '💀',
-  'Azmodan':         '👁️',
+const BOSS_NAMES: Record<string, string> = {
+  ashava: 'Ashava the Pestilent',
+  avarice: 'Avarice, the Gold Cursed',
+  wandering_death: 'Wandering Death',
+  echo_of_varshan: 'Echo of Varshan',
+  grigoire: 'Grigoire the Galvanic Saint',
+  lord_zir: 'Lord Zir',
+  the_beast: 'The Beast in Ice',
+  duriel: 'Duriel, King of Maggots',
+  andariel: 'Andariel, Maiden of Anguish',
+  azmodan: 'Azmodan',
+  // fallback: use raw string
 };
 
-// ──────────────────────────────────────────
-// HELPERS
-// ──────────────────────────────────────────
+interface EventData {
+  worldBoss: {
+    name: string;
+    zone: string;
+    nextTime: number; // unix seconds
+    territory?: string;
+  } | null;
+  helltide: {
+    nextTime: number;
+    zone: string;
+    territory?: string;
+  } | null;
+  legion: {
+    nextTime: number;
+    zone: string;
+    territory?: string;
+    eventName?: string;
+  } | null;
+}
 
-function formatCountdown(totalSeconds: number): string {
-  if (totalSeconds <= 0) return '00:00';
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  if (h > 0) {
-    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  }
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function formatCountdown(seconds: number): string {
+  if (seconds <= 0) return 'Now';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-/**
- * Given a list of scheduled events sorted by startTime, find the event
- * that is either currently active or next up. Returns a derived EventState.
- */
-function resolveTimedEvent(
-  events: ScheduledEvent[],
-  durationSeconds: number,
-  now: number
-): EventState {
-  if (!events || events.length === 0) {
-    return { label: '—', nextTime: null, isActive: false, secondsUntil: 0 };
-  }
-
-  for (const ev of events) {
-    const start = new Date(ev.startTime).getTime();
-    const end   = start + durationSeconds * 1000;
-
-    if (now >= start && now < end) {
-      // Currently active
-      return {
-        label: 'Active',
-        nextTime: new Date(end),
-        isActive: true,
-        secondsUntil: Math.max(0, Math.round((end - now) / 1000)),
-      };
-    }
-
-    if (start > now) {
-      // Next upcoming
-      return {
-        label: 'Starting in',
-        nextTime: new Date(start),
-        isActive: false,
-        secondsUntil: Math.max(0, Math.round((start - now) / 1000)),
-      };
-    }
-  }
-
-  // All events in the list are in the past — shouldn't happen with a live feed
-  return { label: '—', nextTime: null, isActive: false, secondsUntil: 0 };
+function nowSeconds(): number {
+  return Math.floor(Date.now() / 1000);
 }
 
-/**
- * Specialised resolver for World Boss — returns the boss name and zone.
- */
-function resolveWorldBoss(
-  events: WorldBossEvent[],
-  now: number
-): EventState & { bossName: string; zone: string } {
-  const fallback = { label: '—', nextTime: null, isActive: false, secondsUntil: 0, bossName: '—', zone: '' };
-
-  if (!events || events.length === 0) return fallback;
-
-  for (const ev of events) {
-    const start = new Date(ev.startTime).getTime();
-    const end   = start + WORLD_BOSS_WINDOW_S * 1000;
-
-    if (now >= start && now < end) {
-      return {
-        label: 'Active',
-        nextTime: new Date(end),
-        isActive: true,
-        secondsUntil: Math.max(0, Math.round((end - now) / 1000)),
-        bossName: ev.boss,
-        zone: ev.zone.map((z) => z.name).join(' / '),
-      };
-    }
-
-    if (start > now) {
-      return {
-        label: 'Next up',
-        nextTime: new Date(start),
-        isActive: false,
-        secondsUntil: Math.max(0, Math.round((start - now) / 1000)),
-        bossName: ev.boss,
-        zone: ev.zone.map((z) => z.name).join(' / '),
-      };
-    }
-  }
-
-  return fallback;
+function resolveBossName(raw: string): string {
+  const key = raw.toLowerCase().replace(/[^a-z_]/g, '_').replace(/_+/g, '_');
+  return BOSS_NAMES[key] ?? raw;
 }
 
-// ──────────────────────────────────────────
-// TIMER CARD COMPONENT
-// ──────────────────────────────────────────
-
-interface TimerCardProps {
-  icon: React.ReactNode;
-  title: string;
-  accentClass: string;        // Tailwind gradient classes for the icon bg
-  borderClass: string;        // Tailwind border color class
-  isActive: boolean;
-  label: string;
-  countdown: string;
-  subtitle?: string;
-  activePulseClass: string;   // Pulse ring color when active
-}
-
-function TimerCard({
-  icon, title, accentClass, borderClass,
-  isActive, label, countdown, subtitle, activePulseClass,
-}: TimerCardProps) {
-  return (
-    <div className={`relative bg-slate-800/60 backdrop-blur-sm border ${borderClass} rounded-xl p-4 flex items-center gap-4 transition-all hover:bg-slate-800/80 overflow-hidden`}>
-      {/* Active pulse glow */}
-      {isActive && (
-        <span className={`absolute inset-0 rounded-xl animate-pulse opacity-10 ${activePulseClass}`} />
-      )}
-
-      {/* Icon */}
-      <div className={`w-10 h-10 ${accentClass} rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg`}>
-        {icon}
-      </div>
-
-      {/* Text */}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{title}</p>
-        {subtitle && (
-          <p className="text-sm font-medium text-white truncate">{subtitle}</p>
-        )}
-        <p className="text-xs text-slate-500 truncate">{label}</p>
-      </div>
-
-      {/* Countdown */}
-      <div className="text-right flex-shrink-0">
-        <p className={`text-xl font-mono font-bold tabular-nums ${isActive ? 'text-green-400' : 'text-white'}`}>
-          {countdown}
-        </p>
-        {isActive && (
-          <span className="inline-flex items-center gap-1 text-xs text-green-400 font-semibold">
-            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-            LIVE
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ──────────────────────────────────────────
-// MAIN COMPONENT
-// ──────────────────────────────────────────
-
+// ─── Component ───────────────────────────────────────────────────────────────
 export function EventTimers() {
-  const [schedule, setSchedule] = useState<ScheduleData | null>(null);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [now, setNow] = useState(() => Date.now());
+  const [events, setEvents] = useState<EventData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
+  const [lastRefresh, setLastRefresh] = useState(0);
 
-  // Fetch schedule data from our proxy
-  const fetchSchedule = useCallback(async () => {
+  const fetchEvents = useCallback(async () => {
     try {
+      setError(null);
       const res = await fetch('/api/events');
-      if (!res.ok) throw new Error('Schedule unavailable');
-      const data: ScheduleData = await res.json();
-      setSchedule(data);
-      setFetchError(null);
-    } catch {
-      setFetchError('Could not load event timers');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const raw = await res.json();
+
+      // Normalise helltides.com response shape
+      setEvents({
+        worldBoss: raw.worldBoss ?? raw.world_boss ?? null,
+        helltide: raw.helltide ?? null,
+        legion: raw.legion ?? null,
+      });
+      setLastRefresh(nowSeconds());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load events');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, []);
 
-  // Initial fetch + refresh every 60s
+  // Initial fetch + periodic refetch
   useEffect(() => {
-    fetchSchedule();
-    const fetchTimer = setInterval(fetchSchedule, FETCH_INTERVAL_MS);
-    return () => clearInterval(fetchTimer);
-  }, [fetchSchedule]);
+    fetchEvents();
+    const id = setInterval(fetchEvents, FETCH_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [fetchEvents]);
 
-  // Tick every second to keep countdowns live
+  // 1-second ticker
   useEffect(() => {
-    const ticker = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(ticker);
+    const id = setInterval(() => setTick((t) => t + 1), TICK_INTERVAL_MS);
+    return () => clearInterval(id);
   }, []);
 
-  // ── Derived event states ─────────────────
-  const worldBoss = schedule
-    ? resolveWorldBoss(schedule.world_boss ?? [], now)
+  // ── Derived state (recalculated every tick) ────────────────────────────────
+  const now = nowSeconds();
+
+  function getStatus(startTime: number, durationS: number) {
+    const elapsed = now - startTime;
+    if (elapsed >= 0 && elapsed < durationS) {
+      return { live: true, seconds: durationS - elapsed };
+    }
+    const until = startTime - now;
+    return { live: false, seconds: Math.max(0, until) };
+  }
+
+  const wbStatus = events?.worldBoss
+    ? getStatus(events.worldBoss.nextTime, WORLD_BOSS_WINDOW_S)
+    : null;
+  const htStatus = events?.helltide
+    ? getStatus(events.helltide.nextTime, HELLTIDE_DURATION_S)
+    : null;
+  const lgStatus = events?.legion
+    ? getStatus(events.legion.nextTime, LEGION_WINDOW_S)
     : null;
 
-  const helltide = schedule
-    ? resolveTimedEvent(schedule.helltide ?? [], HELLTIDE_DURATION_S, now)
-    : null;
-
-  const legion = schedule
-    ? resolveTimedEvent(schedule.legion ?? [], LEGION_WINDOW_S, now)
-    : null;
-
-  // ── Loading skeleton ─────────────────────
-  if (isLoading) {
+  // ── Render helpers ─────────────────────────────────────────────────────────
+  function LiveBadge() {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {['World Boss', 'Helltide', 'Legion'].map((name) => (
-          <div key={name} className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 flex items-center gap-4 animate-pulse">
-            <div className="w-10 h-10 bg-slate-700 rounded-lg flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-              <div className="h-3 bg-slate-700 rounded w-16" />
-              <div className="h-4 bg-slate-700 rounded w-24" />
-            </div>
-            <div className="h-7 bg-slate-700 rounded w-16" />
-          </div>
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-400 border border-green-500/40 rounded-full text-xs font-bold">
+        <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+        LIVE
+      </span>
+    );
+  }
+
+  function CountdownBadge({ seconds, live }: { seconds: number; live: boolean }) {
+    return (
+      <span
+        className={`text-xl font-mono font-bold tabular-nums ${
+          live ? 'text-green-400' : 'text-white'
+        }`}
+      >
+        {formatCountdown(seconds)}
+      </span>
+    );
+  }
+
+  // ── Loading skeleton ───────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 space-y-3 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="h-4 w-24 bg-slate-700 rounded" />
+          <div className="h-4 w-16 bg-slate-700 rounded" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-16 bg-slate-700/50 rounded-lg" />
         ))}
       </div>
     );
   }
 
-  // ── Error state ──────────────────────────
-  if (fetchError || !schedule) {
+  // ── Error state ────────────────────────────────────────────────────────────
+  if (error || !events) {
     return (
-      <div className="flex items-center justify-between gap-3 bg-slate-800/40 border border-slate-700/40 rounded-xl p-3 text-sm text-slate-500">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-slate-600" />
-          <span>Event timers unavailable</span>
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">Live Events</span>
         </div>
-        <button
-          onClick={() => { setIsLoading(true); fetchSchedule(); }}
-          className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Retry
-        </button>
+        <div className="flex items-center gap-3 text-slate-400 text-sm">
+          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+          <span>Event data unavailable</span>
+          <button
+            onClick={fetchEvents}
+            className="ml-auto flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
+          >
+            <RefreshCw className="w-3 h-3" />
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
-  const bossEmoji = worldBoss ? (BOSS_EMOJI[worldBoss.bossName] ?? '👹') : '👹';
-
+  // ── Main render ────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-2">
-      {/* Header row */}
+    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 space-y-3">
+
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Live Events</p>
+        <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">Live Events</span>
         <button
-          onClick={() => { setIsLoading(true); fetchSchedule(); }}
-          className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-400 transition-colors"
-          title="Refresh event timers"
+          onClick={fetchEvents}
+          title={`Last updated ${Math.round((now - lastRefresh) / 60)}m ago`}
+          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
         >
           <RefreshCw className="w-3 h-3" />
           Refresh
         </button>
       </div>
 
-      {/* Timer grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* ── World Boss ── */}
+      {events.worldBoss && wbStatus && (
+        <div
+          className={`relative overflow-hidden rounded-lg border transition-all ${
+            wbStatus.live
+              ? 'bg-gradient-to-r from-purple-900/60 to-slate-800/60 border-purple-500/40 shadow-sm shadow-purple-500/20'
+              : 'bg-slate-900/50 border-slate-700/50'
+          }`}
+        >
+          <div className="flex items-start gap-3 p-3">
+            {/* Icon */}
+            <div
+              className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                wbStatus.live
+                  ? 'bg-gradient-to-br from-purple-600 to-pink-700'
+                  : 'bg-slate-700'
+              }`}
+            >
+              <Skull className="w-5 h-5 text-white" />
+            </div>
 
-        {/* World Boss */}
-        <TimerCard
-          icon={<Skull className="w-5 h-5 text-white" />}
-          title="World Boss"
-          accentClass="bg-gradient-to-br from-purple-600 to-rose-700"
-          borderClass={worldBoss?.isActive ? 'border-purple-500/60' : 'border-slate-700/50'}
-          activePulseClass="bg-purple-600"
-          isActive={worldBoss?.isActive ?? false}
-          label={worldBoss?.isActive ? `Ends in` : (worldBoss?.zone ? `📍 ${worldBoss.zone}` : 'Spawns in')}
-          countdown={worldBoss ? formatCountdown(worldBoss.secondsUntil) : '--:--'}
-          subtitle={worldBoss?.bossName ? `${bossEmoji} ${worldBoss.bossName}` : undefined}
-        />
+            {/* Info block */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">World Boss</span>
+                {wbStatus.live && <LiveBadge />}
+              </div>
+              <p className="text-white font-semibold text-sm leading-tight mt-0.5 truncate">
+                {resolveBossName(events.worldBoss.name)}
+              </p>
+              {events.worldBoss.zone && (
+                <p className="text-slate-400 text-xs mt-0.5 truncate">
+                  📍 {events.worldBoss.zone}
+                  {events.worldBoss.territory && ` · ${events.worldBoss.territory}`}
+                </p>
+              )}
+              <p className="text-slate-500 text-xs mt-1">
+                {wbStatus.live ? 'Ends in' : 'Spawns in'}
+              </p>
+            </div>
 
-        {/* Helltide */}
-        <TimerCard
-          icon={<Flame className="w-5 h-5 text-white" />}
-          title="Helltide"
-          accentClass="bg-gradient-to-br from-orange-600 to-red-700"
-          borderClass={helltide?.isActive ? 'border-orange-500/60' : 'border-slate-700/50'}
-          activePulseClass="bg-orange-600"
-          isActive={helltide?.isActive ?? false}
-          label={helltide?.isActive ? 'Ends in' : 'Starts in'}
-          countdown={helltide ? formatCountdown(helltide.secondsUntil) : '--:--'}
-          subtitle={helltide?.isActive ? '55-min window active' : '55 min duration'}
-        />
+            {/* Countdown */}
+            <div className="flex-shrink-0 text-right">
+              <CountdownBadge seconds={wbStatus.seconds} live={wbStatus.live} />
+            </div>
+          </div>
+        </div>
+      )}
 
-        {/* Legion */}
-        <TimerCard
-          icon={<Users className="w-5 h-5 text-white" />}
-          title="Legion"
-          accentClass="bg-gradient-to-br from-blue-600 to-cyan-700"
-          borderClass={legion?.isActive ? 'border-blue-500/60' : 'border-slate-700/50'}
-          activePulseClass="bg-blue-600"
-          isActive={legion?.isActive ?? false}
-          label={legion?.isActive ? 'Ends in' : 'Starts in'}
-          countdown={legion ? formatCountdown(legion.secondsUntil) : '--:--'}
-          subtitle={legion?.isActive ? 'Event in progress' : 'Every ~25 minutes'}
-        />
+      {/* ── Helltide ── */}
+      {events.helltide && htStatus && (
+        <div
+          className={`relative overflow-hidden rounded-lg border transition-all ${
+            htStatus.live
+              ? 'bg-gradient-to-r from-orange-900/60 to-slate-800/60 border-orange-500/40 shadow-sm shadow-orange-500/20'
+              : 'bg-slate-900/50 border-slate-700/50'
+          }`}
+        >
+          <div className="flex items-start gap-3 p-3">
+            {/* Icon */}
+            <div
+              className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                htStatus.live
+                  ? 'bg-gradient-to-br from-orange-600 to-red-700'
+                  : 'bg-slate-700'
+              }`}
+            >
+              <Flame className="w-5 h-5 text-white" />
+            </div>
 
-      </div>
+            {/* Info block */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">Helltide</span>
+                {htStatus.live && <LiveBadge />}
+              </div>
+              <p className="text-white font-semibold text-sm leading-tight mt-0.5">
+                55-minute event
+              </p>
+              {events.helltide.zone && (
+                <p className="text-slate-400 text-xs mt-0.5 truncate">
+                  📍 {events.helltide.zone}
+                  {events.helltide.territory && ` · ${events.helltide.territory}`}
+                </p>
+              )}
+              <p className="text-slate-500 text-xs mt-1">
+                {htStatus.live ? 'Ends in' : 'Starts in'}
+              </p>
+            </div>
+
+            {/* Countdown */}
+            <div className="flex-shrink-0 text-right">
+              <CountdownBadge seconds={htStatus.seconds} live={htStatus.live} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Legion ── */}
+      {events.legion && lgStatus && (
+        <div
+          className={`relative overflow-hidden rounded-lg border transition-all ${
+            lgStatus.live
+              ? 'bg-gradient-to-r from-blue-900/60 to-slate-800/60 border-blue-500/40 shadow-sm shadow-blue-500/20'
+              : 'bg-slate-900/50 border-slate-700/50'
+          }`}
+        >
+          <div className="flex items-start gap-3 p-3">
+            {/* Icon */}
+            <div
+              className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                lgStatus.live
+                  ? 'bg-gradient-to-br from-blue-600 to-cyan-700'
+                  : 'bg-slate-700'
+              }`}
+            >
+              <Users className="w-5 h-5 text-white" />
+            </div>
+
+            {/* Info block */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">Legion</span>
+                {lgStatus.live && <LiveBadge />}
+              </div>
+              <p className="text-white font-semibold text-sm leading-tight mt-0.5 truncate">
+                {events.legion.eventName ?? 'Event Incoming'}
+              </p>
+              {events.legion.zone && (
+                <p className="text-slate-400 text-xs mt-0.5 truncate">
+                  📍 {events.legion.zone}
+                  {events.legion.territory && ` · ${events.legion.territory}`}
+                </p>
+              )}
+              <p className="text-slate-500 text-xs mt-1">
+                {lgStatus.live ? 'Ends in' : 'Starts in'}
+              </p>
+            </div>
+
+            {/* Countdown */}
+            <div className="flex-shrink-0 text-right">
+              <CountdownBadge seconds={lgStatus.seconds} live={lgStatus.live} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Attribution */}
-      <p className="text-right text-xs text-slate-700">
+      <p className="text-right text-xs text-slate-600">
         Powered by{' '}
         <a
           href="https://helltides.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-slate-600 hover:text-slate-400 transition-colors underline underline-offset-2"
+          className="text-slate-500 hover:text-slate-300 transition-colors underline underline-offset-2"
         >
           helltides.com
         </a>
