@@ -76,11 +76,42 @@ export function EventTimers() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.json();
 
-      // Normalise helltides.com response shape
+      // helltides.com returns arrays sorted ascending by timestamp.
+      // We pick the first upcoming (or currently active) entry from each array.
+      const now = nowSeconds();
+
+      // ── World Boss ──────────────────────────────────────────────────────────
+      // Each entry: { boss, timestamp, zone: [{id, name}] }
+      const wbArray: Array<{ boss: string; timestamp: number; zone: Array<{ name: string }> }> =
+        raw.world_boss ?? raw.worldBoss ?? [];
+      // Find the most recent entry that hasn't fully expired (window = 15 min)
+      const wbEntry = wbArray.find((e) => e.timestamp + WORLD_BOSS_WINDOW_S >= now) ?? wbArray[0] ?? null;
+
+      // ── Helltide ────────────────────────────────────────────────────────────
+      // Each entry: { timestamp }  (no zone data in this feed)
+      const htArray: Array<{ timestamp: number }> = raw.helltide ?? [];
+      const htEntry = htArray.find((e) => e.timestamp + HELLTIDE_DURATION_S >= now) ?? htArray[0] ?? null;
+
+      // ── Legion ──────────────────────────────────────────────────────────────
+      // Each entry: { timestamp }
+      const lgArray: Array<{ timestamp: number }> = raw.legion ?? [];
+      const lgEntry = lgArray.find((e) => e.timestamp + LEGION_WINDOW_S >= now) ?? lgArray[0] ?? null;
+
       setEvents({
-        worldBoss: raw.worldBoss ?? raw.world_boss ?? null,
-        helltide: raw.helltide ?? null,
-        legion: raw.legion ?? null,
+        worldBoss: wbEntry
+          ? {
+              name: wbEntry.boss,
+              zone: wbEntry.zone?.[0]?.name ?? '',
+              territory: wbEntry.zone?.slice(1).map((z) => z.name).join(', ') ?? undefined,
+              nextTime: wbEntry.timestamp,
+            }
+          : null,
+        helltide: htEntry
+          ? { nextTime: htEntry.timestamp, zone: '' }
+          : null,
+        legion: lgEntry
+          ? { nextTime: lgEntry.timestamp, zone: '' }
+          : null,
       });
       setLastRefresh(nowSeconds());
     } catch (err) {
