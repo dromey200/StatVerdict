@@ -328,6 +328,62 @@ export function RatingGuide() {
         </div>
       </section>
 
+      {/* Pro Tips */}
+      <section className="bg-gradient-to-r from-red-600/20 to-orange-600/20 backdrop-blur-sm border border-red-500/30 rounded-xl p-6 md:p-8 space-y-4">
+        <h2 className="text-2xl font-bold text-white">Pro Tips</h2>
+        <ul className="space-y-3 text-slate-200">
+          <li className="flex items-start gap-3">
+            <span className="text-red-400 font-bold mt-1">•</span>
+            <span>
+              Always set your Build Focus before scanning. A Bloodied weapon scores very differently under
+              Speed Farming (Feast affixes boosted 1.8x) versus Pit Pushing (stable ancestral rolls preferred).
+              The same item can swing a full letter grade depending on focus.
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="text-red-400 font-bold mt-1">•</span>
+            <span>
+              Don't overlook Item Power on Bloodied drops. A Bloodied item under 750 IP gets standard
+              scoring — the Killstreak scaling bonus only unlocks at 750 and above. Always check the IP
+              before deciding whether a Bloodied piece is worth keeping.
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="text-red-400 font-bold mt-1">•</span>
+            <span>
+              Treat socket count as a hard filter for Helms, Chests, and Two-Handed Weapons. A 1-socket
+              item in these slots cannot host a complete Runeword and will be capped at B-tier in endgame
+              scoring regardless of its affixes. Save your upgrade materials for 2-socket bases.
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="text-red-400 font-bold mt-1">•</span>
+            <span>
+              When using Slaughterhouse / Butcher Transformation focus, class skill rank affixes
+              (e.g., +Ranks to Twisting Blades) are actively penalized — they provide zero value
+              while class skills are disabled. The scanner will instead prioritize Movement Speed,
+              Attack Speed, Maximum Life %, and universal Damage Reduction on your behalf.
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="text-red-400 font-bold mt-1">•</span>
+            <span>
+              Greater affixes on the right stats still outweigh everything else. A 2-socket Ancestral
+              with two well-rolled greater affixes will beat a Bloodied item with average rolls in most
+              Pit Pushing scenarios — dynamic scaling doesn't compensate for fundamentally poor stat rolls.
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="text-red-400 font-bold mt-1">•</span>
+            <span>
+              Use comparison mode when deciding between a Bloodied item and a standard Ancestral.
+              The scanner will evaluate both side-by-side against your active build focus, which is
+              the clearest way to resolve that specific trade-off.
+            </span>
+          </li>
+        </ul>
+      </section>
+
     </div>
   );
 }
