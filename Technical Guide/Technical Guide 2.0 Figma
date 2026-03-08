@@ -1,0 +1,739 @@
+# StatVerdict Blog System - Technical Guide
+
+## 📚 Table of Contents
+1. [Architecture Overview](#architecture-overview)
+2. [Data Flow](#data-flow)
+3. [API Reference](#api-reference)
+4. [Component Architecture](#component-architecture)
+5. [Security Considerations](#security-considerations)
+6. [Styling System](#styling-system)
+7. [Performance Optimization](#performance-optimization)
+8. [Testing Guide](#testing-guide)
+9. [Maintenance Guide](#maintenance-guide)
+10. [Future Enhancements](#future-enhancements)
+11. [Troubleshooting](#troubleshooting)
+
+---
+
+## 🏗️ Architecture Overview
+
+### Three-Tier Architecture
+
+The blog system follows a **three-tier architecture**:
+
+```
+┌─────────────────┐
+│   Frontend      │  React + React Router
+│   (Browser)     │  - Landing.tsx (homepage)
+│                 │  - BlogPost.tsx (individual posts)
+└────────┬────────┘
+         │ HTTPS
+         ▼
+┌─────────────────┐
+│   Server        │  Supabase Edge Function (Hono)
+│   (Deno/Hono)   │  - GET /blog-posts
+│                 │  - GET /blog-posts/:slug
+└────────┬────────┘
+         │ Supabase Client
+         ▼
+┌─────────────────┐
+│   Database      │  Supabase Postgres
+│   (Postgres)    │  - blog_posts table
+└─────────────────┘
+```
+
+### Technology Stack
+
+**Frontend:**
+- React 18+
+- React Router (Data mode)
+- TypeScript
+- Tailwind CSS v4
+
+**Backend:**
+- Deno runtime
+- Hono web framework
+- Supabase Edge Functions
+
+**Database:**
+- Supabase Postgres
+- Row Level Security (RLS)
+
+---
+
+## 🔄 Data Flow
+
+### Homepage (Recent Updates Section)
+
+```
+1. User visits `/`
+   ↓
+2. Landing.tsx mounts
+   ↓
+3. useEffect triggers API call
+   → GET /blog-posts?limit=3
+   ↓
+4. Server queries database
+   → SELECT * FROM blog_posts 
+     ORDER BY published_at DESC 
+     LIMIT 3
+   ↓
+5. Server returns JSON
+   → { posts: [...] }
+   ↓
+6. Frontend renders blog post cards
+   ↓
+7. User clicks a card
+   → Navigate to /updates/:slug
+```
+
+### Individual Post Page
+
+```
+1. User visits /updates/season-11-support
+   ↓
+2. BlogPost.tsx mounts
+   ↓
+3. React Router extracts slug from URL params
+   ↓
+4. useEffect triggers API call
+   → GET /blog-posts/season-11-support
+   ↓
+5. Server queries database
+   → SELECT * FROM blog_posts 
+     WHERE slug = 'season-11-support'
+   ↓
+6. Server returns JSON
+   → { post: {...} }
+   ↓
+7. Frontend renders full post with HTML content
+   ↓
+8. useEffect updates page title, meta tags (SEO)
+   ↓
+9. User clicks "Back to Home"
+   → Navigate to /
+```
+
+---
+
+## 🔌 API Reference
+
+### Base URL
+```
+https://{projectId}.supabase.co/functions/v1/make-server-38bddc41
+```
+
+### Authentication
+All endpoints require the public anon key:
+```javascript
+headers: {
+  'Authorization': `Bearer ${publicAnonKey}`
+}
+```
+
+### Endpoints
+
+#### `GET /blog-posts`
+Fetch recent blog posts for homepage display.
+
+**Query Parameters:**
+- `limit` (optional) - Number of posts to return (default: 3)
+
+**Request Example:**
+```javascript
+fetch(`https://${projectId}.supabase.co/functions/v1/make-server-38bddc41/blog-posts?limit=3`, {
+  headers: {
+    'Authorization': `Bearer ${publicAnonKey}`
+  }
+})
+```
+
+**Response (200 OK):**
+```json
+{
+  "posts": [
+    {
+      "id": "uuid-here",
+      "title": "Season 11: Heavenly Forge Support",
+      "slug": "season-11-heavenly-forge-support",
+      "description": "Full support for Sanctified items and new affixes",
+      "tag": "Feature",
+      "published_at": "2026-03-05T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+**Response (500 Error):**
+```json
+{
+  "error": "Failed to fetch blog posts",
+  "details": "error message here"
+}
+```
+
+---
+
+#### `GET /blog-posts/:slug`
+Fetch a single blog post by its slug.
+
+**URL Parameters:**
+- `slug` (required) - The post's URL-friendly identifier
+
+**Request Example:**
+```javascript
+fetch(`https://${projectId}.supabase.co/functions/v1/make-server-38bddc41/blog-posts/season-11-support`, {
+  headers: {
+    'Authorization': `Bearer ${publicAnonKey}`
+  }
+})
+```
+
+**Response (200 OK):**
+```json
+{
+  "post": {
+    "id": "uuid-here",
+    "title": "Season 11: Heavenly Forge Support",
+    "slug": "season-11-heavenly-forge-support",
+    "description": "Full support for Sanctified items and new affixes",
+    "content": "<h2>Season 11 is Here!</h2><p>We're excited...</p>",
+    "tag": "Feature",
+    "published_at": "2026-03-05T10:00:00.000Z",
+    "created_at": "2026-03-05T10:00:00.000Z",
+    "updated_at": "2026-03-05T10:00:00.000Z"
+  }
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "Blog post not found",
+  "details": "error message here"
+}
+```
+
+---
+
+## 🧩 Component Architecture
+
+### `App.tsx`
+**Purpose:** Root component, provides React Router.
+
+**Code:**
+```tsx
+import { RouterProvider } from 'react-router';
+import { router } from './routes';
+
+export default function App() {
+  return <RouterProvider router={router} />;
+}
+```
+
+**Responsibilities:**
+- Render `RouterProvider` with route configuration
+- No state management
+- No business logic
+
+---
+
+### `routes.ts`
+**Purpose:** Define application routes.
+
+**Code:**
+```typescript
+import { createBrowserRouter } from "react-router";
+import Landing from "./components/Landing";
+import BlogPost from "./components/BlogPost";
+
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    Component: Landing,
+  },
+  {
+    path: "/updates/:slug",
+    Component: BlogPost,
+  },
+]);
+```
+
+**Route Mapping:**
+- `/` → `Landing` component
+- `/updates/:slug` → `BlogPost` component (slug is dynamic)
+
+---
+
+### `Landing.tsx`
+**Purpose:** Homepage with Recent Updates section.
+
+**Key Features:**
+- Fetches blog posts on mount via `useEffect`
+- Displays 3 most recent posts
+- Shows loading spinner during fetch
+- Handles empty state ("No updates available")
+- Links to individual post pages via React Router `Link`
+
+**State:**
+```typescript
+const [recentUpdates, setRecentUpdates] = useState<BlogPostPreview[]>([]);
+const [updatesLoading, setUpdatesLoading] = useState(true);
+```
+
+**Data Fetching:**
+```typescript
+useEffect(() => {
+  const fetchBlogPosts = async () => {
+    try {
+      setUpdatesLoading(true);
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-38bddc41/blog-posts?limit=3`,
+        {
+          headers: {
+            'Authorization': `Bearer ${publicAnonKey}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setRecentUpdates(data.posts || []);
+      } else {
+        console.error('Failed to fetch blog posts');
+      }
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+    } finally {
+      setUpdatesLoading(false);
+    }
+  };
+
+  fetchBlogPosts();
+}, []);
+```
+
+**Rendering Logic:**
+- Loading → Show spinner
+- Has posts → Render grid of cards
+- No posts → Show "No updates available"
+
+---
+
+### `BlogPost.tsx`
+**Purpose:** Individual blog post page with SEO.
+
+**Key Features:**
+- Extracts `slug` from URL using `useParams()`
+- Fetches full post data on mount
+- Updates document title and meta tags for SEO
+- Renders HTML content using `dangerouslySetInnerHTML`
+- Handles 404 state (post not found)
+- Includes "Back to Home" navigation
+
+**State:**
+```typescript
+const [post, setPost] = useState<BlogPostData | null>(null);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
+```
+
+**SEO Implementation:**
+```typescript
+useEffect(() => {
+  if (post) {
+    // Update page title
+    document.title = `${post.title} | StatVerdict Blog`;
+    
+    // Update meta description
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', post.description);
+    }
+
+    // Add Open Graph tags
+    const updateOrCreateMetaTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    updateOrCreateMetaTag('og:title', post.title);
+    updateOrCreateMetaTag('og:description', post.description);
+    updateOrCreateMetaTag('og:type', 'article');
+    updateOrCreateMetaTag('article:published_time', post.published_at);
+  }
+
+  // Cleanup on unmount
+  return () => {
+    document.title = 'StatVerdict - AI-Powered Diablo 4 Loot Analysis';
+  };
+}, [post]);
+```
+
+**Content Rendering:**
+```tsx
+<div className="prose prose-invert prose-lg max-w-none"
+     dangerouslySetInnerHTML={{ __html: post.content }}
+/>
+```
+
+⚠️ **Security Note:** Only admin-created content from the database is rendered. User-generated content should be sanitized.
+
+---
+
+## 🔒 Security Considerations
+
+### Current Implementation
+- ✅ Uses `SUPABASE_SERVICE_ROLE_KEY` on server (never exposed to frontend)
+- ✅ Uses public `SUPABASE_ANON_KEY` on frontend (safe to expose)
+- ✅ Blog posts are read-only from frontend perspective
+- ✅ HTML content is admin-controlled (inserted via Supabase dashboard)
+
+### Row Level Security (RLS)
+You should enable RLS on the `blog_posts` table:
+
+```sql
+-- Enable RLS
+ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
+
+-- Allow public read access
+CREATE POLICY "Anyone can view published posts"
+ON blog_posts FOR SELECT
+USING (true);
+
+-- Only service role can insert/update/delete
+-- (handled automatically by Supabase)
+```
+
+### Future Considerations
+If you add user-submitted content:
+- Sanitize HTML using a library like `DOMPurify`
+- Validate input on both frontend and backend
+- Implement rate limiting for POST endpoints
+
+---
+
+## 🎨 Styling System
+
+### CSS Variables
+The blog system uses your existing CSS custom properties from `/src/app/landing.css`:
+
+```css
+--sv-text-primary      /* Main headings */
+--sv-text-secondary    /* Body text */
+--sv-text-muted        /* Dates, metadata */
+--sv-accent            /* Links, buttons */
+--sv-border            /* Dividers */
+--sv-bg-primary        /* Page background */
+--sv-bg-card           /* Card backgrounds */
+```
+
+### Responsive Design
+- Mobile-first approach
+- Grid switches from 1 column → 3 columns on tablets/desktop
+- Typography scales with `clamp()` for fluid sizing
+- Touch-friendly tap targets (minimum 44px)
+
+### Typography
+The blog post content uses Tailwind's typography plugin:
+```tsx
+<div className="prose prose-invert prose-lg max-w-none">
+  {/* Automatically styles h1, h2, p, ul, ol, etc. */}
+</div>
+```
+
+---
+
+## 📈 Performance Optimization
+
+### Current Optimizations
+1. **Lazy Loading:** Blog posts only fetched when needed
+2. **Minimal Data Transfer:** Homepage only fetches title, slug, description, tag, published_at (not full content)
+3. **Efficient Queries:** Database queries use indexes on `published_at` and `slug`
+4. **Client-Side Caching:** Browser caches API responses (default HTTP caching)
+
+### Recommended Improvements
+1. **Add pagination** when you have >10 posts
+2. **Implement stale-while-revalidate** caching strategy
+3. **Add database indexes:**
+   ```sql
+   CREATE INDEX idx_blog_posts_published_at ON blog_posts(published_at DESC);
+   CREATE INDEX idx_blog_posts_slug ON blog_posts(slug);
+   ```
+4. **Enable Supabase Edge Caching** for GET endpoints
+5. **Add prefetching** for linked posts on hover
+6. **Implement service worker** for offline support
+
+---
+
+## 🧪 Testing Guide
+
+### Manual Testing Checklist
+
+**Homepage (`/`)**
+- [ ] Recent Updates section loads
+- [ ] Shows loading spinner initially
+- [ ] Displays 3 most recent posts
+- [ ] Each card shows title, description, tag, date
+- [ ] Clicking a card navigates to `/updates/:slug`
+- [ ] Empty state shows when no posts exist
+- [ ] Error state logs to console
+
+**Individual Post (`/updates/:slug`)**
+- [ ] Post loads successfully
+- [ ] Shows loading spinner initially
+- [ ] Displays title, description, content, tag, date
+- [ ] Page title updates in browser tab
+- [ ] "Back to Home" button works
+- [ ] 404 state shows for invalid slugs
+- [ ] HTML content renders correctly
+
+**SEO**
+- [ ] View page source shows dynamic `<title>` tag
+- [ ] Meta description is present
+- [ ] Open Graph tags exist (`og:title`, `og:description`, etc.)
+
+### Browser Testing
+- [ ] Chrome/Edge (latest)
+- [ ] Firefox (latest)
+- [ ] Safari (latest)
+- [ ] Mobile browsers (iOS Safari, Chrome Android)
+
+### Performance Testing
+- [ ] Lighthouse score >90 for Performance
+- [ ] First Contentful Paint <2s
+- [ ] Time to Interactive <3s
+- [ ] No layout shifts (CLS = 0)
+
+---
+
+## 🔧 Maintenance Guide
+
+### Adding a New Blog Post
+
+**Option 1: Supabase Dashboard (Recommended)**
+1. Go to Supabase Dashboard → Table Editor
+2. Open `blog_posts` table
+3. Click "Insert row"
+4. Fill in fields:
+   - `title`: "My New Post"
+   - `slug`: "my-new-post" (must be unique, URL-friendly)
+   - `description`: "Short summary..."
+   - `content`: `<h2>Heading</h2><p>Content...</p>`
+   - `tag`: "Feature" | "Update" | "Enhancement"
+   - `published_at`: Auto-filled or set custom date
+5. Click "Save"
+
+**Option 2: SQL**
+```sql
+INSERT INTO blog_posts (title, slug, description, content, tag)
+VALUES (
+  'My New Post',
+  'my-new-post',
+  'Short summary of the post',
+  '<h2>Main Heading</h2><p>Your content here...</p>',
+  'Feature'
+);
+```
+
+### Updating a Blog Post
+```sql
+UPDATE blog_posts
+SET 
+  content = '<h2>Updated Content</h2>...',
+  updated_at = NOW()
+WHERE slug = 'my-post-slug';
+```
+
+### Deleting a Blog Post
+```sql
+DELETE FROM blog_posts WHERE slug = 'my-post-slug';
+```
+
+### Changing Homepage Post Limit
+In `/src/app/components/Landing.tsx`:
+```typescript
+// Change limit=3 to limit=5 (or any number)
+`https://${projectId}.supabase.co/functions/v1/make-server-38bddc41/blog-posts?limit=5`
+```
+
+### HTML Content Best Practices
+When writing blog post content:
+- Use semantic HTML: `<h2>`, `<h3>`, `<p>`, `<ul>`, `<ol>`
+- Include alt text for images: `<img src="..." alt="Description">`
+- Use `<code>` for inline code, `<pre><code>` for code blocks
+- Add links with descriptive text: `<a href="...">Click here</a>`
+
+---
+
+## 🚀 Future Enhancements
+
+### Recommended Features
+1. **Pagination:** Add "Load More" or page numbers when you have 10+ posts
+2. **Search:** Filter posts by title or content
+3. **Tags/Categories:** Filter posts by tag (Feature, Update, etc.)
+4. **RSS Feed:** Generate XML feed for blog readers
+5. **Social Sharing:** Add share buttons (Twitter, Reddit, Discord)
+6. **Comments:** Integrate Disqus or custom comment system
+7. **Analytics:** Track post views, popular posts
+8. **Draft System:** Add `published` boolean field to hide unpublished posts
+9. **Author Attribution:** Add `author` field if multiple team members write posts
+10. **Rich Media:** Support for embedded images, videos, code snippets
+
+### Technical Improvements
+1. **TypeScript Interfaces:** Export shared types between frontend/backend
+2. **API Versioning:** Version your API (`/v1/blog-posts`)
+3. **Error Boundaries:** React error boundaries for better error handling
+4. **Loading Skeletons:** Replace spinners with skeleton screens
+5. **Prefetching:** Prefetch linked posts on hover
+6. **Service Worker:** Offline support with cached posts
+7. **Image Optimization:** Compress and resize images automatically
+8. **Sitemap Generation:** Auto-generate sitemap.xml for SEO
+
+---
+
+## 📞 Troubleshooting
+
+### Issue: Posts not showing on homepage
+
+**Symptoms:** Recent Updates section is empty or shows "No updates available"
+
+**Diagnosis:**
+1. Open DevTools → Network tab
+2. Look for request to `/blog-posts?limit=3`
+3. Check response status and body
+
+**Solutions:**
+- **500 Error:** Check Supabase Edge Function logs, verify database connection
+- **404 Error:** Verify Edge Function is deployed
+- **RLS Error:** Check Row Level Security policies allow SELECT
+- **Empty Array:** Verify posts exist in database with `SELECT * FROM blog_posts`
+
+---
+
+### Issue: Individual post shows 404
+
+**Symptoms:** Clicking a blog card leads to "Post Not Found" page
+
+**Diagnosis:**
+1. Check browser console for errors
+2. Verify slug in URL matches database exactly (case-sensitive)
+3. Check Network tab for API response
+
+**Solutions:**
+- Verify post exists: `SELECT * FROM blog_posts WHERE slug = 'your-slug'`
+- Check for typos in slug (hyphens, spelling)
+- Ensure RLS policy allows SELECT on that row
+
+---
+
+### Issue: SEO meta tags not updating
+
+**Symptoms:** Page title/description doesn't change between posts
+
+**Diagnosis:**
+1. View page source (Ctrl+U)
+2. Check if `<title>` and `<meta>` tags exist
+3. Verify `useEffect` is running in BlogPost component
+
+**Solutions:**
+- Add `console.log` in `useEffect` to verify it's running
+- Check if `post` state is populated
+- Clear browser cache and hard refresh (Ctrl+Shift+R)
+
+---
+
+### Issue: API requests failing with CORS errors
+
+**Symptoms:** Console shows "CORS policy" error
+
+**Diagnosis:**
+1. Check if Edge Function includes CORS headers
+2. Verify `Authorization` header is being sent
+
+**Solutions:**
+- Ensure server has `cors()` middleware from `npm:hono/cors`
+- Check that `app.use('*', cors())` is called before routes
+- Verify `Authorization: Bearer ${publicAnonKey}` header is present
+
+---
+
+### Issue: HTML content not rendering
+
+**Symptoms:** Blog post content appears as plain text or HTML tags
+
+**Diagnosis:**
+1. Check if `dangerouslySetInnerHTML` is used
+2. Verify `content` field contains HTML (not escaped text)
+
+**Solutions:**
+- Use `dangerouslySetInnerHTML={{ __html: post.content }}`
+- Check database: content should be `<h2>Title</h2>` not `&lt;h2&gt;Title&lt;/h2&gt;`
+- Verify no XSS protection is stripping HTML
+
+---
+
+## 📚 Resources
+
+### Official Documentation
+- [React Router Docs](https://reactrouter.com/)
+- [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
+- [Hono Framework](https://hono.dev/)
+- [Tailwind CSS v4](https://tailwindcss.com/docs)
+
+### Related Files
+- `/BLOG_SETUP.md` - Setup instructions
+- `/CHANGELOG.md` - Version history
+- `/sample-blog-posts.sql` - Sample data
+- `/src/app/components/Landing.tsx` - Homepage component
+- `/src/app/components/BlogPost.tsx` - Post page component
+- `/supabase/functions/server/index.tsx` - Server routes
+
+### Useful SQL Queries
+
+**View all posts:**
+```sql
+SELECT title, slug, tag, published_at 
+FROM blog_posts 
+ORDER BY published_at DESC;
+```
+
+**Find posts by tag:**
+```sql
+SELECT * FROM blog_posts WHERE tag = 'Feature';
+```
+
+**Count total posts:**
+```sql
+SELECT COUNT(*) FROM blog_posts;
+```
+
+**Find unpublished posts (if you add `published` field):**
+```sql
+SELECT * FROM blog_posts WHERE published = false;
+```
+
+---
+
+## 📝 Summary
+
+You now have a fully functional, SEO-optimized blog system that:
+- ✅ Fetches posts from Supabase database
+- ✅ Displays recent posts on homepage
+- ✅ Provides individual URLs for each post
+- ✅ Updates meta tags for search engines
+- ✅ Handles loading and error states
+- ✅ Is production-ready
+
+**Quick Start:**
+1. Run `/sample-blog-posts.sql` to populate sample data
+2. Test the homepage and individual post pages
+3. Start adding your own blog posts via Supabase dashboard
+4. Monitor analytics to see which posts perform best
+
+Happy blogging! 🎉
