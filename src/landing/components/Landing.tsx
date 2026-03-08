@@ -264,7 +264,7 @@ export default function Landing() {
           {/* Stats */}
           <div className="flex justify-center gap-10 flex-wrap">
             <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--sv-text-secondary)' }}>
-              <TrendingUp className="w-5 h-5" style={{ color: 'var(--sv-accent)' }} />
+              <ArrowLeftRight className="w-5 h-5" style={{ color: 'var(--sv-accent)' }} />
               <span>
                 <strong style={{ color: 'var(--sv-accent)' }}>{stats.scans}</strong> Items Analyzed
               </span>
