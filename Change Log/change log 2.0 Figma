@@ -1,0 +1,112 @@
+# StatVerdict Blog System - Changelog
+
+## Version 2.0.0 - Blog System Implementation (March 7, 2026)
+
+### ✨ New Features
+
+#### Backend (Supabase Edge Functions)
+- Added RESTful API endpoints for blog post management
+- Implemented `GET /make-server-38bddc41/blog-posts` - Fetch recent posts with configurable limit
+- Implemented `GET /make-server-38bddc41/blog-posts/:slug` - Fetch individual post by slug
+- Added error handling and detailed logging for debugging
+- Integrated Supabase client for database queries
+
+#### Frontend (React)
+- Migrated from single-page app to React Router multi-page architecture
+- Created `Landing.tsx` component (homepage with blog post previews)
+- Created `BlogPost.tsx` component (individual post pages)
+- Created `routes.ts` for React Router configuration
+- Refactored `App.tsx` to use `RouterProvider`
+- Added dynamic Recent Updates section that fetches from database
+- Implemented loading states and error handling for blog posts
+
+#### SEO Optimization
+- Dynamic page titles per blog post
+- Meta description tags
+- Open Graph tags for social media sharing
+- Semantic HTML structure
+- Individual crawlable URLs for each post (`/updates/:slug`)
+
+#### Documentation & Sample Data
+- Created `sample-blog-posts.sql` with 3 example posts
+- Created `BLOG_SETUP.md` with setup instructions
+- Created comprehensive technical documentation
+
+### 🔧 Technical Changes
+
+#### File Structure Changes
+```
+/src/app/
+  ├── App.tsx (now only RouterProvider wrapper)
+  ├── routes.ts (new - routing configuration)
+  ├── landing.css (unchanged - styles)
+  └── components/
+      ├── Landing.tsx (new - homepage)
+      └── BlogPost.tsx (new - individual post page)
+
+/supabase/functions/server/
+  └── index.tsx (updated - added blog routes)
+
+/sample-blog-posts.sql (new)
+/BLOG_SETUP.md (new)
+/CHANGELOG.md (new)
+/TECHNICAL_GUIDE.md (new)
+```
+
+#### Database Schema
+
+The system expects a `blog_posts` table with the following structure:
+
+```sql
+CREATE TABLE blog_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT NOT NULL,
+  content TEXT NOT NULL,
+  tag TEXT NOT NULL,
+  published_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Field Descriptions:**
+- `id` - Auto-generated unique identifier
+- `title` - Post title (displayed in cards and on post page)
+- `slug` - URL-friendly identifier (e.g., "season-11-update")
+- `description` - Short summary (150-200 chars, used for meta tags)
+- `content` - Full HTML content of the post
+- `tag` - Category/type (e.g., "Feature", "Update", "Enhancement")
+- `published_at` - Publication date (used for sorting)
+- `created_at` - Record creation timestamp
+- `updated_at` - Last modification timestamp
+
+### 🎨 UI/UX Improvements
+- Removed fire emoji from D4 Scanner card
+- Updated season badge to "Season 11 Ready • S12 in Progress"
+- Removed all references to tiered pricing in FAQ
+- Updated FAQ to reflect current free model without implying future paid tiers
+
+### 🗃️ Database Requirements
+- Postgres database with `blog_posts` table
+- Row Level Security (RLS) enabled for public read access
+- Indexes on `published_at` and `slug` for performance
+
+### 🔒 Security Updates
+- Uses `SUPABASE_SERVICE_ROLE_KEY` on server only (never exposed to frontend)
+- Uses public `SUPABASE_ANON_KEY` on frontend (safe to expose)
+- Blog posts are read-only from frontend perspective
+- HTML content is admin-controlled via Supabase dashboard
+
+---
+
+## Version 1.0.0 - Initial Landing Page (Before March 7, 2026)
+
+### Initial Features
+- Single-page landing page design
+- D4 Scanner feature card with call-to-action
+- Community voting section
+- FAQ section
+- Responsive design with Tailwind CSS
+- Custom CSS variables for theming
